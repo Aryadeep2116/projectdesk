@@ -567,16 +567,24 @@ btn.addEventListener('click', async () => {
 
     resultsEl.scrollIntoView({behavior:'smooth', block:'nearest'});
 
-    // Render premium flagship teaser
-    if(parsed.flagship){
+    // Render premium flagship teaser — built from their inputs directly,
+    // not dependent on the AI reliably returning a flagship field.
+    {
       const premiumEl = document.getElementById('premium');
       premiumEl.style.display = 'block';
+
+      const targetText = dreamTarget ? `at a place like ${dreamTarget}` : `for ${role} roles`;
+      const flagshipTitle = `The ${role} Standout Project`;
+      const flagshipHook = `Most applicants ${targetText} submit the same handful of projects. This is the one built specifically around your gap — ${gap || 'the thing missing from your resume'} — designed to make an interviewer stop and ask you about it.`;
+      const skillGuess = (skills || 'your current skills').split(',').map(s => s.trim()).filter(Boolean);
+      const teaserSkills = [...skillGuess.slice(0,2), 'System design basics', 'Deployment & real users', 'Case-study storytelling'].slice(0,5);
+
       premiumEl.innerHTML = `
         <div class="premium-badge">Premium · Flagship Project</div>
-        <h3>${parsed.flagship.title}</h3>
-        <p class="hook">${parsed.flagship.hook}</p>
-        <div class="skills-teaser">${parsed.flagship.skills_to_learn.map(s => `<span>${s}</span>`).join('')}</div>
-        <p class="premium-copy">This is the project built for <strong>${role}</strong> specifically — the kind that gets you noticed ahead of everyone else applying with the same 4 ideas above. Full build guide + the exact skills roadmap to learn it, plus courses to actually teach you each skill, launching soon.</p>
+        <h3>${flagshipTitle}</h3>
+        <p class="hook">${flagshipHook}</p>
+        <div class="skills-teaser">${teaserSkills.map(s => `<span>${s}</span>`).join('')}</div>
+        <p class="premium-copy">Full build guide + the exact skills roadmap to learn it, plus courses to actually teach you each skill, launching soon.</p>
         <div class="waitlist-row">
           <input id="waitlist-email" type="email" placeholder="your email — get early access + launch discount">
           <button id="waitlist-btn">Join waitlist</button>
