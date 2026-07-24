@@ -38,6 +38,22 @@ export default {
         });
       }
 
+      // --- TRACK: log a simple analytics event (landing view, CTA click, etc.) ---
+      if (body.action === "track") {
+        const { type } = body;
+        if (!type) {
+          return new Response(JSON.stringify({ error: "type required" }), {
+            status: 400,
+            headers: { "Access-Control-Allow-Origin": "*", "Content-Type": "application/json" },
+          });
+        }
+        const key = `event:${type}:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`;
+        await env.WAITLIST.put(key, JSON.stringify({ type, ts: new Date().toISOString() }));
+        return new Response(JSON.stringify({ ok: true }), {
+          headers: { "Access-Control-Allow-Origin": "*", "Content-Type": "application/json" },
+        });
+      }
+
       // --- ADMIN: view all waitlist entries (simple password check) ---
       if (body.action === "admin_view_waitlist") {
         if (body.password !== env.ADMIN_PASSWORD) {
@@ -51,7 +67,17 @@ export default {
           list.keys.map(async (k) => JSON.parse(await env.WAITLIST.get(k.name)))
         );
         entries.sort((a, b) => new Date(b.ts) - new Date(a.ts));
-        return new Response(JSON.stringify({ entries }), {
+
+        const eventList = await env.WAITLIST.list({ prefix: "event:" });
+        const events = await Promise.all(
+          eventList.keys.map(async (k) => JSON.parse(await env.WAITLIST.get(k.name)))
+        );
+        const eventCounts = {};
+        events.forEach((e) => {
+          eventCounts[e.type] = (eventCounts[e.type] || 0) + 1;
+        });
+
+        return new Response(JSON.stringify({ entries, eventCounts }), {
           headers: { "Access-Control-Allow-Origin": "*", "Content-Type": "application/json" },
         });
       }

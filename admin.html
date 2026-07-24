@@ -11,7 +11,10 @@
   table{width:100%;border-collapse:collapse;margin-top:24px;}
   th,td{text-align:left;padding:8px 10px;border-bottom:1px solid #333;font-size:13px;}
   th{color:#B8862E;text-transform:uppercase;font-size:11px;letter-spacing:1px;}
-  .count{color:#8FBF9F;margin-top:16px;font-size:14px;}
+  .stats{display:flex;gap:16px;margin-top:16px;flex-wrap:wrap;}
+  .stat-box{background:#20281F;border:1px solid #333;border-radius:8px;padding:14px 20px;min-width:140px;}
+  .stat-box .num{font-size:28px;font-weight:bold;color:#B8862E;}
+  .stat-box .lbl{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#8B948A;margin-top:4px;}
   .error{color:#E07A5F;margin-top:12px;}
 </style>
 </head>
@@ -49,7 +52,19 @@ document.getElementById('load').addEventListener('click', async () => {
     }
     msg.textContent = '';
     const entries = data.entries || [];
-    document.getElementById('msg').innerHTML = `<div class="count">${entries.length} signups</div>`;
+    const counts = data.eventCounts || {};
+    const views = counts.landing_view || 0;
+    const clicks = counts.cta_click || 0;
+    const rate = views ? ((clicks / views) * 100).toFixed(1) : '0';
+
+    document.getElementById('msg').innerHTML = `
+      <div class="stats">
+        <div class="stat-box"><div class="num">${views}</div><div class="lbl">Landing views</div></div>
+        <div class="stat-box"><div class="num">${clicks}</div><div class="lbl">CTA clicks</div></div>
+        <div class="stat-box"><div class="num">${rate}%</div><div class="lbl">Click-through rate</div></div>
+        <div class="stat-box"><div class="num">${entries.length}</div><div class="lbl">Waitlist signups</div></div>
+      </div>
+    `;
 
     if(entries.length === 0){
       out.textContent = 'No signups yet.';

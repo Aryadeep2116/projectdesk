@@ -240,6 +240,115 @@
     opacity:1;
     transform:translateY(0);
   }
+
+  /* LANDING SECTION */
+  .landing{
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:40px 22px;
+    position:relative;
+    z-index:1;
+  }
+  .land-badge{margin-bottom:26px;}
+  .land-h1{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:700;
+    font-size:clamp(42px, 10vw, 76px);
+    line-height:1.02;
+    letter-spacing:-2.5px;
+    margin:0 0 22px;
+    opacity:0;
+    animation:heroIn .9s cubic-bezier(.2,.9,.25,1.1) .1s forwards;
+  }
+  .land-h1 .line{display:block;}
+  .land-h1 em{
+    font-style:normal;
+    color:var(--accent);
+  }
+  .land-sub{
+    font-size:18px;
+    color:var(--ink-soft);
+    max-width:480px;
+    line-height:1.6;
+    margin:0 0 40px;
+    opacity:0;
+    animation:riseIn .8s ease .35s forwards;
+  }
+  .cta-btn{
+    font-family:'JetBrains Mono', monospace;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    font-size:14.5px;
+    font-weight:600;
+    background:var(--accent);
+    color:#0F1310;
+    border:none;
+    padding:20px 36px;
+    border-radius:8px;
+    cursor:pointer;
+    display:inline-flex;
+    align-items:center;
+    gap:12px;
+    position:relative;
+    overflow:hidden;
+    opacity:0;
+    animation:riseIn .8s ease .5s forwards, ctaPulse 2.5s ease-in-out 2s infinite;
+    transition:transform .2s ease, box-shadow .2s ease;
+  }
+  @keyframes ctaPulse{
+    0%,100%{box-shadow:0 0 0 0 rgba(212,242,106,0.4);}
+    50%{box-shadow:0 0 0 14px rgba(212,242,106,0);}
+  }
+  .cta-btn:hover{transform:translateY(-2px) scale(1.03);}
+  .cta-btn::after{
+    content:'';
+    position:absolute;
+    top:0;left:-120%;
+    width:60%;height:100%;
+    background:linear-gradient(120deg, transparent, rgba(255,255,255,0.4), transparent);
+    transform:skewX(-20deg);
+    transition:left .5s ease;
+  }
+  .cta-btn:hover::after{left:130%;}
+  .cta-btn .btn-arrow{transition:transform .25s ease;}
+  .cta-btn:hover .btn-arrow{transform:translateX(5px);}
+  .land-meta{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11.5px;
+    letter-spacing:.5px;
+    color:var(--ink-soft);
+    margin-top:20px;
+    opacity:0;
+    animation:riseIn .8s ease .65s forwards;
+  }
+  .land-shape-1{top:15%;left:12%;}
+  .land-shape-2{top:22%;right:14%;}
+  .land-shape-3{
+    position:absolute;
+    bottom:18%;left:18%;
+    color:var(--accent-2);
+    font-size:20px;
+    animation:floatShape 5s ease-in-out infinite .6s;
+  }
+
+  #tool-section{
+    opacity:0;
+    transform:translateY(20px);
+  }
+  #tool-section.reveal{
+    animation:riseIn .7s ease forwards;
+  }
+
+  @media (max-width:560px){
+    .land-h1{letter-spacing:-1.5px;}
+    .land-sub{font-size:15.5px;}
+    .cta-btn{padding:17px 24px;font-size:13px;text-align:center;}
+    .land-shape-1, .land-shape-2, .land-shape-3{display:none;}
+  }
   .card{counter-reset:field-count;}
   label{
     display:flex;
@@ -498,6 +607,17 @@
     margin-top:56px;
   }
   footer a{color:var(--accent);}
+  .admin-link{margin-top:14px;}
+  .admin-link a{
+    font-size:10.5px;
+    color:var(--line);
+    text-decoration:none;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    opacity:0.5;
+    transition:opacity .2s ease;
+  }
+  .admin-link a:hover{opacity:1;color:var(--ink-soft);}
 
   /* PREMIUM FLAGSHIP SECTION */
   .premium{
@@ -697,7 +817,20 @@
 <body>
 <div class="bg-orb one"></div>
 <div class="bg-orb two"></div>
+
+<section class="landing" id="landing">
+  <span class="shape circle land-shape-1"></span>
+  <span class="shape plus land-shape-2">+</span>
+  <span class="shape land-shape-3">✦</span>
+  <div class="eyebrow land-badge">Free · Built for students</div>
+  <h1 class="land-h1"><span class="line">Stop guessing</span><span class="line">what to <em>build.</em></span></h1>
+  <p class="land-sub">Get project ideas matched to the role you actually want — not another generic list you'll scroll past. Takes 30 seconds.</p>
+  <button id="cta-btn" class="cta-btn">Build Projects For My Resume <span class="btn-arrow">→</span></button>
+  <div class="land-meta">Free · No signup required · Personalized in seconds</div>
+</section>
+
 <div class="wrap">
+  <div id="tool-section" style="display:none;">
   <div class="hero">
     <span class="shape circle"></span>
     <span class="shape plus">+</span>
@@ -753,7 +886,11 @@
   <div id="results" class="results"></div>
   <div id="premium" class="premium" style="display:none;"></div>
 
-  <footer class="scroll-reveal">Built by a student, for students. Ideas generated live — regenerate anytime for a fresh set.</footer>
+  <footer class="scroll-reveal">
+    Built by a student, for students. Ideas generated live — regenerate anytime for a fresh set.
+    <div class="admin-link"><a href="admin.html">admin</a></div>
+  </footer>
+  </div>
 </div>
 
 <script>
@@ -762,6 +899,28 @@
 const WORKER_URL = "https://projectdesk-api.aryadeepbiswas014.workers.dev";
 
 const btn = document.getElementById('go');
+// Track landing page view (fire and forget, don't block anything on it)
+fetch(WORKER_URL, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ action: 'track', type: 'landing_view' })
+}).catch(() => {});
+
+document.getElementById('cta-btn').addEventListener('click', () => {
+  fetch(WORKER_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'track', type: 'cta_click' })
+  }).catch(() => {});
+
+  const toolSection = document.getElementById('tool-section');
+  toolSection.style.display = 'block';
+  requestAnimationFrame(() => {
+    toolSection.classList.add('reveal');
+    toolSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+});
+
 const scrollObserver = new IntersectionObserver((entries) => {
   entries.forEach(entry => {
     if(entry.isIntersecting){
