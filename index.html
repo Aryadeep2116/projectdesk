@@ -412,6 +412,76 @@
     z-index:2;
   }
   .waitlist-status.success{color:#8FBF9F;}
+
+  /* RESPONSIVE — mobile */
+  @media (max-width: 560px){
+    .wrap{padding:36px 16px 70px;}
+    h1{font-size:clamp(28px, 8vw, 36px);}
+    .sub{font-size:14.5px;margin-bottom:28px;}
+    .card{padding:24px 18px;}
+    .row{flex-direction:column;gap:0;}
+    .row .field{margin-top:20px;}
+    button{width:100%;justify-content:center;padding:15px 20px;}
+    .idea{padding:20px 18px 18px;}
+    .idea h3{font-size:19px;}
+    .premium{padding:24px 20px;}
+    .premium h3{font-size:20px;}
+    .waitlist-row{flex-direction:column;}
+    .waitlist-row input{min-width:0;}
+    .waitlist-row button{width:100%;}
+    .stack-tags span, .skills-teaser span{font-size:11px;padding:3px 8px;}
+  }
+
+  /* SKELETON LOADING CARDS */
+  .skeleton-card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:3px;
+    padding:26px;
+    margin-bottom:18px;
+    overflow:hidden;
+    position:relative;
+  }
+  .skeleton-line{
+    height:12px;
+    border-radius:3px;
+    background:linear-gradient(90deg, var(--paper-2) 25%, #E4DCC5 37%, var(--paper-2) 63%);
+    background-size:400% 100%;
+    animation:shimmer 1.4s ease infinite;
+    margin-bottom:10px;
+  }
+  @keyframes shimmer{
+    0%{background-position:100% 50%;}
+    100%{background-position:0% 50%;}
+  }
+  .skeleton-line.w-40{width:40%;height:18px;margin-bottom:16px;}
+  .skeleton-line.w-90{width:90%;}
+  .skeleton-line.w-70{width:70%;}
+  .skeleton-line.w-30{width:30%;height:22px;border-radius:20px;display:inline-block;margin-right:8px;}
+
+  /* SECTION DIVIDER between free and premium */
+  .section-divider{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    margin:40px 0 24px;
+    opacity:0;
+  }
+  .section-divider.show{animation:riseIn .5s ease forwards;}
+  .section-divider::before, .section-divider::after{
+    content:'';
+    flex:1;
+    height:1px;
+    background:var(--line);
+  }
+  .section-divider span{
+    font-family:'Space Mono', monospace;
+    font-size:11px;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    white-space:nowrap;
+  }
 </style>
 </head>
 <body>
@@ -512,6 +582,20 @@ btn.addEventListener('click', async () => {
   resultsEl.innerHTML = '';
   resultsHead.className = 'results-head';
   resultsSub.className = 'results-sub';
+  document.getElementById('premium').style.display = 'none';
+
+  // Skeleton loading cards for a premium feel while waiting
+  resultsEl.innerHTML = [1,2,3,4].map(() => `
+    <div class="skeleton-card">
+      <div class="skeleton-line w-40"></div>
+      <div class="skeleton-line w-90"></div>
+      <div class="skeleton-line w-70"></div>
+      <div style="margin-top:14px;">
+        <div class="skeleton-line w-30"></div>
+        <div class="skeleton-line w-30"></div>
+      </div>
+    </div>
+  `).join('');
 
   try{
     const response = await fetch(WORKER_URL, {
@@ -570,6 +654,14 @@ btn.addEventListener('click', async () => {
     // Render premium flagship teaser — built from their inputs directly,
     // not dependent on the AI reliably returning a flagship field.
     {
+      const oldDivider = document.querySelector('.section-divider');
+      if(oldDivider) oldDivider.remove();
+      const dividerEl = document.createElement('div');
+      dividerEl.className = 'section-divider';
+      dividerEl.innerHTML = '<span>What would actually set you apart</span>';
+      resultsEl.after(dividerEl);
+      setTimeout(() => dividerEl.classList.add('show'), 100);
+
       const premiumEl = document.getElementById('premium');
       premiumEl.style.display = 'block';
 
