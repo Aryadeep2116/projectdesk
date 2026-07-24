@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ProjectDesk — Admin</title>
+<style>
+  body{font-family:Arial,sans-serif;background:#1A241F;color:#E7E3D6;padding:40px;max-width:900px;margin:0 auto;}
+  h1{font-size:22px;}
+  input{padding:10px;border-radius:4px;border:1px solid #444;background:#20281F;color:#fff;width:260px;margin-right:8px;}
+  button{padding:10px 18px;border-radius:4px;border:none;background:#B8862E;color:#1A241F;cursor:pointer;font-weight:bold;}
+  table{width:100%;border-collapse:collapse;margin-top:24px;}
+  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid #333;font-size:13px;}
+  th{color:#B8862E;text-transform:uppercase;font-size:11px;letter-spacing:1px;}
+  .count{color:#8FBF9F;margin-top:16px;font-size:14px;}
+  .error{color:#E07A5F;margin-top:12px;}
+</style>
+</head>
+<body>
+  <h1>ProjectDesk — Waitlist Admin</h1>
+  <div>
+    <input id="pw" type="password" placeholder="Admin password">
+    <button id="load">Load waitlist</button>
+  </div>
+  <div id="msg"></div>
+  <div id="out"></div>
+
+<script>
+const WORKER_URL = "https://projectdesk-api.aryadeepbiswas014.workers.dev";
+
+document.getElementById('load').addEventListener('click', async () => {
+  const password = document.getElementById('pw').value;
+  const msg = document.getElementById('msg');
+  const out = document.getElementById('out');
+  msg.textContent = 'Loading...';
+  msg.className = '';
+  out.innerHTML = '';
+
+  try{
+    const res = await fetch(WORKER_URL, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ action: 'admin_view_waitlist', password })
+    });
+    const data = await res.json();
+    if(data.error){
+      msg.textContent = data.error;
+      msg.className = 'error';
+      return;
+    }
+    msg.textContent = '';
+    const entries = data.entries || [];
+    document.getElementById('msg').innerHTML = `<div class="count">${entries.length} signups</div>`;
+
+    if(entries.length === 0){
+      out.textContent = 'No signups yet.';
+      return;
+    }
+
+    let html = '<table><tr><th>When</th><th>Email</th><th>Role</th><th>Gap</th><th>Dream Target</th><th>Branch</th><th>Skills</th></tr>';
+    entries.forEach(e => {
+      html += `<tr>
+        <td>${new Date(e.ts).toLocaleString()}</td>
+        <td>${e.email || ''}</td>
+        <td>${e.role || ''}</td>
+        <td>${e.gap || ''}</td>
+        <td>${e.dreamTarget || ''}</td>
+        <td>${e.branch || ''}</td>
+        <td>${e.skills || ''}</td>
+      </tr>`;
+    });
+    html += '</table>';
+    out.innerHTML = html;
+  } catch(err){
+    msg.textContent = 'Failed to load. Check the password or try again.';
+    msg.className = 'error';
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ProjectDesk — Find your next resume project</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600&display=swap');
+
+  :root{
+    --paper:#F5F1E7;
+    --paper-2:#EDE6D3;
+    --ink:#20281F;
+    --ink-soft:#63695C;
+    --line:#D8CFB6;
+    --accent:#2F5D50;
+    --accent-2:#C4491F;
+    --card:#FFFEFA;
+    --gold:#B8862E;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(circle at 15% 10%, rgba(184,134,46,0.06), transparent 40%),
+      radial-gradient(circle at 85% 90%, rgba(47,93,80,0.08), transparent 40%),
+      var(--paper);
+    color:var(--ink);
+    font-family:'Inter', sans-serif;
+    padding:0;
+    min-height:100vh;
+  }
+  .wrap{max-width:800px;margin:0 auto;padding:56px 22px 100px;}
+
+  /* HERO */
+  .hero{
+    opacity:0;
+    animation:riseIn .7s ease forwards;
+  }
+  @keyframes riseIn{
+    from{opacity:0;transform:translateY(14px);}
+    to{opacity:1;transform:translateY(0);}
+  }
+  .eyebrow{
+    font-family:'Space Mono', monospace;
+    font-size:12px;
+    letter-spacing:3px;
+    text-transform:uppercase;
+    color:var(--accent-2);
+    margin-bottom:14px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .eyebrow::before{
+    content:'';
+    width:22px;height:1px;
+    background:var(--accent-2);
+    display:inline-block;
+  }
+  h1{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:clamp(32px, 6vw, 50px);
+    line-height:1.08;
+    margin:0 0 14px;
+    letter-spacing:-0.5px;
+  }
+  h1 em{
+    font-style:italic;
+    color:var(--accent);
+  }
+  .sub{
+    font-size:16px;
+    color:var(--ink-soft);
+    max-width:520px;
+    line-height:1.55;
+    margin-bottom:40px;
+  }
+
+  /* FORM CARD - looks like an index card on a desk */
+  .desk{
+    position:relative;
+    perspective:1200px;
+  }
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:3px;
+    padding:34px 32px;
+    box-shadow: 0 1px 2px rgba(32,40,31,0.04), 0 12px 30px -14px rgba(32,40,31,0.18);
+    position:relative;
+    opacity:0;
+    animation:riseIn .7s ease .15s forwards;
+  }
+  .card::before{
+    content:'';
+    position:absolute;
+    top:0;left:28px;right:28px;height:1px;
+    background:var(--line);
+    opacity:0;
+  }
+  .field{margin-top:20px;}
+  .field:first-child{margin-top:0;}
+  label{
+    display:flex;
+    align-items:baseline;
+    gap:8px;
+    font-family:'Space Mono', monospace;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:1.5px;
+    color:var(--ink-soft);
+    margin-bottom:8px;
+  }
+  label .req{color:var(--accent-2);font-size:10px;}
+  input, select, textarea{
+    width:100%;
+    font-family:'Inter', sans-serif;
+    font-size:15px;
+    padding:12px 14px;
+    border:1px solid var(--line);
+    border-radius:2px;
+    background:#FBFAF5;
+    color:var(--ink);
+    transition:border-color .2s ease, box-shadow .2s ease;
+  }
+  input:focus, select:focus, textarea:focus{
+    outline:none;
+    border-color:var(--accent);
+    box-shadow:0 0 0 3px rgba(47,93,80,0.08);
+  }
+  textarea{resize:vertical;min-height:66px;}
+
+  .row{display:flex;gap:16px;}
+  .row .field{flex:1;}
+
+  .keyfield{
+    margin-top:24px;
+    padding-top:20px;
+    border-top:1px dashed var(--line);
+  }
+  .keyfield .hint{
+    font-size:12px;
+    color:var(--ink-soft);
+    margin-top:6px;
+    line-height:1.5;
+  }
+  .keyfield .hint a{color:var(--accent);}
+
+  button{
+    font-family:'Space Mono', monospace;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    font-size:13px;
+    background:var(--accent);
+    color:#fff;
+    border:none;
+    padding:16px 30px;
+    border-radius:2px;
+    cursor:pointer;
+    margin-top:28px;
+    transition:background .18s ease, transform .18s ease;
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+  }
+  button:hover:not(:disabled){background:#254A40;transform:translateY(-1px);}
+  button:active:not(:disabled){transform:translateY(0);}
+  button:disabled{background:#A9A493;cursor:not-allowed;}
+  .spinner{
+    width:13px;height:13px;
+    border:2px solid rgba(255,255,255,0.4);
+    border-top-color:#fff;
+    border-radius:50%;
+    animation:spin .7s linear infinite;
+    display:none;
+  }
+  button.loading .spinner{display:inline-block;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  .status{
+    font-size:13.5px;
+    color:var(--ink-soft);
+    margin-top:14px;
+    min-height:18px;
+  }
+  .status.error{color:var(--accent-2);}
+
+  /* RESULTS */
+  .results{margin-top:44px;}
+  .results-head{
+    font-family:'Fraunces', serif;
+    font-size:22px;
+    font-style:italic;
+    color:var(--accent);
+    margin-bottom:4px;
+    opacity:0;
+  }
+  .results-head.show{animation:riseIn .5s ease forwards;}
+  .results-sub{
+    font-size:13px;
+    color:var(--ink-soft);
+    margin-bottom:22px;
+    opacity:0;
+  }
+  .results-sub.show{animation:riseIn .5s ease .05s forwards;}
+
+  .idea{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:3px;
+    padding:26px 26px 24px;
+    margin-bottom:18px;
+    position:relative;
+    overflow:hidden;
+    opacity:0;
+    transform:translateY(16px);
+    transition:transform .25s ease, box-shadow .25s ease;
+  }
+  .idea.show{animation:cardIn .55s cubic-bezier(.2,.8,.2,1) forwards;}
+  @keyframes cardIn{
+    to{opacity:1;transform:translateY(0);}
+  }
+  .idea:hover{
+    transform:translateY(-3px);
+    box-shadow:0 16px 30px -18px rgba(32,40,31,0.35);
+  }
+  .idea::before{
+    content:'';
+    position:absolute;
+    top:0;left:0;bottom:0;
+    width:4px;
+    background:var(--accent-2);
+  }
+  .idea-num{
+    font-family:'Space Mono', monospace;
+    font-size:11px;
+    color:var(--accent-2);
+    letter-spacing:1.5px;
+  }
+  .idea h3{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    margin:8px 0 10px;
+    font-size:21px;
+  }
+  .idea p{
+    font-size:14.5px;
+    color:var(--ink);
+    line-height:1.6;
+    margin:6px 0;
+  }
+  .label-inline{
+    font-family:'Space Mono', monospace;
+    font-size:10.5px;
+    text-transform:uppercase;
+    letter-spacing:1.5px;
+    color:var(--ink-soft);
+    margin-top:16px;
+    display:block;
+  }
+  .stack-tags{margin-top:8px;}
+  .stack-tags span{
+    display:inline-block;
+    font-family:'Space Mono', monospace;
+    font-size:12px;
+    background:var(--paper-2);
+    border:1px solid var(--line);
+    padding:4px 10px;
+    border-radius:20px;
+    margin:0 6px 6px 0;
+    transition:background .15s ease;
+  }
+  .idea:hover .stack-tags span{background:#E4DDC6;}
+
+  .resume-line{
+    font-family:'Space Mono', monospace;
+    font-size:13px;
+    background:var(--paper-2);
+    border-left:2px solid var(--accent);
+    padding:12px 14px;
+    margin-top:10px;
+    line-height:1.55;
+    position:relative;
+  }
+  .copy-btn{
+    position:absolute;
+    top:8px;right:8px;
+    background:none;
+    border:1px solid var(--line);
+    color:var(--ink-soft);
+    font-size:10px;
+    padding:4px 8px;
+    margin:0;
+    text-transform:uppercase;
+    letter-spacing:1px;
+    border-radius:2px;
+    cursor:pointer;
+  }
+  .copy-btn:hover{background:var(--card);color:var(--ink);}
+
+  footer{
+    font-size:12px;
+    color:var(--ink-soft);
+    text-align:center;
+    margin-top:56px;
+  }
+  footer a{color:var(--accent);}
+
+  /* PREMIUM FLAGSHIP SECTION */
+  .premium{
+    margin-top:36px;
+    border-radius:4px;
+    position:relative;
+    background:linear-gradient(160deg, #23302A, #1A241F);
+    border:1px solid #33443B;
+    padding:30px 28px;
+    overflow:hidden;
+    opacity:0;
+    transform:translateY(16px);
+  }
+  .premium.show{animation:cardIn .6s cubic-bezier(.2,.8,.2,1) forwards;}
+  .premium::before{
+    content:'';
+    position:absolute;
+    top:-40%;right:-20%;
+    width:60%;height:180%;
+    background:radial-gradient(circle, rgba(184,134,46,0.16), transparent 65%);
+    pointer-events:none;
+  }
+  .premium-badge{
+    font-family:'Space Mono', monospace;
+    font-size:10.5px;
+    letter-spacing:2px;
+    text-transform:uppercase;
+    color:var(--gold);
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    margin-bottom:14px;
+  }
+  .premium-badge::before{content:'✦';}
+  .premium h3{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-style:italic;
+    color:#F5F1E7;
+    font-size:24px;
+    margin:0 0 12px;
+    filter:blur(5px);
+    user-select:none;
+  }
+  .premium .hook{
+    color:#C9CDC4;
+    font-size:14.5px;
+    line-height:1.6;
+    margin:0 0 18px;
+    filter:blur(4px);
+    user-select:none;
+  }
+  .premium .skills-teaser{margin-bottom:22px;}
+  .premium .skills-teaser span{
+    display:inline-block;
+    font-family:'Space Mono', monospace;
+    font-size:12px;
+    background:rgba(184,134,46,0.14);
+    border:1px solid #4A5A47;
+    color:#E8D9B5;
+    padding:4px 10px;
+    border-radius:20px;
+    margin:0 6px 6px 0;
+  }
+  .premium-copy{
+    color:#E7E3D6;
+    font-size:14px;
+    line-height:1.6;
+    max-width:460px;
+    margin-bottom:20px;
+    position:relative;
+    z-index:2;
+  }
+  .premium-copy strong{color:#F5F1E7;}
+  .waitlist-row{
+    display:flex;
+    gap:10px;
+    position:relative;
+    z-index:2;
+    flex-wrap:wrap;
+  }
+  .waitlist-row input{
+    flex:1;
+    min-width:200px;
+    background:rgba(245,241,231,0.06);
+    border:1px solid #3C4B41;
+    color:#F5F1E7;
+  }
+  .waitlist-row input::placeholder{color:#8A9186;}
+  .waitlist-row button{
+    background:var(--gold);
+    color:#1A241F;
+    margin-top:0;
+    white-space:nowrap;
+  }
+  .waitlist-row button:hover{background:#CC9838;}
+  .waitlist-status{
+    font-size:12.5px;
+    color:#B7BEB2;
+    margin-top:10px;
+    position:relative;
+    z-index:2;
+  }
+  .waitlist-status.success{color:#8FBF9F;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hero">
+    <div class="eyebrow">Project Desk</div>
+    <h1>What should I <em>actually</em> build?</h1>
+    <p class="sub">Tell it what you're aiming for. It hands back projects worth putting on a resume — matched to your role, your time, and your skill gap. Not another generic list.</p>
+  </div>
+
+  <div class="desk">
+    <div class="card">
+      <div class="field">
+        <label>Your background</label>
+        <input id="branch" type="text" placeholder="e.g. CSE 3rd year, or Commerce grad learning data analysis">
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label>Target role <span class="req">required</span></label>
+          <input id="role" type="text" placeholder="e.g. SDE intern, Data Analyst">
+        </div>
+        <div class="field">
+          <label>Time available</label>
+          <select id="time">
+            <option>A weekend</option>
+            <option selected>1–2 weeks</option>
+            <option>3–4 weeks</option>
+            <option>Ongoing / open-ended</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Skills you already have</label>
+        <textarea id="skills" placeholder="e.g. Python, basic SQL, React, comfortable with AI tools"></textarea>
+      </div>
+
+      <div class="field">
+        <label>What feels missing from your resume right now?</label>
+        <input id="gap" type="text" placeholder="e.g. no real projects, nothing that shows leadership, too much theory">
+      </div>
+
+      <div class="field">
+        <label>Dream company or target (optional)</label>
+        <input id="dreamTarget" type="text" placeholder="e.g. a fintech startup, Zomato, a Series A SaaS company">
+      </div>
+
+      <button id="go"><span class="spinner"></span><span id="go-label">Get project ideas</span></button>
+      <div id="status" class="status"></div>
+    </div>
+  </div>
+
+  <div id="results-head" class="results-head"></div>
+  <div id="results-sub" class="results-sub"></div>
+  <div id="results" class="results"></div>
+  <div id="premium" class="premium" style="display:none;"></div>
+
+  <footer>Built by a student, for students. Ideas generated live — regenerate anytime for a fresh set.</footer>
+</div>
+
+<script>
+// Replace this with your deployed Cloudflare Worker URL, e.g.
+// "https://projectdesk-api.YOUR_SUBDOMAIN.workers.dev"
+const WORKER_URL = "https://projectdesk-api.aryadeepbiswas014.workers.dev";
+
+const btn = document.getElementById('go');
+const goLabel = document.getElementById('go-label');
+const statusEl = document.getElementById('status');
+const resultsEl = document.getElementById('results');
+const resultsHead = document.getElementById('results-head');
+const resultsSub = document.getElementById('results-sub');
+
+btn.addEventListener('click', async () => {
+  const branch = document.getElementById('branch').value.trim();
+  const role = document.getElementById('role').value.trim();
+  const skills = document.getElementById('skills').value.trim();
+  const time = document.getElementById('time').value;
+  const gap = document.getElementById('gap').value.trim();
+  const dreamTarget = document.getElementById('dreamTarget').value.trim();
+
+  statusEl.className = 'status';
+  if(!role){
+    statusEl.textContent = 'Add a target role so the ideas actually point somewhere.';
+    statusEl.className = 'status error';
+    return;
+  }
+  if(!WORKER_URL || WORKER_URL === "PASTE_YOUR_WORKER_URL_HERE"){
+    statusEl.textContent = 'Backend not configured yet — set WORKER_URL in the script.';
+    statusEl.className = 'status error';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.classList.add('loading');
+  goLabel.textContent = 'Thinking...';
+  statusEl.textContent = '';
+  resultsEl.innerHTML = '';
+  resultsHead.className = 'results-head';
+  resultsSub.className = 'results-sub';
+
+  try{
+    const response = await fetch(WORKER_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ branch, role, skills, time, gap, dreamTarget })
+    });
+
+    if(!response.ok){
+      const errText = await response.text();
+      throw new Error('API error: ' + response.status + ' ' + errText.slice(0,200));
+    }
+
+    const parsed = await response.json();
+    if(parsed.error) throw new Error(parsed.error);
+
+    statusEl.textContent = '';
+    resultsEl.innerHTML = '';
+
+    resultsHead.textContent = parsed.greeting || `Ideas for ${role}`;
+    resultsSub.textContent = 'Regenerate anytime for a different set.';
+    requestAnimationFrame(() => {
+      resultsHead.classList.add('show');
+      resultsSub.classList.add('show');
+    });
+
+    parsed.ideas.forEach((idea, i) => {
+      const div = document.createElement('div');
+      div.className = 'idea';
+      div.innerHTML = `
+        <div class="idea-num">Idea ${String(i+1).padStart(2,'0')}</div>
+        <h3>${idea.title}</h3>
+        <p>${idea.why}</p>
+        <span class="label-inline">Stack</span>
+        <div class="stack-tags">${idea.stack.map(s => `<span>${s}</span>`).join('')}</div>
+        <span class="label-inline">Scope</span>
+        <p>${idea.scope}</p>
+        <span class="label-inline">Resume line</span>
+        <div class="resume-line">
+          <button class="copy-btn">Copy</button>
+          ${idea.resume_line}
+        </div>
+      `;
+      resultsEl.appendChild(div);
+      setTimeout(() => div.classList.add('show'), i * 110);
+
+      div.querySelector('.copy-btn').addEventListener('click', (e) => {
+        navigator.clipboard.writeText(idea.resume_line);
+        e.target.textContent = 'Copied';
+        setTimeout(() => e.target.textContent = 'Copy', 1500);
+      });
+    });
+
+    resultsEl.scrollIntoView({behavior:'smooth', block:'nearest'});
+
+    // Render premium flagship teaser
+    if(parsed.flagship){
+      const premiumEl = document.getElementById('premium');
+      premiumEl.style.display = 'block';
+      premiumEl.innerHTML = `
+        <div class="premium-badge">Premium · Flagship Project</div>
+        <h3>${parsed.flagship.title}</h3>
+        <p class="hook">${parsed.flagship.hook}</p>
+        <div class="skills-teaser">${parsed.flagship.skills_to_learn.map(s => `<span>${s}</span>`).join('')}</div>
+        <p class="premium-copy">This is the project built for <strong>${role}</strong> specifically — the kind that gets you noticed ahead of everyone else applying with the same 4 ideas above. Full build guide + the exact skills roadmap to learn it, plus courses to actually teach you each skill, launching soon.</p>
+        <div class="waitlist-row">
+          <input id="waitlist-email" type="email" placeholder="your email — get early access + launch discount">
+          <button id="waitlist-btn">Join waitlist</button>
+        </div>
+        <div id="waitlist-status" class="waitlist-status"></div>
+      `;
+      setTimeout(() => premiumEl.classList.add('show'), 150);
+
+      document.getElementById('waitlist-btn').addEventListener('click', async () => {
+        const emailInput = document.getElementById('waitlist-email');
+        const wStatus = document.getElementById('waitlist-status');
+        const wBtn = document.getElementById('waitlist-btn');
+        const email = emailInput.value.trim();
+        if(!email || !email.includes('@')){
+          wStatus.textContent = 'Enter a valid email.';
+          wStatus.className = 'waitlist-status';
+          return;
+        }
+
+        wBtn.disabled = true;
+        wBtn.textContent = 'Saving...';
+
+        try{
+          const res = await fetch(WORKER_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'waitlist',
+              email, role, gap, dreamTarget, branch, skills
+            })
+          });
+          const out = await res.json();
+          if(out.error) throw new Error(out.error);
+
+          wStatus.textContent = "You're on the list — we'll email you when Premium launches.";
+          wStatus.className = 'waitlist-status success';
+          emailInput.value = '';
+          emailInput.disabled = true;
+          wBtn.textContent = 'Joined';
+        } catch(err){
+          wStatus.textContent = 'Something went wrong — try again in a moment.';
+          wStatus.className = 'waitlist-status';
+          wBtn.disabled = false;
+          wBtn.textContent = 'Join waitlist';
+        }
+      });
+    }
+
+  } catch(err){
+    console.error(err);
+    statusEl.className = 'status error';
+    statusEl.textContent = 'Could not generate ideas — check your API key and try again.';
+  } finally {
+    btn.disabled = false;
+    btn.classList.remove('loading');
+    goLabel.textContent = 'Get project ideas';
+  }
+});
+</script>
+</body>
+</html>
