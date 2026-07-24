@@ -5,26 +5,26 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ProjectDesk — Find your next resume project</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap');
 
   :root{
-    --paper:#F5F1E7;
-    --paper-2:#EDE6D3;
-    --ink:#20281F;
-    --ink-soft:#63695C;
-    --line:#D8CFB6;
-    --accent:#2F5D50;
-    --accent-2:#C4491F;
-    --card:#FFFEFA;
-    --gold:#B8862E;
+    --paper:#0F1310;
+    --paper-2:#171C18;
+    --ink:#EDEFEA;
+    --ink-soft:#8B948A;
+    --line:#2A322C;
+    --accent:#D4F26A;
+    --accent-2:#6E8DFF;
+    --card:#151A16;
+    --gold:#D4F26A;
   }
   *{box-sizing:border-box;}
   html{scroll-behavior:smooth;}
   body{
     margin:0;
     background:
-      radial-gradient(circle at 15% 10%, rgba(184,134,46,0.06), transparent 40%),
-      radial-gradient(circle at 85% 90%, rgba(47,93,80,0.08), transparent 40%),
+      radial-gradient(circle at 10% 0%, rgba(212,242,106,0.05), transparent 45%),
+      radial-gradient(circle at 90% 100%, rgba(110,141,255,0.06), transparent 45%),
       var(--paper);
     color:var(--ink);
     font-family:'Inter', sans-serif;
@@ -43,11 +43,11 @@
     to{opacity:1;transform:translateY(0);}
   }
   .eyebrow{
-    font-family:'Space Mono', monospace;
+    font-family:'JetBrains Mono', monospace;
     font-size:12px;
     letter-spacing:3px;
     text-transform:uppercase;
-    color:var(--accent-2);
+    color:var(--accent);
     margin-bottom:14px;
     display:flex;
     align-items:center;
@@ -56,19 +56,19 @@
   .eyebrow::before{
     content:'';
     width:22px;height:1px;
-    background:var(--accent-2);
+    background:var(--accent);
     display:inline-block;
   }
   h1{
-    font-family:'Fraunces', serif;
-    font-weight:600;
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:700;
     font-size:clamp(32px, 6vw, 50px);
     line-height:1.08;
     margin:0 0 14px;
-    letter-spacing:-0.5px;
+    letter-spacing:-1px;
   }
   h1 em{
-    font-style:italic;
+    font-style:normal;
     color:var(--accent);
   }
   .sub{
@@ -87,7 +87,7 @@
   .card{
     background:var(--card);
     border:1px solid var(--line);
-    border-radius:3px;
+    border-radius:8px;
     padding:34px 32px;
     box-shadow: 0 1px 2px rgba(32,40,31,0.04), 0 12px 30px -14px rgba(32,40,31,0.18);
     position:relative;
@@ -107,7 +107,7 @@
     display:flex;
     align-items:baseline;
     gap:8px;
-    font-family:'Space Mono', monospace;
+    font-family:'JetBrains Mono', monospace;
     font-size:11px;
     text-transform:uppercase;
     letter-spacing:1.5px;
@@ -121,15 +121,15 @@
     font-size:15px;
     padding:12px 14px;
     border:1px solid var(--line);
-    border-radius:2px;
-    background:#FBFAF5;
+    border-radius:6px;
+    background:#0D110E;
     color:var(--ink);
     transition:border-color .2s ease, box-shadow .2s ease;
   }
   input:focus, select:focus, textarea:focus{
     outline:none;
     border-color:var(--accent);
-    box-shadow:0 0 0 3px rgba(47,93,80,0.08);
+    box-shadow:0 0 0 3px rgba(212,242,106,0.12);
   }
   textarea{resize:vertical;min-height:66px;}
 
@@ -150,15 +150,16 @@
   .keyfield .hint a{color:var(--accent);}
 
   button{
-    font-family:'Space Mono', monospace;
+    font-family:'JetBrains Mono', monospace;
     letter-spacing:1px;
     text-transform:uppercase;
     font-size:13px;
+    font-weight:600;
     background:var(--accent);
-    color:#fff;
+    color:#0F1310;
     border:none;
     padding:16px 30px;
-    border-radius:2px;
+    border-radius:4px;
     cursor:pointer;
     margin-top:28px;
     transition:background .18s ease, transform .18s ease;
@@ -166,13 +167,13 @@
     align-items:center;
     gap:10px;
   }
-  button:hover:not(:disabled){background:#254A40;transform:translateY(-1px);}
+  button:hover:not(:disabled){background:#C2E85A;transform:translateY(-1px);}
   button:active:not(:disabled){transform:translateY(0);}
-  button:disabled{background:#A9A493;cursor:not-allowed;}
+  button:disabled{background:#3A4038;color:#8B948A;cursor:not-allowed;}
   .spinner{
     width:13px;height:13px;
-    border:2px solid rgba(255,255,255,0.4);
-    border-top-color:#fff;
+    border:2px solid rgba(15,19,16,0.3);
+    border-top-color:#0F1310;
     border-radius:50%;
     animation:spin .7s linear infinite;
     display:none;
@@ -191,9 +192,10 @@
   /* RESULTS */
   .results{margin-top:44px;}
   .results-head{
-    font-family:'Fraunces', serif;
+    font-family:'Space Grotesk', sans-serif;
     font-size:22px;
-    font-style:italic;
+    font-weight:600;
+    font-style:normal;
     color:var(--accent);
     margin-bottom:4px;
     opacity:0;
@@ -210,7 +212,7 @@
   .idea{
     background:var(--card);
     border:1px solid var(--line);
-    border-radius:3px;
+    border-radius:8px;
     padding:26px 26px 24px;
     margin-bottom:18px;
     position:relative;
@@ -235,13 +237,13 @@
     background:var(--accent-2);
   }
   .idea-num{
-    font-family:'Space Mono', monospace;
+    font-family:'JetBrains Mono', monospace;
     font-size:11px;
     color:var(--accent-2);
     letter-spacing:1.5px;
   }
   .idea h3{
-    font-family:'Fraunces', serif;
+    font-family:'Space Grotesk', sans-serif;
     font-weight:600;
     margin:8px 0 10px;
     font-size:21px;
@@ -253,7 +255,7 @@
     margin:6px 0;
   }
   .label-inline{
-    font-family:'Space Mono', monospace;
+    font-family:'JetBrains Mono', monospace;
     font-size:10.5px;
     text-transform:uppercase;
     letter-spacing:1.5px;
@@ -264,7 +266,7 @@
   .stack-tags{margin-top:8px;}
   .stack-tags span{
     display:inline-block;
-    font-family:'Space Mono', monospace;
+    font-family:'JetBrains Mono', monospace;
     font-size:12px;
     background:var(--paper-2);
     border:1px solid var(--line);
@@ -273,10 +275,10 @@
     margin:0 6px 6px 0;
     transition:background .15s ease;
   }
-  .idea:hover .stack-tags span{background:#E4DDC6;}
+  .idea:hover .stack-tags span{background:#232B24;border-color:var(--accent);}
 
   .resume-line{
-    font-family:'Space Mono', monospace;
+    font-family:'JetBrains Mono', monospace;
     font-size:13px;
     background:var(--paper-2);
     border-left:2px solid var(--accent);
@@ -296,7 +298,7 @@
     margin:0;
     text-transform:uppercase;
     letter-spacing:1px;
-    border-radius:2px;
+    border-radius:6px;
     cursor:pointer;
   }
   .copy-btn:hover{background:var(--card);color:var(--ink);}
@@ -312,10 +314,10 @@
   /* PREMIUM FLAGSHIP SECTION */
   .premium{
     margin-top:36px;
-    border-radius:4px;
+    border-radius:8px;
     position:relative;
-    background:linear-gradient(160deg, #23302A, #1A241F);
-    border:1px solid #33443B;
+    background:linear-gradient(160deg, #1B2119, #12160F);
+    border:1px solid rgba(212,242,106,0.35);
     padding:30px 28px;
     overflow:hidden;
     opacity:0;
@@ -331,7 +333,7 @@
     pointer-events:none;
   }
   .premium-badge{
-    font-family:'Space Mono', monospace;
+    font-family:'JetBrains Mono', monospace;
     font-size:10.5px;
     letter-spacing:2px;
     text-transform:uppercase;
@@ -343,9 +345,9 @@
   }
   .premium-badge::before{content:'✦';}
   .premium h3{
-    font-family:'Fraunces', serif;
+    font-family:'Space Grotesk', sans-serif;
     font-weight:600;
-    font-style:italic;
+    font-style:normal;
     color:#F5F1E7;
     font-size:24px;
     margin:0 0 12px;
@@ -363,7 +365,7 @@
   .premium .skills-teaser{margin-bottom:22px;}
   .premium .skills-teaser span{
     display:inline-block;
-    font-family:'Space Mono', monospace;
+    font-family:'JetBrains Mono', monospace;
     font-size:12px;
     background:rgba(184,134,46,0.14);
     border:1px solid #4A5A47;
@@ -436,7 +438,7 @@
   .skeleton-card{
     background:var(--card);
     border:1px solid var(--line);
-    border-radius:3px;
+    border-radius:8px;
     padding:26px;
     margin-bottom:18px;
     overflow:hidden;
@@ -444,8 +446,8 @@
   }
   .skeleton-line{
     height:12px;
-    border-radius:3px;
-    background:linear-gradient(90deg, var(--paper-2) 25%, #E4DCC5 37%, var(--paper-2) 63%);
+    border-radius:8px;
+    background:linear-gradient(90deg, var(--paper-2) 25%, #263029 37%, var(--paper-2) 63%);
     background-size:400% 100%;
     animation:shimmer 1.4s ease infinite;
     margin-bottom:10px;
@@ -475,7 +477,7 @@
     background:var(--line);
   }
   .section-divider span{
-    font-family:'Space Mono', monospace;
+    font-family:'JetBrains Mono', monospace;
     font-size:11px;
     letter-spacing:1.5px;
     text-transform:uppercase;
@@ -517,7 +519,7 @@
 
       <div class="field">
         <label>Skills you already have</label>
-        <textarea id="skills" placeholder="e.g. Python, basic SQL, React, comfortable with AI tools"></textarea>
+        <textarea id="skills" placeholder="e.g. Python, basic SQL, React, comfortable picking up new tools"></textarea>
       </div>
 
       <div class="field">
@@ -728,7 +730,7 @@ btn.addEventListener('click', async () => {
   } catch(err){
     console.error(err);
     statusEl.className = 'status error';
-    statusEl.textContent = 'Could not generate ideas — check your API key and try again.';
+    statusEl.textContent = 'Could not generate ideas right now — try again in a moment.';
   } finally {
     btn.disabled = false;
     btn.classList.remove('loading');

@@ -2,7 +2,7 @@
 
 Find your next resume-worthy project — personalized to your target role, skills, and goals. Free AI-powered project recommendations, plus a premium flagship project + skill roadmap for students who want to go further.
 
-**Live site:** https://YOUR_USERNAME.github.io/projectdesk/
+**Live site:** https://Aryadeep2116.github.io/projectdesk/
 
 ## How it works
 
