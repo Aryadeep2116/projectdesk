@@ -22,21 +22,75 @@
   html{scroll-behavior:smooth;}
   body{
     margin:0;
-    background:
-      radial-gradient(circle at 10% 0%, rgba(212,242,106,0.05), transparent 45%),
-      radial-gradient(circle at 90% 100%, rgba(110,141,255,0.06), transparent 45%),
-      var(--paper);
+    background: var(--paper);
     color:var(--ink);
     font-family:'Inter', sans-serif;
     padding:0;
     min-height:100vh;
+    position:relative;
+    overflow-x:hidden;
   }
-  .wrap{max-width:800px;margin:0 auto;padding:56px 22px 100px;}
+  .bg-orb{
+    position:fixed;
+    border-radius:50%;
+    filter:blur(80px);
+    pointer-events:none;
+    z-index:0;
+  }
+  .bg-orb.one{
+    width:420px;height:420px;
+    top:-120px;left:-100px;
+    background:rgba(212,242,106,0.09);
+    animation:floatA 18s ease-in-out infinite;
+  }
+  .bg-orb.two{
+    width:380px;height:380px;
+    bottom:-140px;right:-100px;
+    background:rgba(110,141,255,0.08);
+    animation:floatB 22s ease-in-out infinite;
+  }
+  @keyframes floatA{
+    0%,100%{transform:translate(0,0);}
+    50%{transform:translate(40px,60px);}
+  }
+  @keyframes floatB{
+    0%,100%{transform:translate(0,0);}
+    50%{transform:translate(-50px,-30px);}
+  }
+  .wrap{max-width:800px;margin:0 auto;padding:56px 22px 100px;position:relative;z-index:1;}
 
   /* HERO */
   .hero{
     opacity:0;
-    animation:riseIn .7s ease forwards;
+    animation:heroIn .8s cubic-bezier(.2,.9,.25,1.1) forwards;
+    position:relative;
+  }
+  .shape{
+    position:absolute;
+    pointer-events:none;
+    z-index:-1;
+  }
+  .shape.circle{
+    width:14px;height:14px;
+    border-radius:50%;
+    border:2px solid var(--accent);
+    top:8px;right:18%;
+    animation:floatShape 3.5s ease-in-out infinite;
+  }
+  .shape.plus{
+    top:70px;right:6%;
+    font-family:'JetBrains Mono', monospace;
+    font-size:26px;
+    color:var(--accent-2);
+    animation:floatShape 4.2s ease-in-out infinite .3s;
+  }
+  @keyframes floatShape{
+    0%,100%{transform:translateY(0) rotate(0deg);}
+    50%{transform:translateY(-10px) rotate(12deg);}
+  }
+  @keyframes heroIn{
+    from{opacity:0;transform:translateY(24px) scale(.98);}
+    to{opacity:1;transform:translateY(0) scale(1);}
   }
   @keyframes riseIn{
     from{opacity:0;transform:translateY(14px);}
@@ -45,38 +99,61 @@
   .eyebrow{
     font-family:'JetBrains Mono', monospace;
     font-size:12px;
-    letter-spacing:3px;
+    letter-spacing:2px;
     text-transform:uppercase;
-    color:var(--accent);
-    margin-bottom:14px;
-    display:flex;
+    color:#0F1310;
+    background:var(--accent);
+    padding:6px 14px 6px 10px;
+    border-radius:20px;
+    margin-bottom:22px;
+    display:inline-flex;
     align-items:center;
-    gap:10px;
+    gap:8px;
+    font-weight:600;
+    transform:rotate(-2deg);
+    animation:wiggle 4s ease-in-out infinite;
+  }
+  @keyframes wiggle{
+    0%,100%{transform:rotate(-2deg);}
+    50%{transform:rotate(1.5deg);}
   }
   .eyebrow::before{
     content:'';
-    width:22px;height:1px;
-    background:var(--accent);
+    width:7px;height:7px;
+    border-radius:50%;
+    background:#0F1310;
     display:inline-block;
+    animation:pulseDot 2s ease-in-out infinite;
+  }
+  @keyframes pulseDot{
+    0%,100%{opacity:1;}
+    50%{opacity:.4;}
   }
   h1{
     font-family:'Space Grotesk', sans-serif;
     font-weight:700;
-    font-size:clamp(32px, 6vw, 50px);
-    line-height:1.08;
-    margin:0 0 14px;
-    letter-spacing:-1px;
+    font-size:clamp(40px, 9vw, 68px);
+    line-height:1.02;
+    margin:0 0 18px;
+    letter-spacing:-2px;
   }
+  h1 .line{display:block;}
   h1 em{
     font-style:normal;
     color:var(--accent);
+    position:relative;
+    display:inline-block;
+  }
+  h1 .outline{
+    color:transparent;
+    -webkit-text-stroke:1.5px var(--ink);
   }
   .sub{
-    font-size:16px;
+    font-size:17px;
     color:var(--ink-soft);
     max-width:520px;
-    line-height:1.55;
-    margin-bottom:40px;
+    line-height:1.6;
+    margin-bottom:44px;
   }
 
   /* FORM CARD - looks like an index card on a desk */
@@ -85,34 +162,118 @@
     perspective:1200px;
   }
   .card{
-    background:var(--card);
+    background:linear-gradient(180deg, rgba(21,26,22,0.95), rgba(15,19,16,0.98));
     border:1px solid var(--line);
-    border-radius:8px;
-    padding:34px 32px;
-    box-shadow: 0 1px 2px rgba(32,40,31,0.04), 0 12px 30px -14px rgba(32,40,31,0.18);
+    border-radius:14px;
+    padding:38px 36px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.2), 0 30px 60px -25px rgba(0,0,0,0.7);
     position:relative;
     opacity:0;
-    animation:riseIn .7s ease .15s forwards;
+    animation:cardEntrance .7s cubic-bezier(.2,.9,.25,1.15) .2s forwards;
+    overflow:hidden;
   }
+  @keyframes cardEntrance{
+    from{opacity:0;transform:translateY(24px) scale(.97);}
+    to{opacity:1;transform:translateY(0) scale(1);}
+  }
+  .card:hover{border-color:rgba(212,242,106,0.25);}
   .card::before{
     content:'';
     position:absolute;
-    top:0;left:28px;right:28px;height:1px;
-    background:var(--line);
-    opacity:0;
+    top:0;left:0;right:0;height:3px;
+    background:linear-gradient(90deg, var(--accent), var(--accent-2), var(--accent));
+    background-size:200% 100%;
+    animation:gradientSlide 4s linear infinite;
   }
-  .field{margin-top:20px;}
+  @keyframes gradientSlide{
+    to{background-position:-200% 0;}
+  }
+  .field{margin-top:26px;opacity:0;animation:riseIn .5s ease forwards;position:relative;}
   .field:first-child{margin-top:0;}
+  .field:nth-child(1){animation-delay:.2s;}
+  .field:nth-child(2){animation-delay:.28s;}
+  .field:nth-child(3){animation-delay:.36s;}
+  .field:nth-child(4){animation-delay:.44s;}
+  .field:nth-child(5){animation-delay:.52s;}
+  .field::after{
+    content:'';
+    position:absolute;
+    left:0;bottom:-2px;
+    width:0;height:2px;
+    background:var(--accent);
+    transition:width .3s ease;
+    border-radius:2px;
+  }
+  .pill-group{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-top:2px;
+  }
+  .pill{
+    font-family:'Inter', sans-serif;
+    font-size:13.5px;
+    padding:11px 18px;
+    border-radius:24px;
+    border:1px solid var(--line);
+    background:#0D110E;
+    color:var(--ink-soft);
+    cursor:pointer;
+    transition:all .2s ease;
+  }
+  .pill:hover{border-color:var(--accent);color:var(--ink);transform:translateY(-1px);}
+  .pill.active{
+    background:var(--accent);
+    border-color:var(--accent);
+    color:#0F1310;
+    font-weight:600;
+    transform:scale(1.03);
+  }
+  .field:focus-within::after{width:100%;}
+
+  .scroll-reveal{
+    opacity:0;
+    transform:translateY(30px);
+    transition:opacity .7s ease, transform .7s cubic-bezier(.2,.8,.2,1);
+  }
+  .scroll-reveal.in-view{
+    opacity:1;
+    transform:translateY(0);
+  }
+  .card{counter-reset:field-count;}
   label{
     display:flex;
-    align-items:baseline;
-    gap:8px;
+    align-items:center;
+    gap:9px;
     font-family:'JetBrains Mono', monospace;
     font-size:11px;
     text-transform:uppercase;
     letter-spacing:1.5px;
     color:var(--ink-soft);
-    margin-bottom:8px;
+    margin-bottom:9px;
+    transition:color .2s ease;
+  }
+  .field{counter-increment:field-count;}
+  label::before{
+    content:counter(field-count, decimal-leading-zero);
+    width:20px;height:20px;
+    border-radius:50%;
+    background:var(--paper-2);
+    border:1px solid var(--line);
+    color:var(--ink-soft);
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    font-size:9px;
+    transition:all .25s ease;
+    flex-shrink:0;
+  }
+  .field:focus-within label{color:var(--ink);}
+  .field:focus-within label::before{
+    background:var(--accent);
+    border-color:var(--accent);
+    color:#0F1310;
+    transform:scale(1.15) rotate(-8deg);
   }
   label .req{color:var(--accent-2);font-size:10px;}
   input, select, textarea{
@@ -124,12 +285,22 @@
     border-radius:6px;
     background:#0D110E;
     color:var(--ink);
-    transition:border-color .2s ease, box-shadow .2s ease;
+    transition:border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+  }
+  select{
+    appearance:none;
+    -webkit-appearance:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23D4F26A' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;
+    background-position:right 14px center;
+    padding-right:36px;
+    cursor:pointer;
   }
   input:focus, select:focus, textarea:focus{
     outline:none;
     border-color:var(--accent);
     box-shadow:0 0 0 3px rgba(212,242,106,0.12);
+    transform:translateY(-1px);
   }
   textarea{resize:vertical;min-height:66px;}
 
@@ -166,7 +337,24 @@
     display:inline-flex;
     align-items:center;
     gap:10px;
+    position:relative;
+    overflow:hidden;
   }
+  button::after{
+    content:'';
+    position:absolute;
+    top:0;left:-120%;
+    width:60%;height:100%;
+    background:linear-gradient(120deg, transparent, rgba(255,255,255,0.35), transparent);
+    transform:skewX(-20deg);
+    transition:left .5s ease;
+  }
+  button:hover:not(:disabled)::after{left:130%;}
+  .btn-arrow{
+    transition:transform .25s ease;
+    display:inline-block;
+  }
+  button:hover:not(:disabled) .btn-arrow{transform:translateX(4px);}
   button:hover:not(:disabled){background:#C2E85A;transform:translateY(-1px);}
   button:active:not(:disabled){transform:translateY(0);}
   button:disabled{background:#3A4038;color:#8B948A;cursor:not-allowed;}
@@ -226,8 +414,8 @@
     to{opacity:1;transform:translateY(0);}
   }
   .idea:hover{
-    transform:translateY(-3px);
-    box-shadow:0 16px 30px -18px rgba(32,40,31,0.35);
+    transform:translateY(-4px) scale(1.008);
+    box-shadow:0 20px 40px -18px rgba(0,0,0,0.5), 0 0 0 1px rgba(212,242,106,0.25);
   }
   .idea::before{
     content:'';
@@ -317,11 +505,31 @@
     border-radius:8px;
     position:relative;
     background:linear-gradient(160deg, #1B2119, #12160F);
-    border:1px solid rgba(212,242,106,0.35);
     padding:30px 28px;
     overflow:hidden;
     opacity:0;
     transform:translateY(16px);
+  }
+  .premium::after{
+    content:'';
+    position:absolute;
+    inset:0;
+    border-radius:8px;
+    padding:1px;
+    background:conic-gradient(from var(--spin-angle, 0deg), rgba(212,242,106,0.6), rgba(110,141,255,0.4), rgba(212,242,106,0.6));
+    -webkit-mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite:xor;
+    mask-composite:exclude;
+    animation:rotateBorder 5s linear infinite;
+    pointer-events:none;
+  }
+  @property --spin-angle{
+    syntax:'<angle>';
+    initial-value:0deg;
+    inherits:false;
+  }
+  @keyframes rotateBorder{
+    to{--spin-angle:360deg;}
   }
   .premium.show{animation:cardIn .6s cubic-bezier(.2,.8,.2,1) forwards;}
   .premium::before{
@@ -487,10 +695,14 @@
 </style>
 </head>
 <body>
+<div class="bg-orb one"></div>
+<div class="bg-orb two"></div>
 <div class="wrap">
   <div class="hero">
-    <div class="eyebrow">Project Desk</div>
-    <h1>What should I <em>actually</em> build?</h1>
+    <span class="shape circle"></span>
+    <span class="shape plus">+</span>
+    <div class="eyebrow">Free · Built for students</div>
+    <h1><span class="line">What should I</span><span class="line"><em>actually</em> <span class="outline">build?</span></span></h1>
     <p class="sub">Tell it what you're aiming for. It hands back projects worth putting on a resume — matched to your role, your time, and your skill gap. Not another generic list.</p>
   </div>
 
@@ -501,19 +713,18 @@
         <input id="branch" type="text" placeholder="e.g. CSE 3rd year, or Commerce grad learning data analysis">
       </div>
 
-      <div class="row">
-        <div class="field">
-          <label>Target role <span class="req">required</span></label>
-          <input id="role" type="text" placeholder="e.g. SDE intern, Data Analyst">
-        </div>
-        <div class="field">
-          <label>Time available</label>
-          <select id="time">
-            <option>A weekend</option>
-            <option selected>1–2 weeks</option>
-            <option>3–4 weeks</option>
-            <option>Ongoing / open-ended</option>
-          </select>
+      <div class="field">
+        <label>Target role <span class="req">required</span></label>
+        <input id="role" type="text" placeholder="e.g. SDE intern, Data Analyst">
+      </div>
+
+      <div class="field">
+        <label>Time available</label>
+        <div class="pill-group" id="time-group">
+          <button type="button" class="pill" data-value="A weekend">A weekend</button>
+          <button type="button" class="pill active" data-value="1–2 weeks">1–2 weeks</button>
+          <button type="button" class="pill" data-value="3–4 weeks">3–4 weeks</button>
+          <button type="button" class="pill" data-value="Ongoing / open-ended">Ongoing / open-ended</button>
         </div>
       </div>
 
@@ -532,7 +743,7 @@
         <input id="dreamTarget" type="text" placeholder="e.g. a fintech startup, Zomato, a Series A SaaS company">
       </div>
 
-      <button id="go"><span class="spinner"></span><span id="go-label">Get project ideas</span></button>
+      <button id="go"><span class="spinner"></span><span id="go-label">Get project ideas</span><span class="btn-arrow">→</span></button>
       <div id="status" class="status"></div>
     </div>
   </div>
@@ -542,7 +753,7 @@
   <div id="results" class="results"></div>
   <div id="premium" class="premium" style="display:none;"></div>
 
-  <footer>Built by a student, for students. Ideas generated live — regenerate anytime for a fresh set.</footer>
+  <footer class="scroll-reveal">Built by a student, for students. Ideas generated live — regenerate anytime for a fresh set.</footer>
 </div>
 
 <script>
@@ -551,6 +762,22 @@
 const WORKER_URL = "https://projectdesk-api.aryadeepbiswas014.workers.dev";
 
 const btn = document.getElementById('go');
+const scrollObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if(entry.isIntersecting){
+      entry.target.classList.add('in-view');
+      scrollObserver.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.15 });
+document.querySelectorAll('.scroll-reveal').forEach(el => scrollObserver.observe(el));
+
+document.querySelectorAll('#time-group .pill').forEach(pill => {
+  pill.addEventListener('click', () => {
+    document.querySelectorAll('#time-group .pill').forEach(p => p.classList.remove('active'));
+    pill.classList.add('active');
+  });
+});
 const goLabel = document.getElementById('go-label');
 const statusEl = document.getElementById('status');
 const resultsEl = document.getElementById('results');
@@ -561,7 +788,7 @@ btn.addEventListener('click', async () => {
   const branch = document.getElementById('branch').value.trim();
   const role = document.getElementById('role').value.trim();
   const skills = document.getElementById('skills').value.trim();
-  const time = document.getElementById('time').value;
+  const time = document.querySelector('#time-group .pill.active')?.dataset.value || '1–2 weeks';
   const gap = document.getElementById('gap').value.trim();
   const dreamTarget = document.getElementById('dreamTarget').value.trim();
 
