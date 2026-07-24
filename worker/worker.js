@@ -1,65 +1,116 @@
 // ProjectDesk backend — Cloudflare Worker (FREE version using Workers AI)
 // No API key, no billing, no credit card. Uses Cloudflare's free built-in AI models.
 
+const ALLOWED_ORIGIN = "https://aryadeep2116.github.io";
+
+function corsHeaders() {
+  return {
+    "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type",
+  };
+}
+
+// Simple fixed-window rate limiter using KV.
+// Limits a given IP to `limit` requests per `windowSeconds`.
+async function isRateLimited(env, ip, bucket, limit, windowSeconds) {
+  const windowId = Math.floor(Date.now() / (windowSeconds * 1000));
+  const key = `ratelimit:${bucket}:${ip}:${windowId}`;
+  const current = await env.WAITLIST.get(key);
+  const count = current ? parseInt(current, 10) : 0;
+
+  if (count >= limit) {
+    return true;
+  }
+
+  await env.WAITLIST.put(key, String(count + 1), { expirationTtl: windowSeconds + 5 });
+  return false;
+}
+
 export default {
   async fetch(request, env) {
     if (request.method === "OPTIONS") {
-      return new Response(null, {
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Methods": "POST, OPTIONS",
-          "Access-Control-Allow-Headers": "Content-Type",
-        },
-      });
+      return new Response(null, { headers: corsHeaders() });
     }
 
     if (request.method !== "POST") {
-      return new Response("Method not allowed", { status: 405 });
+      return new Response("Method not allowed", { status: 405, headers: corsHeaders() });
     }
+
+    const ip = request.headers.get("CF-Connecting-IP") || "unknown";
 
     try {
       const body = await request.json();
 
       // --- WAITLIST: save an email + context to KV ---
       if (body.action === "waitlist") {
-        const { email, role, gap, dreamTarget, branch, skills } = body;
-        if (!email || !email.includes("@")) {
-          return new Response(JSON.stringify({ error: "Valid email required" }), {
-            status: 400,
-            headers: { "Access-Control-Allow-Origin": "*", "Content-Type": "application/json" },
+        if (await isRateLimited(env, ip, "waitlist", 5, 3600)) {
+          return new Response(JSON.stringify({ error: "Too many requests. Try again later." }), {
+            status: 429,
+            headers: { ...corsHeaders(), "Content-Type": "application/json" },
           });
         }
-        const entry = { email, role, gap, dreamTarget, branch, skills, ts: new Date().toISOString() };
+
+        const { email, role, gap, dreamTarget, branch, skills } = body;
+        if (!email || !email.includes("@") || email.length > 200) {
+          return new Response(JSON.stringify({ error: "Valid email required" }), {
+            status: 400,
+            headers: { ...corsHeaders(), "Content-Type": "application/json" },
+          });
+        }
+        const entry = {
+          email: String(email).slice(0, 200),
+          role: String(role || "").slice(0, 200),
+          gap: String(gap || "").slice(0, 500),
+          dreamTarget: String(dreamTarget || "").slice(0, 200),
+          branch: String(branch || "").slice(0, 200),
+          skills: String(skills || "").slice(0, 500),
+          ts: new Date().toISOString(),
+        };
         const key = `waitlist:${Date.now()}:${email}`;
         await env.WAITLIST.put(key, JSON.stringify(entry));
 
         return new Response(JSON.stringify({ ok: true }), {
-          headers: { "Access-Control-Allow-Origin": "*", "Content-Type": "application/json" },
+          headers: { ...corsHeaders(), "Content-Type": "application/json" },
         });
       }
 
       // --- TRACK: log a simple analytics event (landing view, CTA click, etc.) ---
       if (body.action === "track") {
+        if (await isRateLimited(env, ip, "track", 60, 3600)) {
+          return new Response(JSON.stringify({ error: "Too many requests." }), {
+            status: 429,
+            headers: { ...corsHeaders(), "Content-Type": "application/json" },
+          });
+        }
+
         const { type } = body;
-        if (!type) {
+        if (!type || typeof type !== "string" || type.length > 50) {
           return new Response(JSON.stringify({ error: "type required" }), {
             status: 400,
-            headers: { "Access-Control-Allow-Origin": "*", "Content-Type": "application/json" },
+            headers: { ...corsHeaders(), "Content-Type": "application/json" },
           });
         }
         const key = `event:${type}:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`;
         await env.WAITLIST.put(key, JSON.stringify({ type, ts: new Date().toISOString() }));
         return new Response(JSON.stringify({ ok: true }), {
-          headers: { "Access-Control-Allow-Origin": "*", "Content-Type": "application/json" },
+          headers: { ...corsHeaders(), "Content-Type": "application/json" },
         });
       }
 
       // --- ADMIN: view all waitlist entries (simple password check) ---
       if (body.action === "admin_view_waitlist") {
+        if (await isRateLimited(env, ip, "admin", 20, 3600)) {
+          return new Response(JSON.stringify({ error: "Too many attempts. Try again later." }), {
+            status: 429,
+            headers: { ...corsHeaders(), "Content-Type": "application/json" },
+          });
+        }
+
         if (body.password !== env.ADMIN_PASSWORD) {
           return new Response(JSON.stringify({ error: "Unauthorized" }), {
             status: 401,
-            headers: { "Access-Control-Allow-Origin": "*", "Content-Type": "application/json" },
+            headers: { ...corsHeaders(), "Content-Type": "application/json" },
           });
         }
         const list = await env.WAITLIST.list({ prefix: "waitlist:" });
@@ -78,28 +129,38 @@ export default {
         });
 
         return new Response(JSON.stringify({ entries, eventCounts }), {
-          headers: { "Access-Control-Allow-Origin": "*", "Content-Type": "application/json" },
+          headers: { ...corsHeaders(), "Content-Type": "application/json" },
         });
       }
 
       // --- DEFAULT: generate project ideas ---
+      if (await isRateLimited(env, ip, "generate", 10, 3600)) {
+        return new Response(JSON.stringify({ error: "Too many requests. Please try again in a bit." }), {
+          status: 429,
+          headers: { ...corsHeaders(), "Content-Type": "application/json" },
+        });
+      }
+
       const { branch, role, skills, time, gap, dreamTarget } = body;
 
       if (!role) {
         return new Response(JSON.stringify({ error: "role is required" }), {
           status: 400,
-          headers: { "Access-Control-Allow-Origin": "*", "Content-Type": "application/json" },
+          headers: { ...corsHeaders(), "Content-Type": "application/json" },
         });
       }
 
+      // Cap input lengths to keep prompts sane and prevent abuse
+      const safe = (v, max) => String(v || "not specified").slice(0, max);
+
       const prompt = `You are a career mentor helping an Indian student pick resume-worthy projects.
 
-Background: ${branch || "not specified"}
-Target role: ${role}
-Existing skills: ${skills || "not specified"}
-Time available: ${time || "not specified"}
-What feels missing from their resume: ${gap || "not specified"}
-Dream company/target: ${dreamTarget || "not specified"}
+Background: ${safe(branch, 100)}
+Target role: ${safe(role, 100)}
+Existing skills: ${safe(skills, 200)}
+Time available: ${safe(time, 50)}
+What feels missing from their resume: ${safe(gap, 300)}
+Dream company/target: ${safe(dreamTarget, 100)}
 
 Give exactly 4 solid project ideas tailored to this. Avoid generic overused ideas (no "to-do list app", no "weather app", no basic calculator) unless genuinely justified. Prefer projects that show real judgement and would make an interviewer ask a follow-up question. Each idea's "why" should reference their specific stated gap or goal where relevant.
 
@@ -190,12 +251,12 @@ Respond ONLY with valid JSON, no markdown fences, no preamble, in this exact str
       }
 
       return new Response(JSON.stringify(parsed), {
-        headers: { "Access-Control-Allow-Origin": "*", "Content-Type": "application/json" },
+        headers: { ...corsHeaders(), "Content-Type": "application/json" },
       });
     } catch (err) {
       return new Response(JSON.stringify({ error: "Server error", detail: String(err) }), {
         status: 500,
-        headers: { "Access-Control-Allow-Origin": "*", "Content-Type": "application/json" },
+        headers: { ...corsHeaders(), "Content-Type": "application/json" },
       });
     }
   },
