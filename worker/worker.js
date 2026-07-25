@@ -85,9 +85,9 @@ async function hashPassword(password, saltHex) {
   const salt = saltHex ? hexToBytes(saltHex) : crypto.getRandomValues(new Uint8Array(16));
   const keyMaterial = await crypto.subtle.importKey("raw", new TextEncoder().encode(password), "PBKDF2", false, ["deriveBits"]);
   const bits = await crypto.subtle.deriveBits(
-      { name: "PBKDF2", salt, iterations: 100000, hash: "SHA-256" },
-      keyMaterial,
-      256
+    { name: "PBKDF2", salt, iterations: 100000, hash: "SHA-256" },
+    keyMaterial,
+    256
   );
   return { hash: bytesToHex(new Uint8Array(bits)), salt: bytesToHex(salt) };
 }
@@ -310,9 +310,9 @@ export default {
         const otp = generateOtp();
         const safeName = String(name).slice(0, 100);
         await env.WAITLIST.put(
-            `otp:${email.toLowerCase()}`,
-            JSON.stringify({ otp, name: safeName, ts: new Date().toISOString() }),
-            { expirationTtl: 600 } // 10 minutes
+          `otp:${email.toLowerCase()}`,
+          JSON.stringify({ otp, name: safeName, ts: new Date().toISOString() }),
+          { expirationTtl: 600 } // 10 minutes
         );
 
         try {
@@ -366,9 +366,9 @@ export default {
 
         const token = generateId();
         await env.WAITLIST.put(
-            `session:${token}`,
-            JSON.stringify({ email: email.toLowerCase(), name: record.name }),
-            { expirationTtl: 60 * 60 * 24 * 30 } // 30 days
+          `session:${token}`,
+          JSON.stringify({ email: email.toLowerCase(), name: record.name }),
+          { expirationTtl: 60 * 60 * 24 * 30 } // 30 days
         );
 
         return new Response(JSON.stringify({ ok: true, token, name: record.name, email: email.toLowerCase() }), {
@@ -404,12 +404,12 @@ export default {
         const ids = stored ? JSON.parse(stored) : [];
 
         const results = await Promise.all(
-            ids.map(async (id) => {
-              const r = await env.WAITLIST.get(`result:${id}`);
-              if (!r) return null;
-              const parsed = JSON.parse(r);
-              return { id: parsed.id, greeting: parsed.greeting, ts: parsed.ts, roleTitle: (parsed.inputs && parsed.inputs.role) || "" };
-            })
+          ids.map(async (id) => {
+            const r = await env.WAITLIST.get(`result:${id}`);
+            if (!r) return null;
+            const parsed = JSON.parse(r);
+            return { id: parsed.id, greeting: parsed.greeting, ts: parsed.ts, roleTitle: (parsed.inputs && parsed.inputs.role) || "" };
+          })
         );
 
         return new Response(JSON.stringify({ ok: true, results: results.filter(Boolean).reverse() }), {
@@ -741,13 +741,13 @@ Respond ONLY with valid JSON, no markdown fences, no preamble, in this exact str
         }
         const list = await env.WAITLIST.list({ prefix: "waitlist:" });
         const entries = await Promise.all(
-            list.keys.map(async (k) => JSON.parse(await env.WAITLIST.get(k.name)))
+          list.keys.map(async (k) => JSON.parse(await env.WAITLIST.get(k.name)))
         );
         entries.sort((a, b) => new Date(b.ts) - new Date(a.ts));
 
         const eventList = await env.WAITLIST.list({ prefix: "event:" });
         const events = await Promise.all(
-            eventList.keys.map(async (k) => JSON.parse(await env.WAITLIST.get(k.name)))
+          eventList.keys.map(async (k) => JSON.parse(await env.WAITLIST.get(k.name)))
         );
         const eventCounts = {};
         events.forEach((e) => {
