@@ -73,10 +73,13 @@ async function getSession(env, token) {
 }
 
 // --- CREDITS SYSTEM ---
-// Free plan gets 1 detailed project guide per 30-day cycle. Premium credits
-// and feature set are a placeholder for now (TODO: decide premium tiering).
-const FREE_PLAN_CREDITS = 1;
-const PREMIUM_PLAN_CREDITS = 5; // placeholder — revisit once premium plan is defined
+// Free plan gets 360 credits per 30-day cycle. Generating the 4 project ideas
+// costs 120 credits; generating one detailed guide costs 200. That leaves a
+// little headroom (40) per cycle. Premium credits/features are still TBD.
+const FREE_PLAN_CREDITS = 360;
+const PREMIUM_PLAN_CREDITS = 1000; // placeholder — revisit once premium plan is defined
+const IDEA_GEN_COST = 120;
+const GUIDE_GEN_COST = 200;
 const CREDIT_CYCLE_MS = 30 * 24 * 60 * 60 * 1000;
 
 async function getUser(env, email) {
@@ -557,10 +560,10 @@ export default {
           });
         }
         userRecord = refreshCredits(userRecord);
-        if (userRecord.credits < 1) {
+        if (userRecord.credits < GUIDE_GEN_COST) {
           await saveUser(env, userRecord); // persist any reset that just happened
           return new Response(JSON.stringify({
-            error: "You've used this month's free project-detail credit.",
+            error: `You need ${GUIDE_GEN_COST} credits for a detailed guide — you have ${userRecord.credits}.`,
             creditsResetAt: userRecord.creditsResetAt,
           }), {
             status: 402,
@@ -721,7 +724,7 @@ Valid values for a node's "type" field: "client", "server", "database", "externa
         await env.WAITLIST.put(guideKey, JSON.stringify(guideRecord), { expirationTtl: 60 * 60 * 24 * 180 });
 
         // Charge the credit and log this as the cycle's used guide.
-        userRecord.credits -= 1;
+        userRecord.credits -= GUIDE_GEN_COST;
         userRecord.usedGuides.push({ resultId, ideaKey, projectTitle: project.title, ts: guideRecord.ts });
         await saveUser(env, userRecord);
 
@@ -929,10 +932,37 @@ Valid values for a node's "type" field: "client", "server", "database", "externa
         });
       }
 
-      // --- DEFAULT: generate project ideas ---
+      // --- DEFAULT: generate project ideas (login + credits required) ---
       if (await isRateLimited(env, ip, "generate", 10, 3600)) {
         return new Response(JSON.stringify({ error: "Too many requests. Please try again in a bit." }), {
           status: 429,
+          headers: { ...corsHeaders(), "Content-Type": "application/json" },
+        });
+      }
+
+      const session = await getSession(env, body.token);
+      if (!session) {
+        return new Response(JSON.stringify({ error: "Log in to generate project ideas." }), {
+          status: 401,
+          headers: { ...corsHeaders(), "Content-Type": "application/json" },
+        });
+      }
+
+      let userRecordForGen = await getUser(env, session.email);
+      if (!userRecordForGen) {
+        return new Response(JSON.stringify({ error: "Account not found." }), {
+          status: 404,
+          headers: { ...corsHeaders(), "Content-Type": "application/json" },
+        });
+      }
+      userRecordForGen = refreshCredits(userRecordForGen);
+      if (userRecordForGen.credits < IDEA_GEN_COST) {
+        await saveUser(env, userRecordForGen);
+        return new Response(JSON.stringify({
+          error: `You need ${IDEA_GEN_COST} credits to generate ideas — you have ${userRecordForGen.credits}.`,
+          creditsResetAt: userRecordForGen.creditsResetAt,
+        }), {
+          status: 402,
           headers: { ...corsHeaders(), "Content-Type": "application/json" },
         });
       }
@@ -1024,6 +1054,12 @@ Respond ONLY with valid JSON, no markdown fences, no preamble, in this exact str
       });
 
       const parsed = parseAiJson(aiResponse);
+
+      // Charge the credit cost now that generation succeeded.
+      userRecordForGen.credits -= IDEA_GEN_COST;
+      await saveUser(env, userRecordForGen);
+      parsed.creditsRemaining = userRecordForGen.credits;
+      parsed.creditsResetAt = userRecordForGen.creditsResetAt;
 
       return new Response(JSON.stringify(parsed), {
         headers: { ...corsHeaders(), "Content-Type": "application/json" },

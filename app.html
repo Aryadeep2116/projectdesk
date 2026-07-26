@@ -959,27 +959,6 @@ const WORKER_URL = "https://projectdesk-api.aryadeepbiswas014.workers.dev";
 let currentResultId = null; // set once a result is saved/loaded, used by "Get full guide" buttons
 
 const btn = document.getElementById('go');
-// Track landing page view (fire and forget, don't block anything on it)
-fetch(WORKER_URL, {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ action: 'track', type: 'landing_view' })
-}).catch(() => {});
-
-document.getElementById('cta-btn').addEventListener('click', () => {
-  fetch(WORKER_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ action: 'track', type: 'cta_click' })
-  }).catch(() => {});
-
-  const toolSection = document.getElementById('tool-section');
-  toolSection.style.display = 'block';
-  requestAnimationFrame(() => {
-    toolSection.classList.add('reveal');
-    toolSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  });
-});
 
 const scrollObserver = new IntersectionObserver((entries) => {
   entries.forEach(entry => {
