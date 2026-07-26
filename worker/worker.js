@@ -72,6 +72,36 @@ async function getSession(env, token) {
   try { return JSON.parse(stored); } catch (e) { return null; }
 }
 
+// --- CREDITS SYSTEM ---
+// Free plan gets 1 detailed project guide per 30-day cycle. Premium credits
+// and feature set are a placeholder for now (TODO: decide premium tiering).
+const FREE_PLAN_CREDITS = 1;
+const PREMIUM_PLAN_CREDITS = 5; // placeholder — revisit once premium plan is defined
+const CREDIT_CYCLE_MS = 30 * 24 * 60 * 60 * 1000;
+
+async function getUser(env, email) {
+  const stored = await env.WAITLIST.get(`user:${email.toLowerCase()}`);
+  return stored ? JSON.parse(stored) : null;
+}
+async function saveUser(env, userRecord) {
+  await env.WAITLIST.put(`user:${userRecord.email}`, JSON.stringify(userRecord));
+}
+
+// Resets a user's credits if their 30-day cycle has elapsed (or if they've
+// never had one, e.g. accounts created before credits existed). Mutates and
+// returns the record; caller is responsible for saving it back.
+function refreshCredits(userRecord) {
+  const now = Date.now();
+  const resetDue = !userRecord.creditsResetAt || now >= new Date(userRecord.creditsResetAt).getTime();
+  if (resetDue) {
+    userRecord.credits = userRecord.plan === "premium" ? PREMIUM_PLAN_CREDITS : FREE_PLAN_CREDITS;
+    userRecord.creditsResetAt = new Date(now + CREDIT_CYCLE_MS).toISOString();
+  }
+  if (!userRecord.plan) userRecord.plan = "free";
+  if (!Array.isArray(userRecord.usedGuides)) userRecord.usedGuides = [];
+  return userRecord;
+}
+
 // --- PASSWORD HASHING (PBKDF2 via Web Crypto, no external deps) ---
 function bytesToHex(bytes) {
   return Array.from(bytes).map((b) => b.toString(16).padStart(2, "0")).join("");
@@ -222,7 +252,17 @@ export default {
         }
 
         const { hash, salt } = await hashPassword(password);
-        const userRecord = { name: String(name).slice(0, 100), email: email.toLowerCase(), hash, salt, ts: new Date().toISOString() };
+        const userRecord = {
+          name: String(name).slice(0, 100),
+          email: email.toLowerCase(),
+          hash,
+          salt,
+          ts: new Date().toISOString(),
+          plan: "free",
+          credits: FREE_PLAN_CREDITS,
+          creditsResetAt: new Date(Date.now() + CREDIT_CYCLE_MS).toISOString(),
+          usedGuides: [],
+        };
         await env.WAITLIST.put(userKey, JSON.stringify(userRecord));
 
         const token = generateId();
@@ -390,6 +430,64 @@ export default {
         });
       }
 
+      // --- GET_DASHBOARD: everything the dashboard page needs in one call ---
+      if (body.action === "get_dashboard") {
+        const session = await getSession(env, body.token);
+        if (!session) {
+          return new Response(JSON.stringify({ error: "Not logged in." }), {
+            status: 401,
+            headers: { ...corsHeaders(), "Content-Type": "application/json" },
+          });
+        }
+
+        let userRecord = await getUser(env, session.email);
+        if (!userRecord) {
+          return new Response(JSON.stringify({ error: "Account not found." }), {
+            status: 404,
+            headers: { ...corsHeaders(), "Content-Type": "application/json" },
+          });
+        }
+        const beforeReset = userRecord.creditsResetAt;
+        userRecord = refreshCredits(userRecord);
+        if (userRecord.creditsResetAt !== beforeReset) {
+          await saveUser(env, userRecord); // persist a reset that just happened
+        }
+
+        // Overview: every idea-set they've generated/saved.
+        const indexKey = `user_results:${session.email}`;
+        const stored = await env.WAITLIST.get(indexKey);
+        const ids = stored ? JSON.parse(stored) : [];
+        const results = await Promise.all(
+          ids.map(async (id) => {
+            const r = await env.WAITLIST.get(`result:${id}`);
+            if (!r) return null;
+            const parsed = JSON.parse(r);
+            return { id: parsed.id, greeting: parsed.greeting, ts: parsed.ts, roleTitle: (parsed.inputs && parsed.inputs.role) || "" };
+          })
+        );
+
+        // The one project they've used this cycle's credit on (most recent, if any).
+        const latestUsed = userRecord.usedGuides.length ? userRecord.usedGuides[userRecord.usedGuides.length - 1] : null;
+        let latestGuide = null;
+        if (latestUsed) {
+          const g = await env.WAITLIST.get(`guide:${latestUsed.resultId}:${latestUsed.ideaKey}`);
+          if (g) latestGuide = JSON.parse(g);
+        }
+
+        return new Response(JSON.stringify({
+          ok: true,
+          name: userRecord.name,
+          email: userRecord.email,
+          plan: userRecord.plan,
+          credits: userRecord.credits,
+          creditsResetAt: userRecord.creditsResetAt,
+          results: results.filter(Boolean).reverse(),
+          latestGuide,
+        }), {
+          headers: { ...corsHeaders(), "Content-Type": "application/json" },
+        });
+      }
+
       // --- GET_USER_RESULTS: list all saved results tied to the logged-in user ---
       if (body.action === "get_user_results") {
         const session = await getSession(env, body.token);
@@ -443,10 +541,31 @@ export default {
 
         const guideKey = `guide:${resultId}:${ideaKey}`;
 
-        // Return the cached guide if we've already generated one — saves AI calls.
+        // Return the cached guide if we've already generated one — saves AI calls
+        // and, importantly, does NOT cost a credit (viewing is free, generating isn't).
         const existing = await env.WAITLIST.get(guideKey);
         if (existing) {
           return new Response(existing, { headers: { ...corsHeaders(), "Content-Type": "application/json" } });
+        }
+
+        // This is a brand-new guide — check credits before spending an AI call.
+        let userRecord = await getUser(env, session.email);
+        if (!userRecord) {
+          return new Response(JSON.stringify({ error: "Account not found." }), {
+            status: 404,
+            headers: { ...corsHeaders(), "Content-Type": "application/json" },
+          });
+        }
+        userRecord = refreshCredits(userRecord);
+        if (userRecord.credits < 1) {
+          await saveUser(env, userRecord); // persist any reset that just happened
+          return new Response(JSON.stringify({
+            error: "You've used this month's free project-detail credit.",
+            creditsResetAt: userRecord.creditsResetAt,
+          }), {
+            status: 402,
+            headers: { ...corsHeaders(), "Content-Type": "application/json" },
+          });
         }
 
         const resultStored = await env.WAITLIST.get(`result:${resultId}`);
@@ -466,7 +585,7 @@ export default {
         }
         const inputs = resultRecord.inputs || {};
 
-        const guidePrompt = `You are a hands-on technical mentor. A student wants a complete, elaborate, step-by-step guide to actually build this project:
+        const guidePrompt = `You are a hands-on technical mentor writing a build guide for someone who has NEVER built this specific type of project before — assume zero prior knowledge of this exact stack, even if they have some general coding background. Do not skip foundational concepts. Someone who knows nothing about this kind of project should be able to follow this guide from the very first step and end up with something genuinely production-aware by the end.
 
 Project: ${project.title}
 Why it matters: ${project.hook || project.why || ""}
@@ -474,27 +593,46 @@ Target role: ${inputs.role || "not specified"}
 Their current skills: ${inputs.skills || "not specified"}
 Time available: ${inputs.time || "not specified"}
 
-Give a genuinely detailed build guide, not a vague outline. Include:
-1. A short system/project architecture overview explaining the main components and how they connect.
-2. A skills breakdown: what they need to learn, ordered by priority, each with a one-line reason why it's needed for this specific project.
-3. A phased step-by-step plan (4-6 phases). Each phase has a title, a short description, and 3-6 concrete steps. Each step should be a specific, actionable task (not "build the backend" but "set up an Express server with a /api/tasks route that returns JSON").
+Write FOUR things:
+
+1. ARCHITECTURE DIAGRAM DATA — model the actual system as a graph of components (nodes) and connections (edges), the way a real architecture diagram would show it (e.g. Browser → Frontend App → API Server → Database, plus any external services, caches, queues). This will be rendered as a visual diagram, so be concrete and specific to this exact project, not generic. 4-9 nodes is typical. Every edge needs a short label describing what flows across it (e.g. "HTTP request", "reads/writes rows", "auth token").
+
+2. A plain-language architecture summary (2-4 sentences) explaining how those pieces work together, written so a total beginner understands WHY the system is shaped this way.
+
+3. A skills breakdown ordered from foundational to advanced. Each skill needs a one-line reason tied to this specific project, and a "level" of either "foundational", "core", or "advanced" so the reader knows what's a prerequisite versus a stretch goal.
+
+4. A phased, step-by-step build plan that genuinely starts from zero and ends at advanced/production-aware. Structure it as:
+   - Early phases: absolute basics — environment setup, core concepts explained simply, a minimal working version.
+   - Middle phases: building out the real features of this specific project.
+   - Late phases: the advanced/production concerns — error handling, testing, security basics, deployment, and one "if you want to go further" stretch idea.
+   Each step must be a specific, actionable task with enough explanation that a beginner understands not just WHAT to do but WHY (not "build the backend" but "set up an Express server with a /api/tasks route that returns JSON — this is the endpoint your frontend will call to list tasks").
 
 Respond ONLY with valid JSON, no markdown fences, no preamble, in this exact structure:
 {
-  "architecture": "2-4 sentences describing the overall system architecture and how the pieces fit together",
+  "architecture_diagram": {
+    "nodes": [
+      { "id": "short_id", "label": "Human-readable name", "type": "client" }
+    ],
+    "edges": [
+      { "from": "short_id", "to": "short_id", "label": "what flows across this connection" }
+    ]
+  },
+  "architecture": "2-4 sentence plain-language summary of how the system fits together, beginner-friendly",
   "skills": [
-    { "name": "skill name", "why": "1 sentence on why this specific project needs it" }
+    { "name": "skill name", "why": "1 sentence on why this specific project needs it", "level": "foundational" }
   ],
   "phases": [
     {
       "title": "short phase name",
       "description": "1 sentence on what this phase accomplishes",
       "steps": [
-        { "title": "short step name", "detail": "1-2 sentences of specific, actionable guidance for this step" }
+        { "title": "short step name", "detail": "2-3 sentences of specific, actionable guidance explaining what to do and why it matters" }
       ]
     }
   ]
-}`;
+}
+
+Valid values for a node's "type" field: "client", "server", "database", "external", "storage", "queue", "other". Use whichever fits each component.`;
 
         let aiResponse;
         try {
@@ -503,16 +641,42 @@ Respond ONLY with valid JSON, no markdown fences, no preamble, in this exact str
               { role: "system", content: "You are a helpful assistant that responds only with valid JSON, no markdown, no commentary." },
               { role: "user", content: guidePrompt },
             ],
-            max_tokens: 2200,
+            max_tokens: 3200,
             response_format: {
               type: "json_schema",
               json_schema: {
                 type: "object",
                 properties: {
+                  architecture_diagram: {
+                    type: "object",
+                    properties: {
+                      nodes: {
+                        type: "array",
+                        items: {
+                          type: "object",
+                          properties: { id: { type: "string" }, label: { type: "string" }, type: { type: "string" } },
+                          required: ["id", "label", "type"],
+                        },
+                      },
+                      edges: {
+                        type: "array",
+                        items: {
+                          type: "object",
+                          properties: { from: { type: "string" }, to: { type: "string" }, label: { type: "string" } },
+                          required: ["from", "to", "label"],
+                        },
+                      },
+                    },
+                    required: ["nodes", "edges"],
+                  },
                   architecture: { type: "string" },
                   skills: {
                     type: "array",
-                    items: { type: "object", properties: { name: { type: "string" }, why: { type: "string" } }, required: ["name", "why"] },
+                    items: {
+                      type: "object",
+                      properties: { name: { type: "string" }, why: { type: "string" }, level: { type: "string" } },
+                      required: ["name", "why", "level"],
+                    },
                   },
                   phases: {
                     type: "array",
@@ -530,7 +694,7 @@ Respond ONLY with valid JSON, no markdown fences, no preamble, in this exact str
                     },
                   },
                 },
-                required: ["architecture", "skills", "phases"],
+                required: ["architecture_diagram", "architecture", "skills", "phases"],
               },
             },
           });
@@ -546,6 +710,7 @@ Respond ONLY with valid JSON, no markdown fences, no preamble, in this exact str
           resultId,
           ideaKey,
           projectTitle: project.title,
+          architectureDiagram: guideParsed.architecture_diagram,
           architecture: guideParsed.architecture,
           skills: guideParsed.skills,
           phases: guideParsed.phases,
@@ -554,6 +719,11 @@ Respond ONLY with valid JSON, no markdown fences, no preamble, in this exact str
           ts: new Date().toISOString(),
         };
         await env.WAITLIST.put(guideKey, JSON.stringify(guideRecord), { expirationTtl: 60 * 60 * 24 * 180 });
+
+        // Charge the credit and log this as the cycle's used guide.
+        userRecord.credits -= 1;
+        userRecord.usedGuides.push({ resultId, ideaKey, projectTitle: project.title, ts: guideRecord.ts });
+        await saveUser(env, userRecord);
 
         return new Response(JSON.stringify(guideRecord), {
           headers: { ...corsHeaders(), "Content-Type": "application/json" },

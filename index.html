@@ -1074,6 +1074,7 @@ document.getElementById('login-btn').addEventListener('click', async () => {
 function showLoggedInBar(name) {
   loginBar.innerHTML = `
     <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink-soft);align-self:center;margin-right:10px;">Hi, ${name}</span>
+    <a href="dashboard.html" style="background:transparent;border:1px solid var(--accent);color:var(--accent);font-family:'JetBrains Mono',monospace;font-size:11.5px;padding:8px 14px;border-radius:8px;cursor:pointer;margin-right:8px;text-decoration:none;display:inline-block;">Dashboard</a>
     <button id="my-projects-btn" style="background:transparent;border:1px solid var(--accent-2);color:var(--accent-2);font-family:'JetBrains Mono',monospace;font-size:11.5px;padding:8px 14px;border-radius:8px;cursor:pointer;margin-right:8px;">My saved projects</button>
     <button id="logout-btn" style="background:transparent;border:1px solid var(--line);color:var(--ink-soft);font-family:'JetBrains Mono',monospace;font-size:11.5px;padding:8px 14px;border-radius:8px;cursor:pointer;">Log out</button>
   `;
@@ -1408,7 +1409,13 @@ async function requestGuide(resultId, ideaKey, triggerBtn) {
       data = await res.json();
     }
 
-    if (data.error) throw new Error(data.error);
+    if (data.error) {
+      if (data.creditsResetAt) {
+        const resetDate = new Date(data.creditsResetAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+        throw new Error(`${data.error} It renews on ${resetDate}. Check your dashboard for what you've already unlocked this cycle.`);
+      }
+      throw new Error(data.error);
+    }
 
     renderGuide(mount, data);
     triggerBtn.style.display = 'none';
@@ -1420,6 +1427,112 @@ async function requestGuide(resultId, ideaKey, triggerBtn) {
   }
 }
 
+// Node type -> accent color + short tag, kept consistent with the site's palette.
+const DIAGRAM_TYPE_STYLE = {
+  client:   { color: '#6E8DFF', tag: 'CLIENT' },
+  server:   { color: '#D4F26A', tag: 'SERVER' },
+  database: { color: '#F2C94C', tag: 'DATABASE' },
+  external: { color: '#FF8A7A', tag: 'EXTERNAL' },
+  storage:  { color: '#8B948A', tag: 'STORAGE' },
+  queue:    { color: '#B89EFF', tag: 'QUEUE' },
+  other:    { color: '#8B948A', tag: '' },
+};
+
+// Simple auto-layout: layer nodes left-to-right by longest path from a root,
+// then stack each layer's nodes vertically. Produces a real generated diagram
+// from just {nodes, edges} data, no manual positioning needed.
+function renderArchitectureDiagram(container, diagram) {
+  if (!diagram || !diagram.nodes || !diagram.nodes.length) {
+    container.innerHTML = '';
+    return;
+  }
+  const nodes = diagram.nodes;
+  const edges = (diagram.edges || []).filter(e => nodes.some(n => n.id === e.from) && nodes.some(n => n.id === e.to));
+
+  // Compute layer (column) for each node via BFS from nodes with no incoming edges.
+  const incoming = {};
+  nodes.forEach(n => incoming[n.id] = 0);
+  edges.forEach(e => incoming[e.to] = (incoming[e.to] || 0) + 1);
+
+  const layer = {};
+  const roots = nodes.filter(n => incoming[n.id] === 0).map(n => n.id);
+  const startIds = roots.length ? roots : [nodes[0].id];
+  startIds.forEach(id => layer[id] = 0);
+
+  let changed = true;
+  let guard = 0;
+  while (changed && guard < 50) {
+    changed = false;
+    guard++;
+    edges.forEach(e => {
+      if (layer[e.from] !== undefined) {
+        const target = layer[e.from] + 1;
+        if (layer[e.to] === undefined || layer[e.to] < target) {
+          layer[e.to] = target;
+          changed = true;
+        }
+      }
+    });
+  }
+  nodes.forEach(n => { if (layer[n.id] === undefined) layer[n.id] = 0; });
+
+  const maxLayer = Math.max(...nodes.map(n => layer[n.id]));
+  const layers = [];
+  for (let i = 0; i <= maxLayer; i++) layers.push(nodes.filter(n => layer[n.id] === i));
+
+  const colWidth = 210;
+  const nodeW = 160;
+  const nodeH = 62;
+  const rowGap = 30;
+  const padding = 30;
+  const maxRows = Math.max(...layers.map(l => l.length));
+  const width = padding * 2 + (maxLayer + 1) * colWidth - (colWidth - nodeW);
+  const height = padding * 2 + maxRows * (nodeH + rowGap) - rowGap;
+
+  const pos = {};
+  layers.forEach((layerNodes, li) => {
+    const totalH = layerNodes.length * (nodeH + rowGap) - rowGap;
+    const startY = (height - totalH) / 2;
+    layerNodes.forEach((n, ni) => {
+      pos[n.id] = { x: padding + li * colWidth, y: startY + ni * (nodeH + rowGap) };
+    });
+  });
+
+  let svg = `<svg viewBox="0 0 ${width} ${height}" style="width:100%;height:auto;font-family:'Inter',sans-serif;">`;
+  svg += `<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6E8DFF"/></marker></defs>`;
+
+  edges.forEach(e => {
+    const a = pos[e.from], b = pos[e.to];
+    if (!a || !b) return;
+    const x1 = a.x + nodeW, y1 = a.y + nodeH / 2;
+    const x2 = b.x, y2 = b.y + nodeH / 2;
+    const midX = (x1 + x2) / 2;
+    svg += `<path d="M${x1},${y1} C${midX},${y1} ${midX},${y2} ${x2},${y2}" fill="none" stroke="#3A443C" stroke-width="1.5" marker-end="url(#arrow)"/>`;
+    if (e.label) {
+      svg += `<rect x="${midX - e.label.length * 2.8}" y="${(y1 + y2) / 2 - 9}" width="${e.label.length * 5.6}" height="16" fill="#0F1310" opacity="0.85"/>`;
+      svg += `<text x="${midX}" y="${(y1 + y2) / 2 + 3}" text-anchor="middle" font-size="9.5" fill="#8B948A" font-family="'JetBrains Mono',monospace">${e.label}</text>`;
+    }
+  });
+
+  nodes.forEach(n => {
+    const p = pos[n.id];
+    if (!p) return;
+    const style = DIAGRAM_TYPE_STYLE[n.type] || DIAGRAM_TYPE_STYLE.other;
+    svg += `<rect x="${p.x}" y="${p.y}" width="${nodeW}" height="${nodeH}" rx="10" fill="#151A16" stroke="${style.color}" stroke-width="1.5"/>`;
+    if (style.tag) {
+      svg += `<text x="${p.x + 12}" y="${p.y + 18}" font-size="8.5" letter-spacing="1" fill="${style.color}" font-family="'JetBrains Mono',monospace">${style.tag}</text>`;
+    }
+    svg += `<text x="${p.x + 12}" y="${p.y + (style.tag ? 38 : 30)}" font-size="12.5" fill="#EDEFEA" font-weight="600">${escapeXml(n.label).slice(0, 22)}</text>`;
+  });
+
+  svg += `</svg>`;
+  container.innerHTML = svg;
+}
+
+function escapeXml(str) {
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
 function renderGuide(mount, guide) {
   const progress = guide.progress || {};
   const totalSteps = guide.phases.reduce((sum, p) => sum + p.steps.length, 0);
@@ -1428,17 +1541,22 @@ function renderGuide(mount, guide) {
 
   mount.innerHTML = `
     <div style="margin-top:16px;padding:20px;background:var(--paper-2);border:1px solid var(--line);border-radius:12px;">
-      <div class="label-inline" style="margin-bottom:6px;">Architecture</div>
+      <div class="label-inline" style="margin-bottom:10px;">Architecture map</div>
+      <div class="diagram-mount" style="background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:14px;overflow-x:auto;"></div>
       <p style="font-size:13.5px;color:var(--ink);line-height:1.6;margin:0 0 18px;">${guide.architecture}</p>
 
-      <div class="label-inline" style="margin-bottom:10px;">Skills you'll need</div>
+      <div class="label-inline" style="margin-bottom:10px;">Skills you'll need — foundational to advanced</div>
       <div style="margin-bottom:20px;">
-        ${guide.skills.map(s => `
+        ${guide.skills.map(s => {
+          const levelColor = s.level === 'advanced' ? '#FF8A7A' : s.level === 'core' ? '#6E8DFF' : '#D4F26A';
+          return `
           <div style="padding:8px 0;border-top:1px solid var(--line);font-size:13px;">
+            <span style="display:inline-block;font-size:9px;letter-spacing:0.5px;font-family:'JetBrains Mono',monospace;color:${levelColor};border:1px solid ${levelColor};border-radius:4px;padding:1px 6px;margin-right:8px;vertical-align:middle;">${(s.level || '').toUpperCase()}</span>
             <span style="color:var(--accent);font-weight:600;">${s.name}</span>
             <span style="color:var(--ink-soft);"> — ${s.why}</span>
           </div>
-        `).join('')}
+        `;
+        }).join('')}
       </div>
 
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
@@ -1470,6 +1588,8 @@ function renderGuide(mount, guide) {
       `).join('')}
     </div>
   `;
+
+  renderArchitectureDiagram(mount.querySelector('.diagram-mount'), guide.architectureDiagram);
 
   mount.querySelectorAll('.guide-step-check').forEach(cb => {
     cb.addEventListener('change', async (e) => {

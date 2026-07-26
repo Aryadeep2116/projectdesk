@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ProjectDesk — Dashboard</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap');
+
+  :root{
+    --paper:#0F1310;
+    --paper-2:#171C18;
+    --ink:#EDEFEA;
+    --ink-soft:#8B948A;
+    --line:#2A322C;
+    --accent:#D4F26A;
+    --accent-2:#6E8DFF;
+    --card:#151A16;
+    --error:#FF8A7A;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter', sans-serif;
+    min-height:100vh;
+  }
+  .wrap{max-width:980px;margin:0 auto;padding:44px 22px 100px;}
+
+  .top{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px;margin-bottom:8px;}
+  h1{font-family:'Space Grotesk',sans-serif;font-size:26px;font-weight:700;margin:0;letter-spacing:-0.3px;}
+  h1 span{color:var(--accent);}
+  .back-link{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--ink-soft);text-decoration:none;}
+  .back-link:hover{color:var(--accent);}
+
+  .credit-card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:16px 20px;
+    display:flex;
+    align-items:center;
+    gap:20px;
+    flex-wrap:wrap;
+    margin:24px 0 32px;
+  }
+  .credit-num{font-family:'Space Grotesk',sans-serif;font-size:26px;font-weight:700;color:var(--accent);}
+  .credit-lbl{font-family:'JetBrains Mono',monospace;font-size:10.5px;text-transform:uppercase;letter-spacing:1px;color:var(--ink-soft);margin-top:2px;}
+  .credit-sep{width:1px;height:34px;background:var(--line);}
+  .credit-reset{font-size:12.5px;color:var(--ink-soft);}
+  .credit-reset span{color:var(--ink);}
+
+  .tabs{display:flex;gap:6px;margin-bottom:26px;border-bottom:1px solid var(--line);}
+  .tab{
+    padding:12px 18px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:12.5px;
+    letter-spacing:0.5px;
+    color:var(--ink-soft);
+    cursor:pointer;
+    border-bottom:2px solid transparent;
+    user-select:none;
+  }
+  .tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+  .tab-panel{display:none;}
+  .tab-panel.active{display:block;}
+
+  .proj-card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:16px 20px;
+    margin-bottom:12px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:10px;
+    text-decoration:none;
+    color:var(--ink);
+    transition:border-color .2s;
+  }
+  .proj-card:hover{border-color:var(--accent-2);}
+  .proj-role{color:var(--accent);font-weight:600;font-size:14px;}
+  .proj-date{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-soft);}
+  .empty-state{
+    padding:50px 20px;
+    text-align:center;
+    color:var(--ink-soft);
+    font-family:'JetBrains Mono',monospace;
+    font-size:13px;
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:12px;
+  }
+
+  .premium-lock{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:44px 30px;
+    text-align:center;
+    position:relative;
+    overflow:hidden;
+  }
+  .premium-lock::before{
+    content:'';
+    position:absolute;top:0;left:0;right:0;height:3px;
+    background:linear-gradient(90deg,var(--accent),var(--accent-2));
+  }
+  .lock-icon{font-size:26px;margin-bottom:14px;}
+  .premium-lock h3{font-family:'Space Grotesk',sans-serif;font-size:19px;margin:0 0 8px;}
+  .premium-lock p{color:var(--ink-soft);font-size:13px;max-width:440px;margin:0 auto 20px;line-height:1.6;}
+  .premium-list{display:inline-flex;flex-direction:column;gap:8px;text-align:left;font-size:12.5px;color:var(--ink-soft);font-family:'JetBrains Mono',monospace;}
+
+  .label-inline{font-family:'JetBrains Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--ink-soft);display:block;margin-bottom:10px;}
+  .diagram-mount{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:14px;overflow-x:auto;}
+
+  .loading{padding:60px 20px;text-align:center;color:var(--ink-soft);font-family:'JetBrains Mono',monospace;font-size:13px;}
+  .needs-login{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:44px 30px;
+    text-align:center;
+  }
+  .needs-login a{color:var(--accent);text-decoration:none;font-weight:600;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="top">
+    <div>
+      <h1>ProjectDesk <span>/ Dashboard</span></h1>
+    </div>
+    <a class="back-link" href="index.html">← Back to ProjectDesk</a>
+  </div>
+
+  <div id="app">
+    <div class="loading">Loading your dashboard...</div>
+  </div>
+
+</div>
+
+<script>
+const WORKER_URL = "https://projectdesk-api.aryadeepbiswas014.workers.dev";
+const app = document.getElementById('app');
+
+const DIAGRAM_TYPE_STYLE = {
+  client:   { color: '#6E8DFF', tag: 'CLIENT' },
+  server:   { color: '#D4F26A', tag: 'SERVER' },
+  database: { color: '#F2C94C', tag: 'DATABASE' },
+  external: { color: '#FF8A7A', tag: 'EXTERNAL' },
+  storage:  { color: '#8B948A', tag: 'STORAGE' },
+  queue:    { color: '#B89EFF', tag: 'QUEUE' },
+  other:    { color: '#8B948A', tag: '' },
+};
+
+function escapeXml(str) {
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function renderArchitectureDiagram(container, diagram) {
+  if (!diagram || !diagram.nodes || !diagram.nodes.length) { container.innerHTML = ''; return; }
+  const nodes = diagram.nodes;
+  const edges = (diagram.edges || []).filter(e => nodes.some(n => n.id === e.from) && nodes.some(n => n.id === e.to));
+
+  const incoming = {};
+  nodes.forEach(n => incoming[n.id] = 0);
+  edges.forEach(e => incoming[e.to] = (incoming[e.to] || 0) + 1);
+
+  const layer = {};
+  const roots = nodes.filter(n => incoming[n.id] === 0).map(n => n.id);
+  const startIds = roots.length ? roots : [nodes[0].id];
+  startIds.forEach(id => layer[id] = 0);
+
+  let changed = true, guard = 0;
+  while (changed && guard < 50) {
+    changed = false; guard++;
+    edges.forEach(e => {
+      if (layer[e.from] !== undefined) {
+        const target = layer[e.from] + 1;
+        if (layer[e.to] === undefined || layer[e.to] < target) { layer[e.to] = target; changed = true; }
+      }
+    });
+  }
+  nodes.forEach(n => { if (layer[n.id] === undefined) layer[n.id] = 0; });
+
+  const maxLayer = Math.max(...nodes.map(n => layer[n.id]));
+  const layers = [];
+  for (let i = 0; i <= maxLayer; i++) layers.push(nodes.filter(n => layer[n.id] === i));
+
+  const colWidth = 210, nodeW = 160, nodeH = 62, rowGap = 30, padding = 30;
+  const maxRows = Math.max(...layers.map(l => l.length));
+  const width = padding * 2 + (maxLayer + 1) * colWidth - (colWidth - nodeW);
+  const height = padding * 2 + maxRows * (nodeH + rowGap) - rowGap;
+
+  const pos = {};
+  layers.forEach((layerNodes, li) => {
+    const totalH = layerNodes.length * (nodeH + rowGap) - rowGap;
+    const startY = (height - totalH) / 2;
+    layerNodes.forEach((n, ni) => { pos[n.id] = { x: padding + li * colWidth, y: startY + ni * (nodeH + rowGap) }; });
+  });
+
+  let svg = `<svg viewBox="0 0 ${width} ${height}" style="width:100%;height:auto;font-family:'Inter',sans-serif;">`;
+  svg += `<defs><marker id="arrow2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6E8DFF"/></marker></defs>`;
+
+  edges.forEach(e => {
+    const a = pos[e.from], b = pos[e.to];
+    if (!a || !b) return;
+    const x1 = a.x + nodeW, y1 = a.y + nodeH / 2, x2 = b.x, y2 = b.y + nodeH / 2;
+    const midX = (x1 + x2) / 2;
+    svg += `<path d="M${x1},${y1} C${midX},${y1} ${midX},${y2} ${x2},${y2}" fill="none" stroke="#3A443C" stroke-width="1.5" marker-end="url(#arrow2)"/>`;
+    if (e.label) {
+      svg += `<rect x="${midX - e.label.length * 2.8}" y="${(y1+y2)/2 - 9}" width="${e.label.length * 5.6}" height="16" fill="#0F1310" opacity="0.85"/>`;
+      svg += `<text x="${midX}" y="${(y1+y2)/2 + 3}" text-anchor="middle" font-size="9.5" fill="#8B948A" font-family="'JetBrains Mono',monospace">${e.label}</text>`;
+    }
+  });
+
+  nodes.forEach(n => {
+    const p = pos[n.id];
+    if (!p) return;
+    const style = DIAGRAM_TYPE_STYLE[n.type] || DIAGRAM_TYPE_STYLE.other;
+    svg += `<rect x="${p.x}" y="${p.y}" width="${nodeW}" height="${nodeH}" rx="10" fill="#151A16" stroke="${style.color}" stroke-width="1.5"/>`;
+    if (style.tag) svg += `<text x="${p.x+12}" y="${p.y+18}" font-size="8.5" letter-spacing="1" fill="${style.color}" font-family="'JetBrains Mono',monospace">${style.tag}</text>`;
+    svg += `<text x="${p.x+12}" y="${p.y + (style.tag ? 38 : 30)}" font-size="12.5" fill="#EDEFEA" font-weight="600">${escapeXml(n.label).slice(0,22)}</text>`;
+  });
+
+  svg += `</svg>`;
+  container.innerHTML = svg;
+}
+
+function showNeedsLogin() {
+  app.innerHTML = `
+    <div class="needs-login">
+      <h3 style="font-family:'Space Grotesk',sans-serif;font-size:18px;margin:0 0 10px;">Log in to view your dashboard</h3>
+      <p style="color:var(--ink-soft);font-size:13px;margin:0 0 20px;">Head back to ProjectDesk and log in — you'll land right back here once you're signed in.</p>
+      <a href="index.html">← Go to ProjectDesk</a>
+    </div>
+  `;
+}
+
+async function loadDashboard() {
+  const token = localStorage.getItem('pd_session_token');
+  if (!token) { showNeedsLogin(); return; }
+
+  try {
+    const res = await fetch(WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'get_dashboard', token })
+    });
+    const data = await res.json();
+    if (data.error) { showNeedsLogin(); return; }
+    renderDashboard(data);
+  } catch (e) {
+    app.innerHTML = `<div class="empty-state">Could not load your dashboard. Check your connection and refresh.</div>`;
+  }
+}
+
+function renderDashboard(data) {
+  const resetDate = new Date(data.creditsResetAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+
+  app.innerHTML = `
+    <div class="credit-card">
+      <div>
+        <div class="credit-num">${data.credits}</div>
+        <div class="credit-lbl">Credits left this cycle</div>
+      </div>
+      <div class="credit-sep"></div>
+      <div class="credit-reset">Renews <span>${resetDate}</span> &nbsp;·&nbsp; Plan: <span>${data.plan === 'premium' ? 'Premium' : 'Free'}</span></div>
+    </div>
+
+    <div class="tabs">
+      <div class="tab active" data-tab="overview">Overview</div>
+      <div class="tab" data-tab="premium">Premium</div>
+      <div class="tab" data-tab="detail">Project Detail</div>
+    </div>
+
+    <div class="tab-panel active" id="panel-overview">
+      ${data.results.length === 0
+        ? `<div class="empty-state">No project ideas generated yet. <a href="index.html" style="color:var(--accent);">Go generate some →</a></div>`
+        : data.results.map(r => `
+          <a class="proj-card" href="index.html?r=${r.id}">
+            <span class="proj-role">${r.roleTitle || 'Untitled'}</span>
+            <span class="proj-date">${new Date(r.ts).toLocaleDateString()}</span>
+          </a>
+        `).join('')
+      }
+    </div>
+
+    <div class="tab-panel" id="panel-premium">
+      <div class="premium-lock">
+        <div class="lock-icon">🔒</div>
+        <h3>Premium — coming soon</h3>
+        <p>More credits, more detailed guides per month, and features we're still deciding on. Join the waitlist from the main page to get notified when it launches.</p>
+        <div class="premium-list">
+          <span>→ More monthly credits</span>
+          <span>→ Priority guide generation</span>
+          <span>→ Additional features (TBD)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="panel-detail">
+      ${data.latestGuide ? renderGuideDetailHtml(data.latestGuide) : `
+        <div class="empty-state">
+          You haven't unlocked a full project guide this cycle yet.<br><br>
+          Go to a project idea and click <strong style="color:var(--accent);">"Get the full step-by-step guide"</strong> — it uses 1 of your ${data.credits > 0 ? data.credits : '0'} remaining credit(s) this cycle.
+        </div>
+      `}
+    </div>
+  `;
+
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById(`panel-${tab.dataset.tab}`).classList.add('active');
+    });
+  });
+
+  if (data.latestGuide) {
+    renderArchitectureDiagram(document.querySelector('#panel-detail .diagram-mount'), data.latestGuide.architectureDiagram);
+  }
+}
+
+function renderGuideDetailHtml(guide) {
+  const progress = guide.progress || {};
+  const totalSteps = guide.phases.reduce((sum, p) => sum + p.steps.length, 0);
+  const doneSteps = Object.values(progress).filter(Boolean).length;
+  const pct = totalSteps ? Math.round((doneSteps / totalSteps) * 100) : 0;
+
+  return `
+    <div style="background:var(--card);border:1px solid var(--line);border-radius:12px;padding:22px;">
+      <div style="font-family:'Space Grotesk',sans-serif;font-size:17px;margin-bottom:16px;">${guide.projectTitle}</div>
+
+      <span class="label-inline">Architecture map</span>
+      <div class="diagram-mount"></div>
+      <p style="font-size:13.5px;color:var(--ink);line-height:1.6;margin:0 0 18px;">${guide.architecture}</p>
+
+      <span class="label-inline">Skills — foundational to advanced</span>
+      <div style="margin-bottom:20px;">
+        ${guide.skills.map(s => {
+          const levelColor = s.level === 'advanced' ? '#FF8A7A' : s.level === 'core' ? '#6E8DFF' : '#D4F26A';
+          return `<div style="padding:8px 0;border-top:1px solid var(--line);font-size:13px;">
+            <span style="display:inline-block;font-size:9px;letter-spacing:0.5px;font-family:'JetBrains Mono',monospace;color:${levelColor};border:1px solid ${levelColor};border-radius:4px;padding:1px 6px;margin-right:8px;">${(s.level||'').toUpperCase()}</span>
+            <span style="color:var(--accent);font-weight:600;">${s.name}</span>
+            <span style="color:var(--ink-soft);"> — ${s.why}</span>
+          </div>`;
+        }).join('')}
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <span class="label-inline" style="margin:0;">Build plan</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--accent);">${pct}% (${doneSteps}/${totalSteps})</span>
+      </div>
+      <div style="height:6px;background:var(--paper);border-radius:4px;overflow:hidden;margin-bottom:16px;">
+        <div style="height:100%;width:${pct}%;background:var(--accent);"></div>
+      </div>
+
+      ${guide.phases.map(phase => `
+        <div style="margin-bottom:16px;">
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:14px;margin-bottom:2px;">${phase.title}</div>
+          <div style="font-size:12px;color:var(--ink-soft);margin-bottom:10px;">${phase.description}</div>
+          ${phase.steps.map(step => `
+            <div style="padding:8px 0;border-top:1px solid var(--line);">
+              <span style="display:block;font-size:13px;color:var(--ink);">${step.title}</span>
+              <span style="display:block;font-size:12px;color:var(--ink-soft);margin-top:2px;">${step.detail}</span>
+            </div>
+          `).join('')}
+        </div>
+      `).join('')}
+
+      <div style="margin-top:14px;">
+        <a href="index.html?r=${guide.resultId}" style="color:var(--accent-2);font-family:'JetBrains Mono',monospace;font-size:12px;text-decoration:none;">← View this project's full checklist on ProjectDesk</a>
+      </div>
+    </div>
+  `;
+}
+
+loadDashboard();
+</script>
+</body>
+</html>
