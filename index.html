@@ -2441,59 +2441,176 @@ function initPinned3D() {
   const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
   camera.position.set(0, 0, 9);
 
-  // 4 polished, smooth spheres (one per step). Replaces the
-  // earlier faceted icosahedrons — these read as premium orbs
-  // rather than blocky crystals, with a glassy clearcoat and a
-  // soft additive glow halo around each one.
+  // 4 mini project cards (one per step). Each card is a flat
+  // plane whose texture is rendered to a Canvas2D — a tiny project
+  // idea card with a colored top stripe, title, 2–3 stack chips,
+  // and a small "scope" line. Cards start spread out, slowly
+  // spin, and assemble to a tight cluster in the center as the
+  // user scrolls through the pinned section.
   const cubeGroup = new THREE.Group();
-  const cubeColors = [0x1D4ED8, 0x1D4ED8, 0x1D4ED8, 0x1D4ED8];
-  // Different sizes (radius) per orb so the cluster feels layered.
-  const orbSizes = [0.95, 0.78, 0.88, 0.68];
+  const cubeColors = [0x1D4ED8, 0x0EA968, 0x1D4ED8, 0x0EA968];
   const cubeOffsets = [
-    new THREE.Vector3(-2.4,  1.6, 0),
-    new THREE.Vector3( 2.4,  1.6, 0),
-    new THREE.Vector3(-2.4, -1.6, 0),
-    new THREE.Vector3( 2.4, -1.6, 0),
+    new THREE.Vector3(-2.6,  1.7, 0),
+    new THREE.Vector3( 2.6,  1.7, 0),
+    new THREE.Vector3(-2.6, -1.7, 0),
+    new THREE.Vector3( 2.6, -1.7, 0),
   ];
-  const cubes = [];
-  cubeOffsets.forEach((offset, i) => {
-    const r = orbSizes[i];
-    // High-segment sphere so the surface is buttery smooth
-    const geo = new THREE.SphereGeometry(r, 64, 48);
-    const mat = new THREE.MeshPhysicalMaterial({
-      color: cubeColors[i],
-      roughness: 0.08,
-      metalness: 0.15,
-      clearcoat: 1.0,
-      clearcoatRoughness: 0.05,
-      transmission: 0.35,    // glassy translucency
-      thickness: 0.6,
-      ior: 1.4,
-      reflectivity: 0.6,
-      transparent: true,
-      opacity: 0.95,
-    });
-    const mesh = new THREE.Mesh(geo, mat);
-    // Soft outer glow halo
-    const haloGeo = new THREE.SphereGeometry(r * 1.8, 32, 20);
-    const haloMat = new THREE.MeshBasicMaterial({
-      color: cubeColors[i],
-      transparent: true,
-      opacity: 0.16,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false,
-    });
-    const halo = new THREE.Mesh(haloGeo, haloMat);
 
+  // Card content (must match the spirit of the other idea cards on
+  // the page). Kept short so it reads as a mini-card.
+  const cardData = [
+    { tag: 'WEB',    title: 'Captioning app',         stack: ['React', 'WebSockets', 'Vite'],   scope: '1 weekend' },
+    { tag: 'ML',     title: 'Food calorie estimator', stack: ['PyTorch', 'ONNX', 'Flutter'],  scope: '3 weekends' },
+    { tag: 'BACKEND',title: 'Distributed rate-limiter',stack: ['Redis', 'Kafka', 'Spring'],    scope: '2 weeks' },
+    { tag: 'DATA',   title: 'Log search engine',      stack: ['Elastic', 'Go', 'gRPC'],        scope: '1 month'  },
+  ];
+
+  // Render a single card to a Canvas2D and use it as a texture.
+  function makeCardTexture(data, accentHex) {
+    const W = 512, H = 360; // 4:3-ish aspect; will be used on a 1.6:1 plane
+    const c = document.createElement('canvas');
+    c.width = W; c.height = H;
+    const ctx = c.getContext('2d');
+    // Background
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0, 0, W, H);
+    // Subtle border
+    ctx.strokeStyle = 'rgba(11,15,13,0.10)';
+    ctx.lineWidth = 2;
+    ctx.roundRect(1, 1, W - 2, H - 2, 18);
+    ctx.stroke();
+    // Top accent stripe (left edge)
+    ctx.fillStyle = accentHex;
+    ctx.beginPath();
+    ctx.roundRect(0, 0, 8, H, [4, 0, 0, 4]);
+    ctx.fill();
+    // Soft drop shadow at the top of the stripe
+    ctx.fillStyle = 'rgba(29,78,216,0.10)';
+    ctx.fillRect(8, 0, 30, H);
+    // Tag pill
+    const tagY = 28;
+    ctx.fillStyle = 'rgba(29,78,216,0.10)';
+    ctx.beginPath();
+    const tagW = ctx.measureText(data.tag).width + 22;
+    ctx.roundRect(28, tagY, tagW, 26, 6);
+    ctx.fill();
+    ctx.fillStyle = '#1D4ED8';
+    ctx.font = '600 13px "IBM Plex Mono", monospace';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(data.tag, 39, tagY + 13);
+    // Title
+    ctx.fillStyle = '#0B0F0D';
+    ctx.font = '700 30px "Sora", "Inter", sans-serif';
+    ctx.textBaseline = 'alphabetic';
+    wrapText(ctx, data.title, 28, 110, W - 56, 34);
+    // Divider
+    ctx.strokeStyle = 'rgba(11,15,13,0.08)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(28, 168);
+    ctx.lineTo(W - 28, 168);
+    ctx.stroke();
+    // Stack label + chips
+    ctx.fillStyle = '#5B6B63';
+    ctx.font = '500 11px "IBM Plex Mono", monospace';
+    ctx.fillText('STACK', 28, 192);
+    let chipX = 28;
+    let chipY = 208;
+    ctx.font = '500 13px "IBM Plex Mono", monospace';
+    for (const tech of data.stack) {
+      const tw = ctx.measureText(tech).width + 22;
+      if (chipX + tw > W - 28) { chipX = 28; chipY += 32; }
+      ctx.fillStyle = '#F7F8FA';
+      ctx.beginPath();
+      ctx.roundRect(chipX, chipY, tw, 26, 6);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(11,15,13,0.12)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.fillStyle = '#0B0F0D';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(tech, chipX + 11, chipY + 13);
+      chipX += tw + 8;
+    }
+    // Scope line at the bottom
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillStyle = '#5B6B63';
+    ctx.font = '500 12px "IBM Plex Mono", monospace';
+    ctx.fillText('SCOPE', 28, H - 26);
+    ctx.fillStyle = '#0B0F0D';
+    ctx.font = '600 12px "IBM Plex Mono", monospace';
+    ctx.fillText(data.scope, 78, H - 26);
+
+    const tex = new THREE.CanvasTexture(c);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.anisotropy = 4;
+    tex.needsUpdate = true;
+    return tex;
+  }
+
+  // Helper: word-wrap text on a 2D canvas
+  function wrapText(ctx, text, x, y, maxW, lineH) {
+    const words = text.split(' ');
+    let line = '';
+    let yy = y;
+    for (let n = 0; n < words.length; n++) {
+      const test = line + words[n] + ' ';
+      const m = ctx.measureText(test);
+      if (m.width > maxW && n > 0) {
+        ctx.fillText(line, x, yy);
+        line = words[n] + ' ';
+        yy += lineH;
+      } else {
+        line = test;
+      }
+    }
+    ctx.fillText(line, x, yy);
+  }
+
+  // Polyfill roundRect for older browsers (Three.js may run in any env)
+  if (!CanvasRenderingContext2D.prototype.roundRect) {
+    CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
+      if (typeof r === 'number') r = [r, r, r, r];
+      this.beginPath();
+      this.moveTo(x + r[0], y);
+      this.lineTo(x + w - r[1], y);
+      this.quadraticCurveTo(x + w, y, x + w, y + r[1]);
+      this.lineTo(x + w, y + h - r[2]);
+      this.quadraticCurveTo(x + w, y + h, x + w - r[2], y + h);
+      this.lineTo(x + r[3], y + h);
+      this.quadraticCurveTo(x, y + h, x, y + h - r[3]);
+      this.lineTo(x, y + r[0]);
+      this.quadraticCurveTo(x, y, x + r[0], y);
+      this.closePath();
+      return this;
+    };
+  }
+
+  const CARD_W = 1.8;
+  const CARD_H = 1.25;
+  const cubes = [];
+  cardData.forEach((data, i) => {
+    const accent = '#' + cubeColors[i].toString(16).padStart(6, '0');
+    const tex = makeCardTexture(data, accent);
+    const mat = new THREE.MeshBasicMaterial({ map: tex, transparent: false });
+    const geo = new THREE.PlaneGeometry(CARD_W, CARD_H);
+    const mesh = new THREE.Mesh(geo, mat);
+    // Soft drop shadow plane behind the card
+    const shadowGeo = new THREE.PlaneGeometry(CARD_W * 1.06, CARD_H * 1.06);
+    const shadowMat = new THREE.MeshBasicMaterial({
+      color: 0x0B0F0D, transparent: true, opacity: 0.10, depthWrite: false,
+    });
+    const shadow = new THREE.Mesh(shadowGeo, shadowMat);
+    shadow.position.z = -0.01;
     const group = new THREE.Group();
+    group.add(shadow);
     group.add(mesh);
-    group.add(halo);
-    group.position.copy(offset);
-    group.userData.basePos = offset.clone();
-    group.userData.explodedPos = offset.clone().multiplyScalar(2.0);
+    group.position.copy(cubeOffsets[i]);
+    group.userData.basePos = cubeOffsets[i].clone();
+    group.userData.explodedPos = cubeOffsets[i].clone().multiplyScalar(1.8);
     group.userData.assembledPos = new THREE.Vector3(0, 0, 0);
-    group.userData.halo = halo;
     group.userData.mesh = mesh;
+    group.userData.spinPhase = i * 0.7;
     cubeGroup.add(group);
     cubes.push(group);
   });
@@ -2568,13 +2685,13 @@ function initPinned3D() {
       const ts = t * t * (3 - 2 * t);
       cube.position.lerpVectors(exploded, assembled, ts);
       if (!prefersReducedMotion) {
-        cube.rotation.x += 0.003 + (i * 0.0005);
-        cube.rotation.y += 0.004 + (i * 0.0005);
-        // Gentle halo breathing
-        if (cube.userData.halo) {
-          const breath = 0.5 + 0.5 * Math.sin(performance.now() * 0.0011 + i * 0.9);
-          cube.userData.halo.material.opacity = 0.10 + 0.18 * breath;
-        }
+        // Cards face the camera (billboard) so they always read
+        // straight-on regardless of the section's perspective
+        cube.lookAt(camera.position);
+        // Tiny tilt for life
+        cube.rotation.z = Math.sin(performance.now() * 0.0008 + cube.userData.spinPhase) * 0.04;
+      } else {
+        cube.lookAt(camera.position);
       }
     });
     lines.forEach(({ line, a, b }) => {
