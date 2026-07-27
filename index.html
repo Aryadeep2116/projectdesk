@@ -303,6 +303,7 @@
 
   /* ---------- SECTIONS SHARED ---------- */
   .section{
+    position:relative;
     padding:110px 24px;
     max-width:1120px;
     margin:0 auto;
@@ -522,6 +523,78 @@
     gap:18px;
     justify-content:center;
   }
+
+  /* ---------- BACKGROUND WATERMARK TEXT ---------- */
+  .watermark{
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    font-family:'Sora', sans-serif;
+    font-weight:800;
+    font-size:clamp(90px, 22vw, 260px);
+    letter-spacing:-6px;
+    color:var(--ink);
+    opacity:0.025;
+    white-space:nowrap;
+    pointer-events:none;
+    z-index:0;
+    user-select:none;
+  }
+
+  /* ---------- MARQUEE TICKER ---------- */
+  .marquee-wrap{
+    position:relative;
+    overflow:hidden;
+    padding:26px 0;
+    border-top:1px solid var(--line);
+    border-bottom:1px solid var(--line);
+    background:var(--bg-soft);
+  }
+  .marquee-track{
+    display:flex;
+    width:max-content;
+    animation:marqueeScroll 28s linear infinite;
+  }
+  .marquee-track span{
+    font-family:'Sora', sans-serif;
+    font-weight:700;
+    font-size:22px;
+    letter-spacing:-0.3px;
+    color:var(--ink-soft);
+    padding:0 28px;
+    display:flex;
+    align-items:center;
+    gap:28px;
+    white-space:nowrap;
+  }
+  .marquee-track span em{
+    font-style:normal;
+    color:var(--emerald-deep);
+  }
+  .marquee-track .sep{color:var(--line);}
+  @keyframes marqueeScroll{
+    from{transform:translateX(0);}
+    to{transform:translateX(-50%);}
+  }
+  .marquee-wrap:hover .marquee-track{animation-play-state:paused;}
+
+  /* ---------- WORD-BY-WORD SCROLL REVEAL ---------- */
+  .word-reveal-wrap{overflow:hidden;display:inline-block;padding-bottom:0.1em;}
+  .word-reveal .word{
+    display:inline-block;
+    opacity:0;
+    transform:translateY(100%) rotate(4deg);
+    transition:opacity .6s cubic-bezier(.2,.8,.2,1), transform .6s cubic-bezier(.2,.8,.2,1);
+  }
+  .word-reveal.in-view .word{opacity:1;transform:translateY(0) rotate(0);}
+
+  /* ---------- MAGNETIC BUTTON ---------- */
+  .magnetic{will-change:transform;}
+
+  @media (prefers-reduced-motion: reduce){
+    .marquee-track{animation:none !important;}
+  }
 </style>
 </head>
 <body>
@@ -543,17 +616,46 @@
   <canvas id="hero-canvas"></canvas>
   <div class="hero-content">
     <div class="hero-eyebrow"><span class="pulse"></span>Free to start · 360 credits every month</div>
-    <h1>Stop guessing<br>what to <span class="grad">build.</span></h1>
+    <h1 class="word-reveal">
+      <span class="word-reveal-wrap"><span class="word">Stop</span></span> <span class="word-reveal-wrap"><span class="word">guessing</span></span><br>
+      <span class="word-reveal-wrap"><span class="word">what</span></span> <span class="word-reveal-wrap"><span class="word">to</span></span> <span class="word-reveal-wrap"><span class="word grad">build.</span></span>
+    </h1>
     <p>Tell BuildItUp your target role and skill gap — get 4 resume-worthy project ideas, then a full AI-guided build plan for the one you pick.</p>
     <div class="hero-actions">
-      <a href="app.html" class="btn-primary">Start Building — Free →</a>
-      <a href="#how-it-works" class="btn-secondary">See how it works</a>
+      <a href="app.html" class="btn-primary magnetic">Start Building — Free →</a>
+      <a href="#how-it-works" class="btn-secondary magnetic">See how it works</a>
     </div>
     <div class="hero-meta">NO CREDIT CARD · SIGN UP IN SECONDS</div>
   </div>
 </section>
 
+<div class="marquee-wrap">
+  <div class="marquee-track" id="marquee-track">
+    <span>
+      <em>Build your resume</em><span class="sep">✦</span>
+      Ship real projects<span class="sep">✦</span>
+      Learn by doing<span class="sep">✦</span>
+      <em>Get hired</em><span class="sep">✦</span>
+      Build your resume<span class="sep">✦</span>
+      Ship real projects<span class="sep">✦</span>
+      Learn by doing<span class="sep">✦</span>
+      <em>Get hired</em><span class="sep">✦</span>
+    </span>
+    <span>
+      <em>Build your resume</em><span class="sep">✦</span>
+      Ship real projects<span class="sep">✦</span>
+      Learn by doing<span class="sep">✦</span>
+      <em>Get hired</em><span class="sep">✦</span>
+      Build your resume<span class="sep">✦</span>
+      Ship real projects<span class="sep">✦</span>
+      Learn by doing<span class="sep">✦</span>
+      <em>Get hired</em><span class="sep">✦</span>
+    </span>
+  </div>
+</div>
+
 <section class="section" id="how-it-works">
+  <div class="watermark">BUILD</div>
   <div class="section-head reveal">
     <span class="section-eyebrow">How it works</span>
     <h2>Three steps to a project worth showing off</h2>
@@ -579,6 +681,7 @@
 </section>
 
 <section class="section soft" id="plans">
+  <div class="watermark">CREDITS</div>
   <div class="section-inner">
     <div class="section-head reveal">
       <span class="section-eyebrow">Plans</span>
@@ -596,7 +699,7 @@
           <li><span class="check">✓</span> Architecture diagrams &amp; skills breakdown</li>
           <li><span class="check">✓</span> Progress tracking on every guide</li>
         </ul>
-        <a href="app.html" class="plan-card-btn solid">Start free</a>
+        <a href="app.html" class="plan-card-btn solid magnetic">Start free</a>
       </div>
       <div class="plan-card locked reveal">
         <span class="plan-badge premium">Premium</span>
@@ -649,6 +752,31 @@ const revealObserver = new IntersectionObserver((entries) => {
 }, { threshold: 0.15 });
 document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
 
+// Word-by-word headline reveal (hero plays immediately on load, not on scroll)
+document.querySelectorAll('.hero .word-reveal').forEach(el => {
+  requestAnimationFrame(() => setTimeout(() => el.classList.add('in-view'), 250));
+});
+document.querySelectorAll('.word-reveal:not(.hero .word-reveal)').forEach(el => revealObserver.observe(el));
+const wordObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) entry.target.classList.add('in-view');
+  });
+}, { threshold: 0.4 });
+document.querySelectorAll('.word-reveal:not(.hero .word-reveal)').forEach(el => wordObserver.observe(el));
+
+// Magnetic buttons — subtly pull toward the cursor within their bounds
+document.querySelectorAll('.magnetic').forEach(btn => {
+  btn.addEventListener('mousemove', (e) => {
+    const rect = btn.getBoundingClientRect();
+    const x = e.clientX - rect.left - rect.width / 2;
+    const y = e.clientY - rect.top - rect.height / 2;
+    btn.style.transform = `translate(${x * 0.25}px, ${y * 0.35}px)`;
+  });
+  btn.addEventListener('mouseleave', () => {
+    btn.style.transform = 'translate(0, 0)';
+  });
+});
+
 // Feature card hover tilt
 document.querySelectorAll('.feature-card').forEach(card => {
   card.addEventListener('mousemove', (e) => {
@@ -662,6 +790,28 @@ document.querySelectorAll('.feature-card').forEach(card => {
   card.addEventListener('mouseleave', () => {
     card.style.transform = 'perspective(800px) rotateX(0) rotateY(0) translateY(0)';
   });
+});
+
+// Parallax: background watermarks and hero canvas drift slower than scroll
+let ticking = false;
+function updateParallax() {
+  const scrollY = window.scrollY;
+  document.querySelectorAll('.watermark').forEach(wm => {
+    const rect = wm.closest('.section').getBoundingClientRect();
+    const offset = (rect.top) * 0.08;
+    wm.style.transform = `translate(-50%, calc(-50% + ${offset}px))`;
+  });
+  const canvas = document.getElementById('hero-canvas');
+  if (canvas && scrollY < window.innerHeight) {
+    canvas.style.transform = `translateY(${scrollY * 0.25}px)`;
+  }
+  ticking = false;
+}
+window.addEventListener('scroll', () => {
+  if (!ticking) {
+    requestAnimationFrame(updateParallax);
+    ticking = true;
+  }
 });
 
 // --- 3D hero: rotating glass/wireframe polyhedra ---
