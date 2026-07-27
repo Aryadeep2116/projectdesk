@@ -129,11 +129,16 @@
   }
   .brand-text{
     font-family:'Sora', sans-serif;
-    font-weight:700;
-    font-size:18px;
-    letter-spacing:-0.3px;
-    color:var(--ink);
+    font-weight:800;
+    font-size:20px;
+    letter-spacing:-0.4px;
     white-space:nowrap;
+    background:linear-gradient(100deg, var(--ink) 0%, var(--emerald-deep,#087F4E) 35%, var(--royal,#1D4ED8) 65%, var(--ink) 100%);
+    background-size:220% auto;
+    background-position:15% center;
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
   }
   .brand-text .bl{
     display:inline-block;
@@ -145,19 +150,14 @@
     to{opacity:1;transform:translateY(0);}
   }
   .brand-mark:hover .brand-text{
-    background:linear-gradient(100deg, var(--ink) 0%, var(--emerald-deep,#087F4E) 25%, var(--royal,#1D4ED8) 50%, var(--ink) 75%);
-    background-size:250% auto;
-    -webkit-background-clip:text;
-    background-clip:text;
-    color:transparent;
-    animation:shimmerSweep 1.6s linear infinite;
+    animation:shimmerSweep 1.4s linear infinite;
   }
   @keyframes shimmerSweep{
-    to{background-position:-250% center;}
+    to{background-position:-205% center;}
   }
   @media (prefers-reduced-motion: reduce){
     .brand-blocks .blk, .brand-text .bl{animation:none !important; opacity:1 !important; transform:none !important;}
-    .brand-mark:hover .brand-text{animation:none !important; background:none !important; -webkit-text-fill-color:initial !important; color:var(--ink) !important;}
+    .brand-mark:hover .brand-text{animation:none !important;}
   }
 
   @media (max-width:760px){

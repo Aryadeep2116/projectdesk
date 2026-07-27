@@ -27,7 +27,17 @@
   .brand-blocks .blk2{left:7px;bottom:5px;background:#0EA968;animation-delay:.18s;}
   .brand-blocks .blk3{left:14px;bottom:10px;background:#1D4ED8;animation-delay:.31s;}
   @keyframes blockIn{to{opacity:1;transform:translateY(0) scale(1);}}
+  .brand-text{
+    background:linear-gradient(100deg, var(--ink) 0%, #087F4E 35%, #1D4ED8 65%, var(--ink) 100%);
+    background-size:220% auto;
+    background-position:15% center;
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+  }
   .brand-text .bl{display:inline-block;opacity:0;transform:translateY(10px);animation:letterIn .5s ease forwards;}
+  .brand-mark:hover .brand-text{animation:shimmerSweep 1.4s linear infinite;}
+  @keyframes shimmerSweep{to{background-position:-205% center;}}
   @keyframes letterIn{to{opacity:1;transform:translateY(0);}}
   @media (prefers-reduced-motion: reduce){
     .brand-blocks .blk, .brand-text .bl{animation:none !important; opacity:1 !important; transform:none !important;}
