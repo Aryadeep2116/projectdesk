@@ -35,6 +35,7 @@
   @media (prefers-reduced-motion: reduce){
     *{animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important;}
     .custom-cursor, .cursor-follower{display:none !important;}
+    .cursor-mesh{display:none !important;}
   }
 
   /* ---------- SCROLL PROGRESS BAR ---------- */
@@ -47,6 +48,31 @@
     z-index:200;
     transition:width 80ms linear;
     box-shadow:0 1px 8px rgba(14,169,104,0.4);
+  }
+
+  /* ===========================================================
+     TIER 1 / #3 — CURSOR-REACTIVE GRADIENT MESH
+     A soft 4-color radial mesh behind everything. The brightest
+     spot tracks the cursor; everything else breathes slowly.
+     =========================================================== */
+  .cursor-mesh{
+    position:fixed;
+    inset:0;
+    z-index:-1;
+    pointer-events:none;
+    background:
+      radial-gradient(45vw 45vw at 20% 30%, rgba(14,169,104,0.10), transparent 65%),
+      radial-gradient(40vw 40vw at 80% 70%, rgba(29,78,216,0.10), transparent 65%),
+      radial-gradient(35vw 35vw at 50% 50%, rgba(255,255,255,0.55), transparent 70%),
+      radial-gradient(18vw 18vw at var(--mx,50%) var(--my,50%), rgba(29,78,216,0.18), transparent 60%);
+    transition:background-position .4s ease;
+  }
+  .cursor-mesh::after{
+    content:'';
+    position:absolute;
+    inset:0;
+    background:
+      radial-gradient(22vw 22vw at calc(var(--mx,50%) + 14vw) calc(var(--my,50%) - 10vw), rgba(14,169,104,0.08), transparent 65%);
   }
 
   /* ---------- CUSTOM CURSOR ---------- */
@@ -200,6 +226,86 @@
   @media (max-width:760px){
     .nav{padding:14px 20px;}
     .nav-links{display:none;}
+  }
+
+  /* ===========================================================
+     TIER 1 / #5 — SCROLL-JOURNEY MAP
+     A fixed vertical line on the right edge with waypoint dots.
+     Dots glow when their section is in view.
+     =========================================================== */
+  .journey-map{
+    position:fixed;
+    top:50%;
+    right:28px;
+    transform:translateY(-50%);
+    z-index:80;
+    width:32px;
+    height:60vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    pointer-events:none;
+  }
+  .journey-map .track{
+    position:absolute;
+    top:6px; bottom:6px;
+    width:1.5px;
+    background:var(--line);
+    border-radius:2px;
+    overflow:hidden;
+  }
+  .journey-map .track-fill{
+    position:absolute;
+    top:0; left:0;
+    width:100%;
+    height:0%;
+    background:linear-gradient(to bottom, var(--royal), var(--emerald-deep));
+    border-radius:2px;
+  }
+  .journey-map .waypoint{
+    position:relative;
+    width:14px; height:14px;
+    border-radius:50%;
+    background:#fff;
+    border:1.5px solid var(--line);
+    margin:auto 0;
+    transition:transform .3s ease, background .3s ease, border-color .3s ease;
+    pointer-events:auto;
+    cursor:pointer;
+  }
+  .journey-map .waypoint.active{
+    background:var(--royal);
+    border-color:var(--royal);
+    transform:scale(1.35);
+    box-shadow:0 0 0 6px rgba(29,78,216,0.12);
+  }
+  .journey-map .waypoint:hover{transform:scale(1.25);}
+  .journey-map .waypoint-label{
+    position:absolute;
+    right:26px;
+    top:50%;
+    transform:translateY(-50%) translateX(8px);
+    background:#fff;
+    color:var(--ink);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:5px 10px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.5px;
+    white-space:nowrap;
+    opacity:0;
+    transition:opacity .25s ease, transform .25s ease;
+    pointer-events:none;
+    box-shadow:0 6px 16px -8px rgba(11,15,13,0.2);
+  }
+  .journey-map .waypoint:hover .waypoint-label,
+  .journey-map .waypoint.active .waypoint-label{
+    opacity:1;
+    transform:translateY(-50%) translateX(0);
+  }
+  @media (max-width:820px){
+    .journey-map{display:none;}
   }
 
   /* ---------- HERO ---------- */
@@ -460,6 +566,275 @@
   .stagger.in-view > *:nth-child(4){transition-delay:.35s;}
   .stagger.in-view > *:nth-child(5){transition-delay:.45s;}
   .stagger.in-view > *:nth-child(6){transition-delay:.55s;}
+
+  /* ===========================================================
+     TIER 1 / #2 — TYPEWRITER "YOUR PROJECT IDEA" PREVIEW
+     A live, self-typing block of text that cycles through fake
+     project-idea outputs the user might get from the product.
+     =========================================================== */
+  .typewriter-section{
+    position:relative;
+    max-width:1120px;
+    margin:0 auto;
+    padding:90px 24px 100px;
+  }
+  .typewriter-section .tw-head{
+    text-align:center;
+    margin-bottom:36px;
+  }
+  .terminal{
+    max-width:780px;
+    margin:0 auto;
+    background:#0B0F0D;
+    color:#E7EAE7;
+    border-radius:14px;
+    box-shadow:0 30px 60px -20px rgba(11,15,13,0.35), 0 0 0 1px rgba(255,255,255,0.04);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:14.5px;
+    line-height:1.7;
+    overflow:hidden;
+  }
+  .terminal-bar{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:11px 16px;
+    background:rgba(255,255,255,0.04);
+    border-bottom:1px solid rgba(255,255,255,0.06);
+  }
+  .terminal-bar .dot{
+    width:11px; height:11px; border-radius:50%;
+    background:#FF5F57;
+  }
+  .terminal-bar .dot.y{background:#FEBC2E;}
+  .terminal-bar .dot.g{background:#28C840;}
+  .terminal-bar .file{
+    margin-left:14px;
+    color:rgba(231,234,231,0.55);
+    font-size:12px;
+    letter-spacing:0.4px;
+  }
+  .terminal-body{
+    padding:22px 22px 26px;
+    min-height:200px;
+    position:relative;
+  }
+  .terminal-line{
+    white-space:pre-wrap;
+    word-break:break-word;
+  }
+  .terminal-line .prompt{
+    color:var(--emerald);
+    user-select:none;
+    margin-right:6px;
+  }
+  .terminal-line .accent-key{
+    color:#FFD479;
+  }
+  .terminal-line .accent-str{
+    color:#A6E8B6;
+  }
+  .terminal-line.dim{color:rgba(231,234,231,0.4);}
+  .terminal-cursor{
+    display:inline-block;
+    width:8px;
+    height:1.1em;
+    background:#E7EAE7;
+    vertical-align:-2px;
+    margin-left:2px;
+    animation:blink 1.05s steps(2) infinite;
+  }
+  @keyframes blink{50%{opacity:0;}}
+  .terminal-actions{
+    display:flex;
+    justify-content:center;
+    margin-top:22px;
+  }
+  .terminal-actions a{
+    font-family:'Inter', sans-serif;
+    font-weight:600;
+    font-size:14px;
+    color:var(--ink);
+    background:#fff;
+    border:1.5px solid var(--line);
+    padding:11px 22px;
+    border-radius:9px;
+    text-decoration:none;
+    transition:transform .2s ease, border-color .2s ease;
+  }
+  .terminal-actions a:hover{border-color:var(--royal); transform:translateY(-2px);}
+
+  /* ===========================================================
+     TIER 1 / #1 — INTERACTIVE 3D PROJECT CARD
+     A drag-to-rotate 3D card. Front = "flagship project idea".
+     Back = tiny architecture diagram. Click card to flip.
+     =========================================================== */
+  .flipcard-section{
+    max-width:1120px;
+    margin:0 auto;
+    padding:80px 24px 100px;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:60px;
+    align-items:center;
+  }
+  .flipcard-text .section-eyebrow{margin-bottom:14px;}
+  .flipcard-text h2{
+    font-family:'Sora', sans-serif;
+    font-weight:700;
+    font-size:clamp(28px, 4.5vw, 40px);
+    letter-spacing:-1px;
+    margin:0 0 16px;
+    line-height:1.1;
+  }
+  .flipcard-text p{
+    color:var(--ink-soft);
+    font-size:15.5px;
+    line-height:1.65;
+    margin:0 0 18px;
+    max-width:440px;
+  }
+  .flipcard-text .flip-hint{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    color:var(--ink-soft);
+    margin-top:8px;
+    background:var(--bg-soft);
+    border:1px solid var(--line);
+    padding:7px 12px;
+    border-radius:8px;
+  }
+  .flipcard-text .flip-hint .kbd{
+    font-family:'IBM Plex Mono', monospace;
+    background:#fff;
+    border:1px solid var(--line);
+    border-bottom-width:2px;
+    border-radius:5px;
+    padding:2px 7px;
+    font-size:11px;
+    color:var(--ink);
+  }
+  .flipcard-stage{
+    position:relative;
+    aspect-ratio:1.1/1;
+    perspective:1400px;
+    cursor:grab;
+  }
+  .flipcard-stage.dragging{cursor:grabbing;}
+  .flipcard{
+    position:relative;
+    width:100%;
+    height:100%;
+    transform-style:preserve-3d;
+    transition:transform .15s ease-out;
+  }
+  .flipcard-face{
+    position:absolute;
+    inset:0;
+    backface-visibility:hidden;
+    -webkit-backface-visibility:hidden;
+    border-radius:22px;
+    background:#fff;
+    border:1px solid var(--line);
+    box-shadow:0 30px 60px -22px rgba(11,15,13,0.25);
+    padding:28px;
+    display:flex;
+    flex-direction:column;
+    /* Prevent the browser from selecting text while the user is dragging
+       the card — otherwise a quick drag would highlight the heading and
+       the flip would feel "sticky". */
+    -webkit-user-select:none;
+    -moz-user-select:none;
+    -ms-user-select:none;
+    user-select:none;
+    -webkit-touch-callout:none;
+  }
+  .flipcard-face .flip-tag{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    color:var(--royal);
+    background:var(--royal-soft);
+    border:1px solid rgba(29,78,216,0.18);
+    display:inline-block;
+    padding:5px 11px;
+    border-radius:7px;
+    align-self:flex-start;
+    margin-bottom:18px;
+  }
+  .flipcard-face h3{
+    font-family:'Sora', sans-serif;
+    font-weight:700;
+    font-size:24px;
+    line-height:1.15;
+    letter-spacing:-0.5px;
+    margin:0 0 14px;
+  }
+  .flipcard-face .flip-hook{
+    color:var(--ink-soft);
+    font-size:14.5px;
+    line-height:1.6;
+    margin:0 0 18px;
+  }
+  .flipcard-face .flip-stack{
+    display:flex;
+    flex-wrap:wrap;
+    gap:7px;
+    margin-bottom:auto;
+  }
+  .flipcard-face .flip-stack span{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    background:var(--bg-soft);
+    border:1px solid var(--line);
+    color:var(--ink);
+    padding:4px 9px;
+    border-radius:6px;
+  }
+  .flipcard-face .flip-foot{
+    margin-top:18px;
+    padding-top:18px;
+    border-top:1px dashed var(--line);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11.5px;
+    color:var(--ink-soft);
+    line-height:1.55;
+  }
+  .flipcard-face .flip-foot b{color:var(--ink); font-weight:600;}
+  .flipcard-back{transform:rotateY(180deg);}
+  .flipcard.flipped{transform:rotateY(180deg);}
+  .flipcard-stage.dragging .flipcard{transition:none;}
+  .flipcard-arch{
+    flex:1;
+    width:100%;
+    height:100%;
+    min-height:0;
+  }
+  .flipcard-stage .flip-btn{
+    position:absolute;
+    bottom:-16px;
+    right:14px;
+    background:var(--ink);
+    color:#fff;
+    border:none;
+    border-radius:999px;
+    padding:8px 16px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11.5px;
+    letter-spacing:0.5px;
+    cursor:pointer;
+    box-shadow:0 10px 24px -10px rgba(11,15,13,0.4);
+    transition:transform .2s ease, background .2s ease;
+  }
+  .flipcard-stage .flip-btn:hover{background:var(--emerald-deep); transform:translateY(-2px);}
+  @media (max-width:820px){
+    .flipcard-section{grid-template-columns:1fr; gap:30px; padding:60px 24px 80px;}
+    .flipcard-stage{max-width:480px; margin:0 auto; width:100%;}
+  }
 
   /* ---------- FEATURE CARDS ---------- */
   .features-grid{
@@ -963,10 +1338,14 @@
 
   @media (prefers-reduced-motion: reduce){
     .marquee-track{animation:none !important;}
+    .terminal-cursor{animation:none !important;}
   }
 </style>
 </head>
 <body>
+
+<!-- Tier 1 / #3 — cursor-reactive gradient mesh -->
+<div class="cursor-mesh" id="cursor-mesh" aria-hidden="true"></div>
 
 <!-- Scroll progress -->
 <div class="scroll-progress" id="scroll-progress"></div>
@@ -974,6 +1353,12 @@
 <!-- Custom cursor -->
 <div class="custom-cursor" id="custom-cursor"></div>
 <div class="cursor-follower" id="cursor-follower"></div>
+
+<!-- Tier 1 / #5 — scroll journey map -->
+<aside class="journey-map" id="journey-map" aria-label="Page sections">
+  <div class="track"><div class="track-fill" id="journey-fill"></div></div>
+  <!-- waypoints injected by JS based on data-journey sections -->
+</aside>
 
 <nav class="nav">
   <a href="index.html" class="brand-mark">
@@ -993,7 +1378,7 @@
   </div>
 </nav>
 
-<section class="hero">
+<section class="hero" data-journey="Hero" data-journey-label="Hero">
   <div class="hero-fallback-glow"></div>
   <canvas id="hero-canvas"></canvas>
   <div class="hero-content">
@@ -1012,8 +1397,27 @@
   <div class="hero-scroll-cue">SCROLL<span class="line"></span></div>
 </section>
 
+<!-- Tier 1 / #2 — Typewriter "your project idea" preview -->
+<section class="typewriter-section" data-journey="Typewriter" data-journey-label="Live preview">
+  <div class="tw-head reveal">
+    <span class="section-eyebrow">See what you'd build</span>
+    <h2 style="font-family:'Sora',sans-serif;font-weight:700;font-size:clamp(26px,3.8vw,36px);letter-spacing:-1px;margin:0 0 12px;">Real output. Real stacks. Real resume bullets.</h2>
+    <p style="color:var(--ink-soft);max-width:520px;margin:0 auto;font-size:15.5px;line-height:1.65;">A glimpse of the kind of project idea you get in under 30 seconds.</p>
+  </div>
+  <div class="terminal reveal" id="terminal">
+    <div class="terminal-bar">
+      <span class="dot"></span><span class="dot y"></span><span class="dot g"></span>
+      <span class="file">~/builditup · flagship-idea.json</span>
+    </div>
+    <div class="terminal-body" id="terminal-body"></div>
+  </div>
+  <div class="terminal-actions reveal">
+    <a href="app.html" class="magnetic">Generate one for me →</a>
+  </div>
+</section>
+
 <!-- Stats / count-up -->
-<div class="stats-row" id="stats-row">
+<div class="stats-row" id="stats-row" data-journey="Stats" data-journey-label="By the numbers">
   <div class="stat reveal-scale">
     <div class="stat-num" data-target="360" data-suffix="">0</div>
     <div class="stat-label">Free credits / month</div>
@@ -1032,32 +1436,7 @@
   </div>
 </div>
 
-<div class="marquee-wrap">
-  <div class="marquee-track" id="marquee-track">
-    <span>
-      <em>Build your resume</em><span class="sep">✦</span>
-      Ship real projects<span class="sep">✦</span>
-      Learn by doing<span class="sep">✦</span>
-      <em>Get hired</em><span class="sep">✦</span>
-      Build your resume<span class="sep">✦</span>
-      Ship real projects<span class="sep">✦</span>
-      Learn by doing<span class="sep">✦</span>
-      <em>Get hired</em><span class="sep">✦</span>
-    </span>
-    <span>
-      <em>Build your resume</em><span class="sep">✦</span>
-      Ship real projects<span class="sep">✦</span>
-      Learn by doing<span class="sep">✦</span>
-      <em>Get hired</em><span class="sep">✦</span>
-      Build your resume<span class="sep">✦</span>
-      Ship real projects<span class="sep">✦</span>
-      Learn by doing<span class="sep">✦</span>
-      <em>Get hired</em><span class="sep">✦</span>
-    </span>
-  </div>
-</div>
-
-<section class="section" id="how-it-works">
+<section class="section" id="how-it-works" data-journey="How it works" data-journey-label="How it works">
   <div class="watermark">BUILD</div>
   <div class="section-head reveal">
     <span class="section-eyebrow">How it works</span>
@@ -1083,8 +1462,82 @@
   </div>
 </section>
 
+<!-- Tier 1 / #1 — Interactive 3D project card -->
+<section class="flipcard-section" data-journey="Card" data-journey-label="Grab a project">
+  <div class="flipcard-text reveal-left">
+    <span class="section-eyebrow">Grab a project</span>
+    <h2>Pick it up.<br>See it from any angle.</h2>
+    <p>Every BuildItUp idea is a real, scoped project — stack, architecture, and a resume line already drafted. Drag this card to inspect it, or flip it over to see the architecture underneath.</p>
+    <div class="flip-hint">
+      Drag · or hit <span class="kbd">F</span> to flip
+    </div>
+  </div>
+  <div class="flipcard-stage reveal-right" id="flipcard-stage">
+    <div class="flipcard" id="flipcard">
+      <div class="flipcard-face">
+        <span class="flip-tag">Flagship project</span>
+        <h3>Real-time event check-in for college fests</h3>
+        <p class="flip-hook">A QR-based attendance app that handles 5,000+ check-ins per hour without dropping a beat, with a live dashboard for organizers.</p>
+        <div class="flip-stack">
+          <span>Next.js</span><span>WebSockets</span><span>Postgres</span><span>Redis</span><span>QR</span>
+        </div>
+        <div class="flip-foot">
+          <b>Resume line:</b> Built a real-time check-in system handling 5k+ concurrent users with sub-200ms latency using WebSockets and Redis pub/sub.
+        </div>
+      </div>
+      <div class="flipcard-face flipcard-back">
+        <span class="flip-tag">Architecture</span>
+        <svg class="flipcard-arch" viewBox="0 0 400 280" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" fill="#5B6B63"/>
+            </marker>
+          </defs>
+          <g font-family="Inter, sans-serif" font-size="11" fill="#0B0F0D">
+            <rect x="20"  y="110" width="100" height="44" rx="9" fill="#EEF2FF" stroke="#1D4ED8"/>
+            <text x="70"  y="135" text-anchor="middle" fill="#1D4ED8" font-weight="600">Attendee</text>
+            <text x="70"  y="148" text-anchor="middle" fill="#5B6B63" font-size="9">(mobile)</text>
+
+            <rect x="150" y="60"  width="110" height="44" rx="9" fill="#E6F7EF" stroke="#0EA968"/>
+            <text x="205" y="85"  text-anchor="middle" fill="#087F4E" font-weight="600">Next.js app</text>
+            <text x="205" y="98"  text-anchor="middle" fill="#5B6B63" font-size="9">(UI + API)</text>
+
+            <rect x="150" y="180" width="110" height="44" rx="9" fill="#EEF2FF" stroke="#1D4ED8"/>
+            <text x="205" y="205" text-anchor="middle" fill="#1D4ED8" font-weight="600">WebSocket</text>
+            <text x="205" y="218" text-anchor="middle" fill="#5B6B63" font-size="9">server</text>
+
+            <rect x="290" y="120" width="100" height="44" rx="9" fill="#E6F7EF" stroke="#0EA968"/>
+            <text x="340" y="142" text-anchor="middle" fill="#087F4E" font-weight="600">Postgres</text>
+            <text x="340" y="155" text-anchor="middle" fill="#5B6B63" font-size="9">(check-ins)</text>
+
+            <rect x="200" y="0" width="100" height="40" rx="9" fill="#F7F8FA" stroke="#5B6B63"/>
+            <text x="250" y="22" text-anchor="middle" fill="#0B0F0D" font-weight="600">Redis</text>
+            <text x="250" y="34" text-anchor="middle" fill="#5B6B63" font-size="9">(pub/sub)</text>
+
+            <line x1="120" y1="132" x2="150" y2="82"  stroke="#5B6B63" stroke-width="1.2" marker-end="url(#arr)"/>
+            <text x="125" y="105" font-size="9" fill="#5B6B63">QR scan</text>
+
+            <line x1="260" y1="82"  x2="290" y2="132" stroke="#5B6B63" stroke-width="1.2" marker-end="url(#arr)"/>
+            <text x="265" y="105" font-size="9" fill="#5B6B63">read/write</text>
+
+            <line x1="205" y1="104" x2="205" y2="180" stroke="#5B6B63" stroke-width="1.2" marker-end="url(#arr)"/>
+            <text x="212" y="148" font-size="9" fill="#5B6B63">events</text>
+
+            <line x1="260" y1="202" x2="290" y2="156" stroke="#5B6B63" stroke-width="1.2" marker-end="url(#arr)"/>
+            <text x="270" y="186" font-size="9" fill="#5B6B63">push</text>
+
+            <line x1="205" y1="60"  x2="225" y2="40"  stroke="#5B6B63" stroke-width="1.2" stroke-dasharray="3,3"/>
+            <line x1="205" y1="224" x2="225" y2="40"  stroke="#5B6B63" stroke-width="1.2" stroke-dasharray="3,3"/>
+          </g>
+        </svg>
+      </div>
+    </div>
+    <button class="flip-btn" id="flip-btn">Flip card</button>
+  </div>
+</section>
+
 <!-- Scroll-pinned 3D section -->
-<section class="pinned-section" id="capabilities">
+<section class="pinned-section" id="capabilities" data-journey="Path" data-journey-label="Your path">
   <div class="pinned-sticky">
     <div class="pinned-canvas-wrap">
       <canvas id="pinned-canvas"></canvas>
@@ -1119,7 +1572,7 @@
 </section>
 
 <!-- Horizontal scroll showcase -->
-<section class="hscroll-section" id="what-you-get">
+<section class="hscroll-section" id="what-you-get" data-journey="Building blocks" data-journey-label="Building blocks">
   <div class="hscroll-head reveal">
     <span class="section-eyebrow">What you get</span>
     <h2 style="font-family:'Sora',sans-serif;font-weight:700;font-size:clamp(28px,4.5vw,40px);letter-spacing:-1px;margin:14px 0;">
@@ -1168,7 +1621,7 @@
   </div>
 </section>
 
-<section class="section soft" id="plans">
+<section class="section soft" id="plans" data-journey="Plans" data-journey-label="Pricing">
   <div class="watermark">CREDITS</div>
   <div class="section-inner">
     <div class="section-head reveal">
@@ -1204,7 +1657,7 @@
   </div>
 </section>
 
-<footer>
+<footer data-journey="Footer" data-journey-label="Footer">
   <div>Built by a student, for students.</div>
   <div class="foot-links">
     <a href="app.html">Open app</a>
@@ -1285,6 +1738,326 @@ const wordObserver = new IntersectionObserver((entries) => {
 document.querySelectorAll('.word-reveal:not(#hero-headline)').forEach(el => wordObserver.observe(el));
 
 /* ===========================================================
+   TIER 1 / #5 — SCROLL-JOURNEY MAP
+   Builds a dot per data-journey section, lights up the one
+   in view, and fills the rail as you scroll the page.
+   =========================================================== */
+(function initJourneyMap() {
+  const map = document.getElementById('journey-map');
+  const fill = document.getElementById('journey-fill');
+  if (!map || !fill) return;
+  const sections = Array.from(document.querySelectorAll('[data-journey]'));
+  if (!sections.length) return;
+
+  // Build waypoint dots
+  const dots = sections.map((sec, i) => {
+    const dot = document.createElement('div');
+    dot.className = 'waypoint';
+    dot.setAttribute('role', 'button');
+    dot.setAttribute('aria-label', sec.dataset.journey || ('Section ' + (i + 1)));
+    const label = document.createElement('span');
+    label.className = 'waypoint-label';
+    label.textContent = sec.dataset.journeyLabel || sec.dataset.journey;
+    dot.appendChild(label);
+    dot.addEventListener('click', () => {
+      sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+    map.appendChild(dot);
+    return dot;
+  });
+
+  // Active waypoint
+  const waypointObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const idx = sections.indexOf(entry.target);
+        dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+      }
+    });
+  }, { threshold: [0.25, 0.5, 0.75] });
+
+  sections.forEach(s => waypointObserver.observe(s));
+
+  // Page-level fill height
+  function updateFill() {
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const pct = docHeight > 0 ? Math.max(0, Math.min(1, window.scrollY / docHeight)) * 100 : 0;
+    fill.style.height = pct + '%';
+  }
+  window.addEventListener('scroll', updateFill, { passive: true });
+  updateFill();
+})();
+
+/* ===========================================================
+   TIER 1 / #3 — CURSOR-REACTIVE GRADIENT MESH
+   Updates --mx / --my CSS vars; CSS does the rest.
+   =========================================================== */
+(function initCursorMesh() {
+  const mesh = document.getElementById('cursor-mesh');
+  if (!mesh || prefersReducedMotion) return;
+  let targetX = 50, targetY = 50;
+  let curX = 50, curY = 50;
+  document.addEventListener('mousemove', (e) => {
+    targetX = (e.clientX / window.innerWidth) * 100;
+    targetY = (e.clientY / window.innerHeight) * 100;
+  });
+  function tick() {
+    curX += (targetX - curX) * 0.12;
+    curY += (targetY - curY) * 0.12;
+    mesh.style.setProperty('--mx', curX + '%');
+    mesh.style.setProperty('--my', curY + '%');
+    requestAnimationFrame(tick);
+  }
+  tick();
+})();
+
+/* ===========================================================
+   TIER 1 / #1 — INTERACTIVE 3D PROJECT CARD
+   Drag to rotate (Y axis primarily, with a little X), click
+   the Flip button or press F to flip front/back.
+   =========================================================== */
+(function initFlipCard() {
+  const stage = document.getElementById('flipcard-stage');
+  const card = document.getElementById('flipcard');
+  const flipBtn = document.getElementById('flip-btn');
+  if (!stage || !card) return;
+
+  let rotY = -12;     // initial Y rotation (degrees)
+  let rotX = 6;       // initial X rotation (degrees)
+  let targetY = rotY;
+  let targetX = rotX;
+  let dragging = false;
+  let startX = 0, startY = 0;
+  let flipped = false;
+  let targetFlipY = 0; // for flip animation
+
+  function applyTransform() {
+    if (!dragging) {
+      rotY += (targetY - rotY) * 0.18;
+      rotX += (targetX - rotX) * 0.18;
+    }
+    const baseY = flipped ? 180 : 0;
+    card.style.transform = `rotateY(${rotY + baseY}deg) rotateX(${rotX}deg)`;
+    requestAnimationFrame(applyTransform);
+  }
+  applyTransform();
+
+  // Subtle idle wobble when not dragged — pulls targetY back toward -12 slowly
+  let idleTimer = null;
+  function scheduleIdle() {
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(() => { targetY = -12; targetX = 6; }, 1500);
+  }
+
+  function setDragging(on) {
+    dragging = on;
+    stage.classList.toggle('dragging', on);
+  }
+
+  // Pointer events work for both mouse and touch
+  stage.addEventListener('pointerdown', (e) => {
+    // Don't initiate drag if the user clicked the flip button
+    if (e.target.closest('.flip-btn')) return;
+    setDragging(true);
+    startX = e.clientX;
+    startY = e.clientY;
+    stage.setPointerCapture(e.pointerId);
+    scheduleIdle();
+  });
+  stage.addEventListener('pointermove', (e) => {
+    if (!dragging) return;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    targetY = rotY + dx * 0.6;
+    targetX = Math.max(-25, Math.min(25, rotX - dy * 0.4));
+    startX = e.clientX;
+    startY = e.clientY;
+  });
+  stage.addEventListener('pointerup', (e) => {
+    setDragging(false);
+    try { stage.releasePointerCapture(e.pointerId); } catch (_) {}
+    scheduleIdle();
+  });
+  stage.addEventListener('pointercancel', () => setDragging(false));
+
+  // Flip
+  function toggleFlip() {
+    flipped = !flipped;
+    card.classList.toggle('flipped', flipped);
+  }
+  if (flipBtn) flipBtn.addEventListener('click', toggleFlip);
+  stage.addEventListener('dblclick', toggleFlip);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'f' || e.key === 'F') {
+      // Don't flip if user is typing in an input
+      if (document.activeElement && /input|textarea|select/i.test(document.activeElement.tagName)) return;
+      toggleFlip();
+    }
+  });
+})();
+
+/* ===========================================================
+   TIER 1 / #2 — TYPEWRITER "YOUR PROJECT IDEA" PREVIEW
+   Cycles through a queue of pre-formatted idea outputs.
+   Each output is built by typing character-by-character; the
+   terminal pauses, then fades and replaces with the next one.
+   =========================================================== */
+(function initTypewriter() {
+  const body = document.getElementById('terminal-body');
+  if (!body) return;
+
+  // Each "idea" is an array of lines. Lines can be plain strings or
+  // { html: '...' } to render styled spans. We type plain strings
+  // char-by-char; HTML lines just appear instantly (used for short
+  // accent labels like flags).
+  const ideas = [
+    [
+      { html: '<span class="prompt">$</span> builditup generate --role "frontend intern" --skills "React, basic Node"' },
+      { html: '<span class="dim">▸ connecting to your profile…</span>' },
+      { html: '<span class="dim">▸ analyzing 6 resume gaps…</span>' },
+      { html: '' },
+      { html: '<span class="accent-key">flagship</span>' },
+      { html: '  <span class="accent-str">"Live captioning app for college lectures"</span>' },
+      { html: '  <span class="dim">uses Web Speech API + a /captions WebSocket,</span>' },
+      { html: '  <span class="dim">sub-300ms latency, works on shaky hostel Wi-Fi</span>' },
+      { html: '' },
+      { html: '<span class="accent-key">stack</span>     React · Vite · WebSockets · Postgres' },
+      { html: '<span class="accent-key">skills</span>    streaming · optimistic UI · rate-limiting' },
+      { html: '<span class="accent-key">scope</span>     1 weekend (working MVP) → 2 weeks (polished)' },
+      { html: '' },
+      { html: '<span class="accent-key">resume</span>    ' },
+      { html: '  Shipped a real-time captioning app used by 200+ students' },
+      { html: '  with sub-300ms latency using WebSockets and React.' },
+      { html: '' },
+      { html: '<span class="prompt">$</span> <span class="terminal-cursor"></span>' },
+    ],
+    [
+      { html: '<span class="prompt">$</span> builditup generate --role "ML intern" --skills "Python, sklearn"' },
+      { html: '<span class="dim">▸ 4 ideas generated · 1 flagship</span>' },
+      { html: '' },
+      { html: '<span class="accent-key">flagship</span>' },
+      { html: '  <span class="accent-str">"Calorie estimator from a single food photo"</span>' },
+      { html: '  <span class="dim">on-device inference, works offline,</span>' },
+      { html: '  <span class="dim">trained on Indian food datasets (not just pizza)</span>' },
+      { html: '' },
+      { html: '<span class="accent-key">stack</span>     PyTorch · ONNX · Flutter · FastAPI' },
+      { html: '<span class="accent-key">skills</span>    quantization · data labeling · model eval' },
+      { html: '<span class="accent-key">scope</span>     3–4 weekends' },
+      { html: '' },
+      { html: '<span class="accent-key">resume</span>    ' },
+      { html: '  Built a 12MB on-device food classifier (92% top-1)' },
+      { html: '  covering 80+ Indian dishes, deployed as a Flutter app.' },
+      { html: '' },
+      { html: '<span class="prompt">$</span> <span class="terminal-cursor"></span>' },
+    ],
+    [
+      { html: '<span class="prompt">$</span> builditup generate --role "backend SDE" --skills "Java, Spring"' },
+      { html: '<span class="dim">▸ 4 ideas generated · 1 flagship</span>' },
+      { html: '' },
+      { html: '<span class="accent-key">flagship</span>' },
+      { html: '  <span class="accent-str">"Distributed rate limiter (token bucket, Redis)"</span>' },
+      { html: '  <span class="dim">handles 50k req/s across 8 regions,</span>' },
+      { html: '  <span class="dim">with a live admin dashboard and p99 dashboards</span>' },
+      { html: '' },
+      { html: '<span class="accent-key">stack</span>     Spring Boot · Redis · Kafka · Grafana' },
+      { html: '<span class="accent-key">skills</span>    distributed locks · backpressure · SLO design' },
+      { html: '<span class="accent-key">scope</span>     2 weeks' },
+      { html: '' },
+      { html: '<span class="accent-key">resume</span>    ' },
+      { html: '  Designed a Redis-backed rate limiter handling 50k req/s' },
+      { html: '  with p99 < 5ms, used by 3 internal services in prod.' },
+      { html: '' },
+      { html: '<span class="prompt">$</span> <span class="terminal-cursor"></span>' },
+    ],
+  ];
+
+  // Render helpers
+  function clearBody() {
+    body.innerHTML = '';
+  }
+  function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+  async function typeLine(lineEl, html, perChar) {
+    // Strip HTML tags to get plain text length so we type smoothly.
+    const tmp = document.createElement('span');
+    tmp.innerHTML = html;
+    const text = tmp.textContent || '';
+    // Use innerHTML so spans keep their color, but type by progressively
+    // appending one character at a time from the *inner* text.
+    // To keep the colored spans intact, we type only when the line has
+    // no nested elements; otherwise we just fade it in.
+    if (tmp.childElementCount === 0) {
+      lineEl.innerHTML = '';
+      let acc = '';
+      for (let i = 0; i < text.length; i++) {
+        acc += text[i];
+        lineEl.textContent = acc;
+        await sleep(perChar);
+      }
+    } else {
+      lineEl.innerHTML = html;
+      lineEl.style.opacity = '0';
+      await sleep(20);
+      lineEl.style.transition = 'opacity .25s ease';
+      lineEl.style.opacity = '1';
+      await sleep(220);
+    }
+  }
+
+  async function playIdea(idea) {
+    clearBody();
+    for (let i = 0; i < idea.length; i++) {
+      const line = document.createElement('div');
+      line.className = 'terminal-line';
+      body.appendChild(line);
+      // The very last line keeps the blinking cursor; previous lines
+      // lose it (we re-attach the cursor on the final element only).
+      const html = idea[i].html || '';
+      const isLast = i === idea.length - 1;
+      const isEmpty = html.trim() === '';
+      if (isEmpty) {
+        line.innerHTML = '&nbsp;';
+        await sleep(60);
+        continue;
+      }
+      // Slightly faster per-char typing so it doesn't drag
+      const perChar = Math.max(8, Math.min(28, 900 / (html.length || 1)));
+      await typeLine(line, html, perChar);
+      if (isLast) {
+        // Pause with the cursor on screen
+        await sleep(2400);
+      } else {
+        await sleep(40);
+      }
+    }
+  }
+
+  // Start the typewriter when the terminal scrolls into view, then loop
+  const termEl = document.getElementById('terminal');
+  let started = false;
+  let ideaIdx = 0;
+  async function runLoop() {
+    while (true) {
+      await playIdea(ideas[ideaIdx % ideas.length]);
+      ideaIdx++;
+      await sleep(600);
+    }
+  }
+  if (termEl) {
+    const twObs = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting && !started) {
+          started = true;
+          twObs.disconnect();
+          runLoop();
+        }
+      });
+    }, { threshold: 0.25 });
+    twObs.observe(termEl);
+  }
+})();
+
+/* ===========================================================
    CUSTOM CURSOR
    =========================================================== */
 const cursor = document.getElementById('custom-cursor');
@@ -1312,8 +2085,7 @@ if (cursor && follower && !isTouch && !prefersReducedMotion) {
     requestAnimationFrame(animateFollower);
   }
   animateFollower();
-  // Hover state on interactive elements
-  document.querySelectorAll('a, button, .magnetic, .feature-card, .plan-card, .hscroll-card, .pinned-step').forEach(el => {
+  document.querySelectorAll('a, button, .magnetic, .feature-card, .plan-card, .hscroll-card, .pinned-step, .flipcard-stage, .waypoint').forEach(el => {
     el.addEventListener('mouseenter', () => {
       cursor.classList.add('hovering');
       follower.classList.add('hovering');
@@ -1358,7 +2130,7 @@ document.querySelectorAll('.feature-card').forEach(card => {
 });
 
 /* ===========================================================
-   PARALLAX (watermarks + hero canvas + new bg canvas)
+   PARALLAX
    =========================================================== */
 let ticking = false;
 function updateParallax() {
@@ -1392,7 +2164,6 @@ function animateCountUp(el) {
   function tick(now) {
     const elapsed = now - start;
     const progress = Math.min(elapsed / duration, 1);
-    // easeOutCubic
     const eased = 1 - Math.pow(1 - progress, 3);
     const value = Math.floor(eased * target);
     el.textContent = value + suffix;
@@ -1423,7 +2194,6 @@ if (hscrollTrack && hscrollSection) {
   function updateHScroll() {
     const rect = hscrollSection.getBoundingClientRect();
     const vh = window.innerHeight;
-    // Section scrolls vertically through 1.2 viewports of motion
     const total = rect.height - vh;
     const scrolled = -rect.top;
     let progress = 0;
@@ -1445,7 +2215,7 @@ if (hscrollTrack && hscrollSection) {
 }
 
 /* ===========================================================
-   FLOATING QUOTE — appears after user scrolls past hero
+   FLOATING QUOTE
    =========================================================== */
 const quote = document.getElementById('floating-quote');
 const quoteClose = document.getElementById('quote-close');
@@ -1469,7 +2239,7 @@ if (quote) {
 }
 
 /* ===========================================================
-   3D HERO: rotating glass/wireframe polyhedra + particles
+   3D HERO
    =========================================================== */
 function initHero3D() {
   if (typeof THREE === 'undefined') return;
@@ -1488,25 +2258,21 @@ function initHero3D() {
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
   const shapes = [];
-  // Only the blue shapes — green icosahedrons removed by user request.
+  // User removed the lower-right torus — keep only the upper-left octahedron.
   const geometries = [
     new THREE.OctahedronGeometry(1.2, 0),
-    new THREE.TorusGeometry(1.0, 0.30, 16, 64),
   ];
-  const colors = [0x1D4ED8, 0x1D4ED8];
+  const colors = [0x1D4ED8];
   const positions = [
-    [-2.6, 0.4, -1.2],
-    [ 2.6, -0.4, -0.8],
+    [-2.4, 0.6, -1.2],
   ];
 
   geometries.forEach((geo, i) => {
     const wireMat = new THREE.MeshBasicMaterial({ color: colors[i], wireframe: true, transparent: true, opacity: 0.4 });
     const glassMat = new THREE.MeshPhysicalMaterial({ color: colors[i], transparent: true, opacity: 0.1, roughness: 0.2, metalness: 0.1 });
-
     const wireMesh = new THREE.Mesh(geo, wireMat);
     const glassMesh = new THREE.Mesh(geo, glassMat);
     glassMesh.scale.set(0.99, 0.99, 0.99);
-
     const group = new THREE.Group();
     group.add(wireMesh);
     group.add(glassMesh);
@@ -1514,12 +2280,10 @@ function initHero3D() {
     group.userData.rotSpeed = { x: (Math.random() - 0.5) * 0.005, y: (Math.random() - 0.5) * 0.007 };
     group.userData.floatOffset = Math.random() * Math.PI * 2;
     group.userData.basePos = new THREE.Vector3(...positions[i]);
-
     scene.add(group);
     shapes.push(group);
   });
 
-  // Particle field
   const particleCount = 600;
   const particleGeo = new THREE.BufferGeometry();
   const positionsArr = new Float32Array(particleCount * 3);
@@ -1561,34 +2325,26 @@ function initHero3D() {
   });
 
   let frame = 0;
-  let lastScrollY = 0;
   function animate() {
     requestAnimationFrame(animate);
     frame += 1;
     const scrollY = window.scrollY;
-
     shapes.forEach(group => {
       if (!prefersReducedMotion) {
         group.rotation.x += group.userData.rotSpeed.x;
         group.rotation.y += group.userData.rotSpeed.y;
-        // Scroll-driven vertical drift and slight dispersion
         const scrollFactor = Math.min(scrollY / window.innerHeight, 1.5);
         group.position.y = group.userData.basePos.y + Math.sin(frame * 0.01 + group.userData.floatOffset) * 0.0025 - scrollFactor * 1.2;
         group.position.x = group.userData.basePos.x + mouseX * 0.3;
       }
     });
-
     particles.rotation.y += 0.0006;
     particles.rotation.x += 0.0002;
-    // Particles drift opposite to scroll
     particles.position.y = -scrollY * 0.18;
-
     camera.position.x += (mouseX * 0.6 - camera.position.x) * 0.02;
     camera.position.y += (-mouseY * 0.4 - camera.position.y) * 0.02;
     camera.lookAt(0, 0, 0);
-
     renderer.render(scene, camera);
-    lastScrollY = scrollY;
   }
   animate();
   canvas.classList.add('loaded');
@@ -1606,8 +2362,6 @@ initHero3D();
 
 /* ===========================================================
    SCROLL-PINNED 3D SECTION
-   Stack of 4 cubes (one per step) that explode/reassemble
-   based on scroll progress through the section.
    =========================================================== */
 function initPinned3D() {
   if (typeof THREE === 'undefined') return;
@@ -1623,9 +2377,9 @@ function initPinned3D() {
   const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
   camera.position.set(0, 0, 9);
 
-  // 4 cubes (one per step) arranged in a cross pattern
   const cubeGroup = new THREE.Group();
   const cubeColors = [0x1D4ED8, 0x1D4ED8, 0x1D4ED8, 0x1D4ED8];
+  const icoSizes = [1.05, 0.85, 0.95, 0.75];
   const cubeOffsets = [
     new THREE.Vector3(-2.4,  1.6, 0),
     new THREE.Vector3( 2.4,  1.6, 0),
@@ -1634,25 +2388,46 @@ function initPinned3D() {
   ];
   const cubes = [];
   cubeOffsets.forEach((offset, i) => {
-    const geo = new THREE.BoxGeometry(1.4, 1.4, 1.4);
-    const wireMat = new THREE.MeshBasicMaterial({ color: cubeColors[i], wireframe: true, transparent: true, opacity: 0.55 });
-    const faceMat = new THREE.MeshBasicMaterial({ color: cubeColors[i], transparent: true, opacity: 0.08 });
-    const wire = new THREE.Mesh(geo, wireMat);
-    const face = new THREE.Mesh(geo, faceMat);
+    const sz = icoSizes[i];
+    // Solid glassy icosahedron
+    const geo = new THREE.IcosahedronGeometry(sz, 0);
+    const faceMat = new THREE.MeshPhysicalMaterial({
+      color: cubeColors[i],
+      transparent: true,
+      opacity: 0.55,
+      roughness: 0.15,
+      metalness: 0.35,
+      clearcoat: 1.0,
+      clearcoatRoughness: 0.1,
+      flatShading: true,
+    });
+    const mesh = new THREE.Mesh(geo, faceMat);
+    // Soft glow halo (additive-blended sphere)
+    const haloGeo = new THREE.SphereGeometry(sz * 1.7, 24, 16);
+    const haloMat = new THREE.MeshBasicMaterial({
+      color: cubeColors[i],
+      transparent: true,
+      opacity: 0.18,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+    const halo = new THREE.Mesh(haloGeo, haloMat);
+
     const group = new THREE.Group();
-    group.add(wire);
-    group.add(face);
+    group.add(mesh);
+    group.add(halo);
     group.position.copy(offset);
     group.userData.basePos = offset.clone();
-    group.userData.explodedPos = offset.clone().multiplyScalar(2.2);
+    group.userData.explodedPos = offset.clone().multiplyScalar(2.0);
     group.userData.assembledPos = new THREE.Vector3(0, 0, 0);
+    group.userData.halo = halo;
+    group.userData.mesh = mesh;
     cubeGroup.add(group);
     cubes.push(group);
   });
   scene.add(cubeGroup);
 
-  // Connecting lines between cubes
-  const lineMat = new THREE.LineBasicMaterial({ color: 0x1D4ED8, transparent: true, opacity: 0.25 });
+  const lineMat = new THREE.LineBasicMaterial({ color: 0x1D4ED8, transparent: true, opacity: 0.22 });
   const linePairs = [[0,1],[0,2],[1,3],[2,3]];
   const lines = [];
   linePairs.forEach(([a,b]) => {
@@ -1676,7 +2451,6 @@ function initPinned3D() {
   resize();
   window.addEventListener('resize', resize);
 
-  // Steps + progress dots
   const steps = section.querySelectorAll('.pinned-step');
   const dots = section.querySelectorAll('.pinned-progress .dot');
   let currentStep = 0;
@@ -1687,7 +2461,6 @@ function initPinned3D() {
     dots.forEach((d, i) => d.classList.toggle('active', i === n));
   }
 
-  // Scroll progress through the section
   function getProgress() {
     const rect = section.getBoundingClientRect();
     const total = rect.height - window.innerHeight;
@@ -1705,45 +2478,37 @@ function initPinned3D() {
   function animate() {
     requestAnimationFrame(animate);
     const p = getProgress();
-    // p: 0 -> all cubes explode outward; 0.5 -> mid; 1 -> all assembled in center
-    // We map the section into 4 quarters and assign each step a cube
     const stageFromExplodeToAssemble = 1 - p;
     cubes.forEach((cube, i) => {
-      const base = cube.userData.basePos;
       const exploded = cube.userData.explodedPos;
       const assembled = cube.userData.assembledPos;
-      // Each cube lags slightly so they cascade as you scroll back
       const lag = i * 0.04;
       const t = Math.max(0, Math.min(1, stageFromExplodeToAssemble - lag));
-      // Smoothstep
       const ts = t * t * (3 - 2 * t);
       cube.position.lerpVectors(exploded, assembled, ts);
-      // Subtle wobble
       if (!prefersReducedMotion) {
         cube.rotation.x += 0.003 + (i * 0.0005);
         cube.rotation.y += 0.004 + (i * 0.0005);
+        // Gentle halo breathing
+        if (cube.userData.halo) {
+          const breath = 0.5 + 0.5 * Math.sin(performance.now() * 0.0011 + i * 0.9);
+          cube.userData.halo.material.opacity = 0.10 + 0.18 * breath;
+        }
       }
     });
-
-    // Update connecting lines between cubes
     lines.forEach(({ line, a, b }) => {
       const pos = line.geometry.attributes.position.array;
       pos[0] = cubes[a].position.x; pos[1] = cubes[a].position.y; pos[2] = cubes[a].position.z;
       pos[3] = cubes[b].position.x; pos[4] = cubes[b].position.y; pos[5] = cubes[b].position.z;
       line.geometry.attributes.position.needsUpdate = true;
     });
-
-    // Camera parallax
     if (!prefersReducedMotion) {
       camera.position.x += (mouseX * 0.5 - camera.position.x) * 0.04;
       camera.position.y += (-mouseY * 0.4 - camera.position.y) * 0.04;
       camera.lookAt(0, 0, 0);
     }
-
-    // Step transitions: divide p into 4 quarters
     const step = Math.min(3, Math.floor(p * 4));
     setStep(step);
-
     renderer.render(scene, camera);
   }
   animate();
