@@ -27,12 +27,60 @@
     color:var(--ink);
     font-family:'Inter', sans-serif;
     -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
   }
   a{color:inherit;}
   ::selection{background:var(--emerald-soft);color:var(--emerald-deep);}
 
   @media (prefers-reduced-motion: reduce){
     *{animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important;}
+    .custom-cursor, .cursor-follower{display:none !important;}
+  }
+
+  /* ---------- SCROLL PROGRESS BAR ---------- */
+  .scroll-progress{
+    position:fixed;
+    top:0; left:0;
+    height:3px;
+    width:0%;
+    background:linear-gradient(90deg, var(--emerald-deep), var(--royal));
+    z-index:200;
+    transition:width 80ms linear;
+    box-shadow:0 1px 8px rgba(14,169,104,0.4);
+  }
+
+  /* ---------- CUSTOM CURSOR ---------- */
+  .custom-cursor{
+    position:fixed;
+    top:0; left:0;
+    width:10px; height:10px;
+    border-radius:50%;
+    background:var(--emerald);
+    pointer-events:none;
+    z-index:300;
+    transform:translate(-50%, -50%);
+    mix-blend-mode:multiply;
+    transition:width .25s ease, height .25s ease, background .25s ease, opacity .25s ease;
+    opacity:0;
+  }
+  .custom-cursor.ready{opacity:1;}
+  .custom-cursor.hovering{width:32px; height:32px; background:rgba(29,78,216,0.35);}
+  .cursor-follower{
+    position:fixed;
+    top:0; left:0;
+    width:36px; height:36px;
+    border:1.5px solid var(--ink);
+    border-radius:50%;
+    pointer-events:none;
+    z-index:299;
+    transform:translate(-50%, -50%);
+    transition:transform .35s cubic-bezier(.2,.8,.2,1), width .25s ease, height .25s ease, border-color .25s ease, opacity .25s ease;
+    opacity:0;
+  }
+  .cursor-follower.ready{opacity:0.5;}
+  .cursor-follower.hovering{width:54px; height:54px; border-color:var(--royal);}
+  @media (hover: none){
+    .custom-cursor, .cursor-follower{display:none;}
   }
 
   /* ---------- NAV ---------- */
@@ -184,7 +232,7 @@
   }
   .hero-content{
     position:relative;
-    z-index:1;
+    z-index:2;
     max-width:760px;
   }
   .hero-eyebrow{
@@ -262,7 +310,18 @@
     gap:10px;
     box-shadow:0 10px 30px -10px rgba(14,169,104,0.5);
     transition:transform .2s ease, box-shadow .2s ease;
+    position:relative;
+    overflow:hidden;
   }
+  .btn-primary::after{
+    content:'';
+    position:absolute;
+    top:0; left:-100%;
+    width:100%; height:100%;
+    background:linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    transition:left .6s ease;
+  }
+  .btn-primary:hover::after{left:100%;}
   .btn-primary:hover{transform:translateY(-2px); box-shadow:0 14px 34px -8px rgba(14,169,104,0.6);}
   .btn-secondary{
     font-family:'Inter', sans-serif;
@@ -288,6 +347,33 @@
     color:var(--ink-soft);
     opacity:0;
     animation:riseIn .8s ease .56s forwards;
+  }
+  .hero-scroll-cue{
+    position:absolute;
+    bottom:24px;
+    left:50%;
+    transform:translateX(-50%);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10.5px;
+    letter-spacing:1.2px;
+    color:var(--ink-soft);
+    opacity:0;
+    animation:riseIn .8s ease .8s forwards;
+    z-index:2;
+  }
+  .hero-scroll-cue .line{
+    display:block;
+    width:1px;
+    height:34px;
+    background:linear-gradient(to bottom, var(--ink-soft), transparent);
+    margin:8px auto 0;
+    animation:scrollLine 2s ease-in-out infinite;
+    transform-origin:top;
+  }
+  @keyframes scrollLine{
+    0%{transform:scaleY(0);}
+    50%{transform:scaleY(1);}
+    100%{transform:scaleY(0); transform-origin:bottom;}
   }
 
   /* ---------- SECTIONS SHARED ---------- */
@@ -334,12 +420,46 @@
     margin:0 auto;
     line-height:1.65;
   }
+
+  /* ---------- ENHANCED REVEAL ANIMATIONS ---------- */
   .reveal{
     opacity:0;
-    transform:translateY(24px);
-    transition:opacity .7s ease, transform .7s ease;
+    transform:translateY(36px);
+    transition:opacity .9s cubic-bezier(.2,.8,.2,1), transform .9s cubic-bezier(.2,.8,.2,1);
   }
   .reveal.in-view{opacity:1;transform:translateY(0);}
+  .reveal-left{
+    opacity:0;
+    transform:translateX(-50px);
+    transition:opacity .9s cubic-bezier(.2,.8,.2,1), transform .9s cubic-bezier(.2,.8,.2,1);
+  }
+  .reveal-left.in-view{opacity:1;transform:translateX(0);}
+  .reveal-right{
+    opacity:0;
+    transform:translateX(50px);
+    transition:opacity .9s cubic-bezier(.2,.8,.2,1), transform .9s cubic-bezier(.2,.8,.2,1);
+  }
+  .reveal-right.in-view{opacity:1;transform:translateX(0);}
+  .reveal-scale{
+    opacity:0;
+    transform:scale(.85);
+    transition:opacity .9s cubic-bezier(.2,.8,.2,1), transform .9s cubic-bezier(.2,.8,.2,1);
+  }
+  .reveal-scale.in-view{opacity:1;transform:scale(1);}
+
+  /* Staggered children: parent gets .stagger, children animate sequentially */
+  .stagger > *{
+    opacity:0;
+    transform:translateY(28px);
+    transition:opacity .8s cubic-bezier(.2,.8,.2,1), transform .8s cubic-bezier(.2,.8,.2,1);
+  }
+  .stagger.in-view > *{opacity:1;transform:translateY(0);}
+  .stagger.in-view > *:nth-child(1){transition-delay:.05s;}
+  .stagger.in-view > *:nth-child(2){transition-delay:.15s;}
+  .stagger.in-view > *:nth-child(3){transition-delay:.25s;}
+  .stagger.in-view > *:nth-child(4){transition-delay:.35s;}
+  .stagger.in-view > *:nth-child(5){transition-delay:.45s;}
+  .stagger.in-view > *:nth-child(6){transition-delay:.55s;}
 
   /* ---------- FEATURE CARDS ---------- */
   .features-grid{
@@ -360,6 +480,17 @@
     transform-style:preserve-3d;
     will-change:transform;
   }
+  .feature-card::before{
+    content:'';
+    position:absolute;
+    inset:0;
+    border-radius:18px;
+    background:linear-gradient(135deg, rgba(14,169,104,0.1), rgba(29,78,216,0.1));
+    opacity:0;
+    transition:opacity .35s ease;
+    pointer-events:none;
+  }
+  .feature-card:hover::before{opacity:1;}
   .feature-card:hover{
     border-color:rgba(14,169,104,0.35);
     box-shadow:0 28px 50px -22px rgba(11,15,13,0.2);
@@ -375,6 +506,7 @@
     padding:5px 12px;
     border-radius:7px;
     margin-bottom:20px;
+    transform:translateZ(40px);
   }
   .feature-card h3{
     font-family:'Sora', sans-serif;
@@ -382,12 +514,14 @@
     font-size:19px;
     margin:0 0 10px;
     letter-spacing:-0.3px;
+    transform:translateZ(30px);
   }
   .feature-card p{
     color:var(--ink-soft);
     font-size:14px;
     line-height:1.65;
     margin:0;
+    transform:translateZ(20px);
   }
   @media (max-width:820px){
     .features-grid{grid-template-columns:1fr;}
@@ -574,12 +708,258 @@
     display:inline-block;
     opacity:0;
     transform:translateY(100%) rotate(4deg);
-    transition:opacity .6s cubic-bezier(.2,.8,.2,1), transform .6s cubic-bezier(.2,.8,.2,1);
+    transition:opacity .7s cubic-bezier(.2,.8,.2,1), transform .7s cubic-bezier(.2,.8,.2,1);
   }
   .word-reveal.in-view .word{opacity:1;transform:translateY(0) rotate(0);}
+  .word-reveal.in-view .word:nth-child(1){transition-delay:.0s;}
+  .word-reveal.in-view .word:nth-child(2){transition-delay:.08s;}
+  .word-reveal.in-view .word:nth-child(3){transition-delay:.16s;}
+  .word-reveal.in-view .word:nth-child(4){transition-delay:.24s;}
+  .word-reveal.in-view .word:nth-child(5){transition-delay:.32s;}
+  .word-reveal.in-view .word:nth-child(6){transition-delay:.40s;}
+  .word-reveal.in-view .word:nth-child(7){transition-delay:.48s;}
+  .word-reveal.in-view .word:nth-child(8){transition-delay:.56s;}
 
   /* ---------- MAGNETIC BUTTON ---------- */
   .magnetic{will-change:transform;}
+
+  /* ---------- STATS / COUNT-UP ---------- */
+  .stats-row{
+    display:grid;
+    grid-template-columns:repeat(4, 1fr);
+    gap:0;
+    max-width:1120px;
+    margin:0 auto;
+    border-top:1px solid var(--line);
+    border-bottom:1px solid var(--line);
+  }
+  .stat{
+    text-align:center;
+    padding:48px 16px;
+    border-right:1px solid var(--line);
+    position:relative;
+  }
+  .stat:last-child{border-right:none;}
+  .stat-num{
+    font-family:'Sora', sans-serif;
+    font-weight:800;
+    font-size:clamp(36px, 5vw, 52px);
+    letter-spacing:-2px;
+    background:linear-gradient(100deg, var(--emerald-deep), var(--royal));
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+    line-height:1;
+    margin-bottom:8px;
+  }
+  .stat-label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11.5px;
+    letter-spacing:0.6px;
+    color:var(--ink-soft);
+    text-transform:uppercase;
+  }
+  @media (max-width:760px){
+    .stats-row{grid-template-columns:1fr 1fr;}
+    .stat:nth-child(2){border-right:none;}
+    .stat:nth-child(1), .stat:nth-child(2){border-bottom:1px solid var(--line);}
+  }
+
+  /* ---------- SCROLL-PINNED 3D SECTION ---------- */
+  .pinned-section{
+    position:relative;
+    height:280vh; /* gives us scroll runway */
+    background:linear-gradient(180deg, var(--bg-soft) 0%, #ffffff 50%, var(--bg-soft) 100%);
+  }
+  .pinned-sticky{
+    position:sticky;
+    top:0;
+    height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow:hidden;
+  }
+  .pinned-canvas-wrap{
+    position:absolute;
+    inset:0;
+    z-index:1;
+  }
+  #pinned-canvas{
+    width:100%;
+    height:100%;
+    display:block;
+  }
+  .pinned-content{
+    position:relative;
+    z-index:2;
+    max-width:520px;
+    text-align:center;
+    padding:0 24px;
+    pointer-events:none;
+  }
+  .pinned-step{
+    position:absolute;
+    inset:0;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:0 24px;
+    opacity:0;
+    transform:translateY(40px);
+    transition:opacity .6s ease, transform .6s ease;
+    pointer-events:none;
+  }
+  .pinned-step.active{
+    opacity:1;
+    transform:translateY(0);
+    pointer-events:auto;
+  }
+  .pinned-step .step-tag{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    color:var(--emerald-deep);
+    background:var(--emerald-soft);
+    border:1px solid rgba(14,169,104,0.2);
+    display:inline-block;
+    padding:5px 12px;
+    border-radius:7px;
+    margin-bottom:18px;
+  }
+  .pinned-step h3{
+    font-family:'Sora', sans-serif;
+    font-weight:700;
+    font-size:clamp(26px, 3.5vw, 36px);
+    letter-spacing:-1px;
+    margin:0 0 14px;
+    line-height:1.15;
+  }
+  .pinned-step p{
+    color:var(--ink-soft);
+    font-size:15.5px;
+    line-height:1.65;
+    margin:0;
+    max-width:440px;
+  }
+  .pinned-progress{
+    position:absolute;
+    bottom:32px;
+    left:50%;
+    transform:translateX(-50%);
+    display:flex;
+    gap:10px;
+    z-index:3;
+  }
+  .pinned-progress .dot{
+    width:8px; height:8px;
+    border-radius:50%;
+    background:var(--line);
+    transition:background .3s ease, transform .3s ease;
+  }
+  .pinned-progress .dot.active{background:var(--royal); transform:scale(1.4);}
+
+  /* ---------- HORIZONTAL SCROLL SECTION ---------- */
+  .hscroll-section{
+    background:var(--bg);
+    border-top:1px solid var(--line);
+    border-bottom:1px solid var(--line);
+    padding:90px 0 100px;
+    position:relative;
+    overflow:hidden;
+  }
+  .hscroll-head{
+    max-width:1120px;
+    margin:0 auto 50px;
+    padding:0 24px;
+    text-align:center;
+  }
+  .hscroll-track-wrap{
+    overflow:hidden;
+    padding:0 24px;
+  }
+  .hscroll-track{
+    display:flex;
+    gap:24px;
+    width:max-content;
+    will-change:transform;
+  }
+  .hscroll-card{
+    width:340px;
+    flex-shrink:0;
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:28px 24px;
+    box-shadow:0 14px 30px -20px rgba(11,15,13,0.12);
+    transition:transform .3s ease, box-shadow .3s ease, border-color .3s ease;
+  }
+  .hscroll-card:hover{
+    transform:translateY(-6px);
+    box-shadow:0 22px 40px -18px rgba(11,15,13,0.18);
+    border-color:rgba(29,78,216,0.3);
+  }
+  .hscroll-card .hscroll-icon{
+    width:42px; height:42px;
+    border-radius:11px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin-bottom:18px;
+    font-size:20px;
+  }
+  .hscroll-icon.green{background:var(--emerald-soft); color:var(--emerald-deep);}
+  .hscroll-icon.blue{background:var(--royal-soft); color:var(--royal);}
+  .hscroll-icon.mix{background:linear-gradient(135deg, var(--emerald-soft), var(--royal-soft)); color:var(--ink);}
+  .hscroll-card h4{
+    font-family:'Sora', sans-serif;
+    font-weight:700;
+    font-size:18px;
+    margin:0 0 8px;
+    letter-spacing:-0.3px;
+  }
+  .hscroll-card p{
+    color:var(--ink-soft);
+    font-size:13.5px;
+    line-height:1.6;
+    margin:0;
+  }
+
+  /* ---------- TESTIMONIAL / QUOTE FLOAT ---------- */
+  .floating-quote{
+    position:fixed;
+    bottom:24px;
+    right:24px;
+    z-index:90;
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:14px 18px;
+    max-width:280px;
+    box-shadow:0 18px 36px -16px rgba(11,15,13,0.18);
+    font-size:13px;
+    color:var(--ink-soft);
+    line-height:1.5;
+    transform:translateY(140%);
+    transition:transform .6s cubic-bezier(.2,.8,.2,1);
+    pointer-events:none;
+  }
+  .floating-quote.visible{transform:translateY(0);}
+  .floating-quote strong{color:var(--ink); display:block; margin-bottom:4px; font-family:'Sora', sans-serif; font-size:13.5px;}
+  .floating-quote-close{
+    position:absolute;
+    top:6px; right:8px;
+    background:none; border:none;
+    color:var(--ink-soft);
+    font-size:16px;
+    cursor:pointer;
+    line-height:1;
+    padding:2px 4px;
+    pointer-events:auto;
+  }
 
   @media (prefers-reduced-motion: reduce){
     .marquee-track{animation:none !important;}
@@ -587,6 +967,13 @@
 </style>
 </head>
 <body>
+
+<!-- Scroll progress -->
+<div class="scroll-progress" id="scroll-progress"></div>
+
+<!-- Custom cursor -->
+<div class="custom-cursor" id="custom-cursor"></div>
+<div class="cursor-follower" id="cursor-follower"></div>
 
 <nav class="nav">
   <a href="index.html" class="brand-mark">
@@ -600,6 +987,7 @@
   </a>
   <div class="nav-links">
     <a href="#how-it-works">How it works</a>
+    <a href="#capabilities">What you get</a>
     <a href="#plans">Plans</a>
     <a href="app.html" class="nav-cta">Get Started</a>
   </div>
@@ -610,7 +998,7 @@
   <canvas id="hero-canvas"></canvas>
   <div class="hero-content">
     <div class="hero-eyebrow"><span class="pulse"></span>Free to start · 360 credits every month</div>
-    <h1 class="word-reveal">
+    <h1 class="word-reveal" id="hero-headline">
       <span class="word-reveal-wrap"><span class="word">Stop</span></span> <span class="word-reveal-wrap"><span class="word">guessing</span></span><br>
       <span class="word-reveal-wrap"><span class="word">what</span></span> <span class="word-reveal-wrap"><span class="word">to</span></span> <span class="word-reveal-wrap"><span class="word grad">build.</span></span>
     </h1>
@@ -621,7 +1009,28 @@
     </div>
     <div class="hero-meta">NO CREDIT CARD · SIGN UP IN SECONDS</div>
   </div>
+  <div class="hero-scroll-cue">SCROLL<span class="line"></span></div>
 </section>
+
+<!-- Stats / count-up -->
+<div class="stats-row" id="stats-row">
+  <div class="stat reveal-scale">
+    <div class="stat-num" data-target="360" data-suffix="">0</div>
+    <div class="stat-label">Free credits / month</div>
+  </div>
+  <div class="stat reveal-scale">
+    <div class="stat-num" data-target="4" data-suffix="">0</div>
+    <div class="stat-label">Tailored ideas / run</div>
+  </div>
+  <div class="stat reveal-scale">
+    <div class="stat-num" data-target="30" data-suffix="s">0</div>
+    <div class="stat-label">Avg. setup time</div>
+  </div>
+  <div class="stat reveal-scale">
+    <div class="stat-num" data-target="100" data-suffix="%">0</div>
+    <div class="stat-label">Resume-ready output</div>
+  </div>
+</div>
 
 <div class="marquee-wrap">
   <div class="marquee-track" id="marquee-track">
@@ -655,21 +1064,106 @@
     <h2>Three steps to a project worth showing off</h2>
     <p>Most "project idea" lists are generic and forgettable. This one's built around what you're actually missing.</p>
   </div>
-  <div class="features-grid">
-    <div class="feature-card reveal">
+  <div class="features-grid stagger">
+    <div class="feature-card">
       <div class="feature-num">01</div>
       <h3>Tell it your target</h3>
       <p>Your role, current skills, resume gap, and dream company. Takes about 30 seconds — no essay required.</p>
     </div>
-    <div class="feature-card reveal">
+    <div class="feature-card">
       <div class="feature-num">02</div>
       <h3>Get 4 tailored ideas</h3>
       <p>Each one comes with a stack, a realistic scope for your timeframe, and a resume-ready bullet point you can copy straight away.</p>
     </div>
-    <div class="feature-card reveal">
+    <div class="feature-card">
       <div class="feature-num">03</div>
       <h3>Build with a real guide</h3>
       <p>Pick one and unlock a full step-by-step build plan — architecture map, skills to learn, and a phased checklist from zero to done.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Scroll-pinned 3D section -->
+<section class="pinned-section" id="capabilities">
+  <div class="pinned-sticky">
+    <div class="pinned-canvas-wrap">
+      <canvas id="pinned-canvas"></canvas>
+    </div>
+    <div class="pinned-step active" data-step="0">
+      <span class="step-tag">01 · Discover</span>
+      <h3>Find the gap<br>in your resume</h3>
+      <p>We compare your current skills, target role, and dream company — then surface the projects that actually move the needle.</p>
+    </div>
+    <div class="pinned-step" data-step="1">
+      <span class="step-tag">02 · Choose</span>
+      <h3>Pick from 4 ideas<br>tailored to you</h3>
+      <p>Every idea comes with a stack, a realistic scope, and a resume bullet you can paste straight in.</p>
+    </div>
+    <div class="pinned-step" data-step="2">
+      <span class="step-tag">03 · Build</span>
+      <h3>Follow a full<br>step-by-step guide</h3>
+      <p>Architecture, skills to learn, phased checklist, and progress tracking — from zero to a project worth shipping.</p>
+    </div>
+    <div class="pinned-step" data-step="3">
+      <span class="step-tag">04 · Ship</span>
+      <h3>Walk into your<br>next interview ready</h3>
+      <p>Talk confidently about a real thing you built, with the technical depth to back it up under any follow-up question.</p>
+    </div>
+    <div class="pinned-progress">
+      <span class="dot active" data-dot="0"></span>
+      <span class="dot" data-dot="1"></span>
+      <span class="dot" data-dot="2"></span>
+      <span class="dot" data-dot="3"></span>
+    </div>
+  </div>
+</section>
+
+<!-- Horizontal scroll showcase -->
+<section class="hscroll-section" id="what-you-get">
+  <div class="hscroll-head reveal">
+    <span class="section-eyebrow">What you get</span>
+    <h2 style="font-family:'Sora',sans-serif;font-weight:700;font-size:clamp(28px,4.5vw,40px);letter-spacing:-1px;margin:14px 0;">
+      Everything between <em style="font-style:normal;background:linear-gradient(100deg,var(--emerald-deep),var(--royal));-webkit-background-clip:text;background-clip:text;color:transparent;">idea</em> and <em style="font-style:normal;background:linear-gradient(100deg,var(--emerald-deep),var(--royal));-webkit-background-clip:text;background-clip:text;color:transparent;">shipped</em>
+    </h2>
+    <p style="color:var(--ink-soft);max-width:520px;margin:0 auto;font-size:15.5px;line-height:1.65;">Drag, scroll, or use arrow keys — every guide includes these building blocks, pre-tailored to your pick.</p>
+  </div>
+  <div class="hscroll-track-wrap">
+    <div class="hscroll-track" id="hscroll-track">
+      <div class="hscroll-card">
+        <div class="hscroll-icon green">🎯</div>
+        <h4>Targeted scope</h4>
+        <p>Each project is sized to a realistic timeframe — weekend, two weeks, or a month — so you never over-commit.</p>
+      </div>
+      <div class="hscroll-card">
+        <div class="hscroll-icon blue">🧩</div>
+        <h4>Stack breakdown</h4>
+        <p>The exact languages, frameworks, and services — with reasoning on why this stack fits your target role.</p>
+      </div>
+      <div class="hscroll-card">
+        <div class="hscroll-icon mix">🏗️</div>
+        <h4>Architecture map</h4>
+        <p>A bird's-eye view of the components and how they talk to each other — designed for your level, not a senior's.</p>
+      </div>
+      <div class="hscroll-card">
+        <div class="hscroll-icon green">📚</div>
+        <h4>Skills to learn</h4>
+        <p>The 3–6 specific concepts you'll pick up while building — mapped to what interviewers actually ask.</p>
+      </div>
+      <div class="hscroll-card">
+        <div class="hscroll-icon blue">✅</div>
+        <h4>Phased checklist</h4>
+        <p>From "set up the repo" to "deploy and write the README" — broken into phases so you always know the next step.</p>
+      </div>
+      <div class="hscroll-card">
+        <div class="hscroll-icon mix">📈</div>
+        <h4>Resume bullet</h4>
+        <p>A pre-written, metrics-style line for your resume, plus talking points for the interview follow-up.</p>
+      </div>
+      <div class="hscroll-card">
+        <div class="hscroll-icon green">🔁</div>
+        <h4>Progress tracking</h4>
+        <p>Check off phases as you go; pick up exactly where you left off across devices and sessions.</p>
+      </div>
     </div>
   </div>
 </section>
@@ -683,7 +1177,7 @@
       <p>Credits reset every 30 days. Generating ideas costs 120, a full build guide costs 200.</p>
     </div>
     <div class="plans-grid">
-      <div class="plan-card highlight reveal">
+      <div class="plan-card highlight reveal-left">
         <span class="plan-badge free">Free</span>
         <h3>Starter</h3>
         <div class="plan-credits"><b>360</b> credits / month</div>
@@ -695,7 +1189,7 @@
         </ul>
         <a href="app.html" class="plan-card-btn solid magnetic">Start free</a>
       </div>
-      <div class="plan-card locked reveal">
+      <div class="plan-card locked reveal-right">
         <span class="plan-badge premium">Premium</span>
         <h3>Coming soon</h3>
         <div class="plan-credits">More credits, more guides / month</div>
@@ -718,7 +1212,14 @@
   </div>
 </footer>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r150/three.min.js"></script>
+<!-- Floating testimonial cue -->
+<aside class="floating-quote" id="floating-quote">
+  <button class="floating-quote-close" id="quote-close" aria-label="Dismiss">×</button>
+  <strong>Stuck on a stack?</strong>
+  Pick an idea and let BuildItUp sketch the architecture, the skills, and a 4-phase plan for you.
+</aside>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
 <script>
 const WORKER_URL = "https://projectdesk-api.aryadeepbiswas014.workers.dev";
 
@@ -738,27 +1239,95 @@ document.querySelectorAll('a[href="app.html"]').forEach(link => {
   });
 });
 
-// Scroll reveal
+const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ===========================================================
+   SCROLL PROGRESS BAR
+   =========================================================== */
+const progressBar = document.getElementById('scroll-progress');
+function updateProgressBar() {
+  const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+  const pct = docHeight > 0 ? (window.scrollY / docHeight) * 100 : 0;
+  progressBar.style.width = pct + '%';
+}
+window.addEventListener('scroll', updateProgressBar, { passive: true });
+updateProgressBar();
+
+/* ===========================================================
+   SCROLL REVEAL OBSERVER (multi-variant)
+   =========================================================== */
 const revealObserver = new IntersectionObserver((entries) => {
   entries.forEach(entry => {
-    if (entry.isIntersecting) entry.target.classList.add('in-view');
+    if (entry.isIntersecting) {
+      entry.target.classList.add('in-view');
+      revealObserver.unobserve(entry.target);
+    }
   });
-}, { threshold: 0.15 });
-document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+}, { threshold: 0.15, rootMargin: '0px 0px -60px 0px' });
 
-// Word-by-word headline reveal (hero plays immediately on load, not on scroll)
-document.querySelectorAll('.hero .word-reveal').forEach(el => {
-  requestAnimationFrame(() => setTimeout(() => el.classList.add('in-view'), 250));
+document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-scale, .stagger').forEach(el => {
+  revealObserver.observe(el);
 });
-document.querySelectorAll('.word-reveal:not(.hero .word-reveal)').forEach(el => revealObserver.observe(el));
+
+/* Word-by-word headline (hero plays immediately) */
+const heroWord = document.getElementById('hero-headline');
+if (heroWord) {
+  requestAnimationFrame(() => setTimeout(() => heroWord.classList.add('in-view'), 250));
+}
 const wordObserver = new IntersectionObserver((entries) => {
   entries.forEach(entry => {
-    if (entry.isIntersecting) entry.target.classList.add('in-view');
+    if (entry.isIntersecting) {
+      entry.target.classList.add('in-view');
+      wordObserver.unobserve(entry.target);
+    }
   });
 }, { threshold: 0.4 });
-document.querySelectorAll('.word-reveal:not(.hero .word-reveal)').forEach(el => wordObserver.observe(el));
+document.querySelectorAll('.word-reveal:not(#hero-headline)').forEach(el => wordObserver.observe(el));
 
-// Magnetic buttons — subtly pull toward the cursor within their bounds
+/* ===========================================================
+   CUSTOM CURSOR
+   =========================================================== */
+const cursor = document.getElementById('custom-cursor');
+const follower = document.getElementById('cursor-follower');
+const isTouch = window.matchMedia('(hover: none)').matches;
+
+if (cursor && follower && !isTouch && !prefersReducedMotion) {
+  let mouseX = 0, mouseY = 0;
+  let followerX = 0, followerY = 0;
+  document.addEventListener('mousemove', (e) => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+    cursor.style.transform = `translate(${mouseX}px, ${mouseY}px) translate(-50%, -50%)`;
+    cursor.classList.add('ready');
+    follower.classList.add('ready');
+  });
+  document.addEventListener('mouseleave', () => {
+    cursor.classList.remove('ready');
+    follower.classList.remove('ready');
+  });
+  function animateFollower() {
+    followerX += (mouseX - followerX) * 0.15;
+    followerY += (mouseY - followerY) * 0.15;
+    follower.style.transform = `translate(${followerX}px, ${followerY}px) translate(-50%, -50%)`;
+    requestAnimationFrame(animateFollower);
+  }
+  animateFollower();
+  // Hover state on interactive elements
+  document.querySelectorAll('a, button, .magnetic, .feature-card, .plan-card, .hscroll-card, .pinned-step').forEach(el => {
+    el.addEventListener('mouseenter', () => {
+      cursor.classList.add('hovering');
+      follower.classList.add('hovering');
+    });
+    el.addEventListener('mouseleave', () => {
+      cursor.classList.remove('hovering');
+      follower.classList.remove('hovering');
+    });
+  });
+}
+
+/* ===========================================================
+   MAGNETIC BUTTONS
+   =========================================================== */
 document.querySelectorAll('.magnetic').forEach(btn => {
   btn.addEventListener('mousemove', (e) => {
     const rect = btn.getBoundingClientRect();
@@ -771,7 +1340,9 @@ document.querySelectorAll('.magnetic').forEach(btn => {
   });
 });
 
-// Feature card hover tilt
+/* ===========================================================
+   3D TILT ON FEATURE CARDS
+   =========================================================== */
 document.querySelectorAll('.feature-card').forEach(card => {
   card.addEventListener('mousemove', (e) => {
     const rect = card.getBoundingClientRect();
@@ -786,7 +1357,9 @@ document.querySelectorAll('.feature-card').forEach(card => {
   });
 });
 
-// Parallax: background watermarks and hero canvas drift slower than scroll
+/* ===========================================================
+   PARALLAX (watermarks + hero canvas + new bg canvas)
+   =========================================================== */
 let ticking = false;
 function updateParallax() {
   const scrollY = window.scrollY;
@@ -806,13 +1379,100 @@ window.addEventListener('scroll', () => {
     requestAnimationFrame(updateParallax);
     ticking = true;
   }
-});
+}, { passive: true });
 
-// --- 3D hero: rotating glass/wireframe polyhedra ---
-const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+/* ===========================================================
+   COUNT-UP STATS
+   =========================================================== */
+function animateCountUp(el) {
+  const target = parseInt(el.dataset.target, 10);
+  const suffix = el.dataset.suffix || '';
+  const duration = 1600;
+  const start = performance.now();
+  function tick(now) {
+    const elapsed = now - start;
+    const progress = Math.min(elapsed / duration, 1);
+    // easeOutCubic
+    const eased = 1 - Math.pow(1 - progress, 3);
+    const value = Math.floor(eased * target);
+    el.textContent = value + suffix;
+    if (progress < 1) requestAnimationFrame(tick);
+    else el.textContent = target + suffix;
+  }
+  requestAnimationFrame(tick);
+}
+const countObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const nums = entry.target.querySelectorAll('.stat-num');
+      nums.forEach(animateCountUp);
+      countObserver.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.4 });
+const statsRow = document.getElementById('stats-row');
+if (statsRow) countObserver.observe(statsRow);
 
+/* ===========================================================
+   HORIZONTAL SCROLL TRACK
+   =========================================================== */
+const hscrollTrack = document.getElementById('hscroll-track');
+const hscrollSection = document.getElementById('what-you-get');
+if (hscrollTrack && hscrollSection) {
+  let hscrollTicking = false;
+  function updateHScroll() {
+    const rect = hscrollSection.getBoundingClientRect();
+    const vh = window.innerHeight;
+    // Section scrolls vertically through 1.2 viewports of motion
+    const total = rect.height - vh;
+    const scrolled = -rect.top;
+    let progress = 0;
+    if (total > 0) progress = Math.max(0, Math.min(1, scrolled / total));
+    const trackWidth = hscrollTrack.scrollWidth;
+    const wrapWidth = hscrollSection.querySelector('.hscroll-track-wrap').clientWidth;
+    const maxOffset = Math.max(0, trackWidth - wrapWidth);
+    hscrollTrack.style.transform = `translateX(${-progress * maxOffset}px)`;
+    hscrollTicking = false;
+  }
+  window.addEventListener('scroll', () => {
+    if (!hscrollTicking) {
+      requestAnimationFrame(updateHScroll);
+      hscrollTicking = true;
+    }
+  }, { passive: true });
+  window.addEventListener('resize', updateHScroll);
+  updateHScroll();
+}
+
+/* ===========================================================
+   FLOATING QUOTE — appears after user scrolls past hero
+   =========================================================== */
+const quote = document.getElementById('floating-quote');
+const quoteClose = document.getElementById('quote-close');
+let quoteDismissed = false;
+if (quote) {
+  function maybeShowQuote() {
+    if (quoteDismissed) return;
+    if (window.scrollY > window.innerHeight * 0.6) {
+      quote.classList.add('visible');
+    } else {
+      quote.classList.remove('visible');
+    }
+  }
+  window.addEventListener('scroll', maybeShowQuote, { passive: true });
+  if (quoteClose) {
+    quoteClose.addEventListener('click', () => {
+      quoteDismissed = true;
+      quote.classList.remove('visible');
+    });
+  }
+}
+
+/* ===========================================================
+   3D HERO: rotating glass/wireframe polyhedra + particles
+   =========================================================== */
 function initHero3D() {
-  if (typeof THREE === 'undefined') return; // CDN failed to load — fall back to the CSS glow background
+  if (typeof THREE === 'undefined') return;
 
   const canvas = document.getElementById('hero-canvas');
   const heroSection = document.querySelector('.hero');
@@ -828,23 +1488,20 @@ function initHero3D() {
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
   const shapes = [];
+  // Only the blue shapes — green icosahedrons removed by user request.
   const geometries = [
-    new THREE.IcosahedronGeometry(1.4, 0),
-    new THREE.OctahedronGeometry(1.1, 0),
-    new THREE.TorusGeometry(0.9, 0.28, 16, 60),
-    new THREE.IcosahedronGeometry(0.75, 0),
+    new THREE.OctahedronGeometry(1.2, 0),
+    new THREE.TorusGeometry(1.0, 0.30, 16, 64),
   ];
-  const colors = [0x0EA968, 0x1D4ED8, 0x087F4E, 0x1D4ED8];
+  const colors = [0x1D4ED8, 0x1D4ED8];
   const positions = [
-    [-3.2, 1.4, -1],
-    [3.0, -1.0, -2],
-    [2.6, 1.8, 0],
-    [-2.4, -1.6, -1.5],
+    [-2.6, 0.4, -1.2],
+    [ 2.6, -0.4, -0.8],
   ];
 
   geometries.forEach((geo, i) => {
-    const wireMat = new THREE.MeshBasicMaterial({ color: colors[i], wireframe: true, transparent: true, opacity: 0.35 });
-    const glassMat = new THREE.MeshPhysicalMaterial({ color: colors[i], transparent: true, opacity: 0.08, roughness: 0.2, metalness: 0.1 });
+    const wireMat = new THREE.MeshBasicMaterial({ color: colors[i], wireframe: true, transparent: true, opacity: 0.4 });
+    const glassMat = new THREE.MeshPhysicalMaterial({ color: colors[i], transparent: true, opacity: 0.1, roughness: 0.2, metalness: 0.1 });
 
     const wireMesh = new THREE.Mesh(geo, wireMat);
     const glassMesh = new THREE.Mesh(geo, glassMat);
@@ -854,16 +1511,47 @@ function initHero3D() {
     group.add(wireMesh);
     group.add(glassMesh);
     group.position.set(...positions[i]);
-    group.userData.rotSpeed = { x: (Math.random() - 0.5) * 0.004, y: (Math.random() - 0.5) * 0.006 };
+    group.userData.rotSpeed = { x: (Math.random() - 0.5) * 0.005, y: (Math.random() - 0.5) * 0.007 };
     group.userData.floatOffset = Math.random() * Math.PI * 2;
+    group.userData.basePos = new THREE.Vector3(...positions[i]);
 
     scene.add(group);
     shapes.push(group);
   });
 
-  const light = new THREE.DirectionalLight(0xffffff, 0.6);
-  light.position.set(2, 3, 4);
-  scene.add(light);
+  // Particle field
+  const particleCount = 600;
+  const particleGeo = new THREE.BufferGeometry();
+  const positionsArr = new Float32Array(particleCount * 3);
+  const colorsArr = new Float32Array(particleCount * 3);
+  const palette = [
+    new THREE.Color(0x1D4ED8),
+    new THREE.Color(0x1D4ED8),
+    new THREE.Color(0x1D4ED8),
+    new THREE.Color(0xffffff),
+  ];
+  for (let i = 0; i < particleCount; i++) {
+    positionsArr[i * 3]     = (Math.random() - 0.5) * 22;
+    positionsArr[i * 3 + 1] = (Math.random() - 0.5) * 14;
+    positionsArr[i * 3 + 2] = (Math.random() - 0.5) * 14 - 2;
+    const c = palette[Math.floor(Math.random() * palette.length)];
+    colorsArr[i * 3]     = c.r;
+    colorsArr[i * 3 + 1] = c.g;
+    colorsArr[i * 3 + 2] = c.b;
+  }
+  particleGeo.setAttribute('position', new THREE.BufferAttribute(positionsArr, 3));
+  particleGeo.setAttribute('color', new THREE.BufferAttribute(colorsArr, 3));
+  const particleMat = new THREE.PointsMaterial({
+    size: 0.05,
+    vertexColors: true,
+    transparent: true,
+    opacity: 0.7,
+    sizeAttenuation: true,
+  });
+  const particles = new THREE.Points(particleGeo, particleMat);
+  scene.add(particles);
+
+  scene.add(new THREE.DirectionalLight(0xffffff, 0.6).position.set(2, 3, 4));
   scene.add(new THREE.AmbientLight(0xffffff, 0.5));
 
   let mouseX = 0, mouseY = 0;
@@ -873,23 +1561,34 @@ function initHero3D() {
   });
 
   let frame = 0;
+  let lastScrollY = 0;
   function animate() {
     requestAnimationFrame(animate);
     frame += 1;
+    const scrollY = window.scrollY;
 
     shapes.forEach(group => {
       if (!prefersReducedMotion) {
         group.rotation.x += group.userData.rotSpeed.x;
         group.rotation.y += group.userData.rotSpeed.y;
-        group.position.y += Math.sin(frame * 0.01 + group.userData.floatOffset) * 0.0025;
+        // Scroll-driven vertical drift and slight dispersion
+        const scrollFactor = Math.min(scrollY / window.innerHeight, 1.5);
+        group.position.y = group.userData.basePos.y + Math.sin(frame * 0.01 + group.userData.floatOffset) * 0.0025 - scrollFactor * 1.2;
+        group.position.x = group.userData.basePos.x + mouseX * 0.3;
       }
     });
+
+    particles.rotation.y += 0.0006;
+    particles.rotation.x += 0.0002;
+    // Particles drift opposite to scroll
+    particles.position.y = -scrollY * 0.18;
 
     camera.position.x += (mouseX * 0.6 - camera.position.x) * 0.02;
     camera.position.y += (-mouseY * 0.4 - camera.position.y) * 0.02;
     camera.lookAt(0, 0, 0);
 
     renderer.render(scene, camera);
+    lastScrollY = scrollY;
   }
   animate();
   canvas.classList.add('loaded');
@@ -904,6 +1603,153 @@ function initHero3D() {
 }
 
 initHero3D();
+
+/* ===========================================================
+   SCROLL-PINNED 3D SECTION
+   Stack of 4 cubes (one per step) that explode/reassemble
+   based on scroll progress through the section.
+   =========================================================== */
+function initPinned3D() {
+  if (typeof THREE === 'undefined') return;
+  const section = document.getElementById('capabilities');
+  const canvas = document.getElementById('pinned-canvas');
+  if (!section || !canvas) return;
+
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setClearColor(0x000000, 0);
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+  camera.position.set(0, 0, 9);
+
+  // 4 cubes (one per step) arranged in a cross pattern
+  const cubeGroup = new THREE.Group();
+  const cubeColors = [0x1D4ED8, 0x1D4ED8, 0x1D4ED8, 0x1D4ED8];
+  const cubeOffsets = [
+    new THREE.Vector3(-2.4,  1.6, 0),
+    new THREE.Vector3( 2.4,  1.6, 0),
+    new THREE.Vector3(-2.4, -1.6, 0),
+    new THREE.Vector3( 2.4, -1.6, 0),
+  ];
+  const cubes = [];
+  cubeOffsets.forEach((offset, i) => {
+    const geo = new THREE.BoxGeometry(1.4, 1.4, 1.4);
+    const wireMat = new THREE.MeshBasicMaterial({ color: cubeColors[i], wireframe: true, transparent: true, opacity: 0.55 });
+    const faceMat = new THREE.MeshBasicMaterial({ color: cubeColors[i], transparent: true, opacity: 0.08 });
+    const wire = new THREE.Mesh(geo, wireMat);
+    const face = new THREE.Mesh(geo, faceMat);
+    const group = new THREE.Group();
+    group.add(wire);
+    group.add(face);
+    group.position.copy(offset);
+    group.userData.basePos = offset.clone();
+    group.userData.explodedPos = offset.clone().multiplyScalar(2.2);
+    group.userData.assembledPos = new THREE.Vector3(0, 0, 0);
+    cubeGroup.add(group);
+    cubes.push(group);
+  });
+  scene.add(cubeGroup);
+
+  // Connecting lines between cubes
+  const lineMat = new THREE.LineBasicMaterial({ color: 0x1D4ED8, transparent: true, opacity: 0.25 });
+  const linePairs = [[0,1],[0,2],[1,3],[2,3]];
+  const lines = [];
+  linePairs.forEach(([a,b]) => {
+    const geom = new THREE.BufferGeometry();
+    const positions = new Float32Array(6);
+    geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    const line = new THREE.Line(geom, lineMat);
+    scene.add(line);
+    lines.push({ line, a, b });
+  });
+
+  scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+
+  function resize() {
+    const w = section.querySelector('.pinned-sticky').clientWidth;
+    const h = window.innerHeight;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  // Steps + progress dots
+  const steps = section.querySelectorAll('.pinned-step');
+  const dots = section.querySelectorAll('.pinned-progress .dot');
+  let currentStep = 0;
+  function setStep(n) {
+    if (n === currentStep) return;
+    currentStep = n;
+    steps.forEach((s, i) => s.classList.toggle('active', i === n));
+    dots.forEach((d, i) => d.classList.toggle('active', i === n));
+  }
+
+  // Scroll progress through the section
+  function getProgress() {
+    const rect = section.getBoundingClientRect();
+    const total = rect.height - window.innerHeight;
+    if (total <= 0) return 0;
+    const scrolled = -rect.top;
+    return Math.max(0, Math.min(1, scrolled / total));
+  }
+
+  let mouseX = 0, mouseY = 0;
+  window.addEventListener('mousemove', (e) => {
+    mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
+    mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+  });
+
+  function animate() {
+    requestAnimationFrame(animate);
+    const p = getProgress();
+    // p: 0 -> all cubes explode outward; 0.5 -> mid; 1 -> all assembled in center
+    // We map the section into 4 quarters and assign each step a cube
+    const stageFromExplodeToAssemble = 1 - p;
+    cubes.forEach((cube, i) => {
+      const base = cube.userData.basePos;
+      const exploded = cube.userData.explodedPos;
+      const assembled = cube.userData.assembledPos;
+      // Each cube lags slightly so they cascade as you scroll back
+      const lag = i * 0.04;
+      const t = Math.max(0, Math.min(1, stageFromExplodeToAssemble - lag));
+      // Smoothstep
+      const ts = t * t * (3 - 2 * t);
+      cube.position.lerpVectors(exploded, assembled, ts);
+      // Subtle wobble
+      if (!prefersReducedMotion) {
+        cube.rotation.x += 0.003 + (i * 0.0005);
+        cube.rotation.y += 0.004 + (i * 0.0005);
+      }
+    });
+
+    // Update connecting lines between cubes
+    lines.forEach(({ line, a, b }) => {
+      const pos = line.geometry.attributes.position.array;
+      pos[0] = cubes[a].position.x; pos[1] = cubes[a].position.y; pos[2] = cubes[a].position.z;
+      pos[3] = cubes[b].position.x; pos[4] = cubes[b].position.y; pos[5] = cubes[b].position.z;
+      line.geometry.attributes.position.needsUpdate = true;
+    });
+
+    // Camera parallax
+    if (!prefersReducedMotion) {
+      camera.position.x += (mouseX * 0.5 - camera.position.x) * 0.04;
+      camera.position.y += (-mouseY * 0.4 - camera.position.y) * 0.04;
+      camera.lookAt(0, 0, 0);
+    }
+
+    // Step transitions: divide p into 4 quarters
+    const step = Math.min(3, Math.floor(p * 4));
+    setStep(step);
+
+    renderer.render(scene, camera);
+  }
+  animate();
+}
+
+initPinned3D();
 </script>
 </body>
 </html>

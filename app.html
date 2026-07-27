@@ -887,9 +887,96 @@
     color:var(--ink-soft);
     white-space:nowrap;
   }
+
+  /* ===========================================================
+     BUILD-3D: 3D + SCROLL ANIMATION ADDITIONS
+     =========================================================== */
+
+  /* Scroll progress bar */
+  .scroll-progress-app{
+    position:fixed;
+    top:0; left:0;
+    height:3px;
+    width:0%;
+    background:linear-gradient(90deg, var(--accent), var(--accent-2));
+    z-index:200;
+    transition:width 80ms linear;
+    box-shadow:0 1px 8px rgba(14,169,104,0.4);
+  }
+
+  /* 3D background canvas */
+  #app-3d-bg{
+    position:fixed;
+    top:0; left:0;
+    width:100vw; height:100vh;
+    z-index:-1;
+    pointer-events:none;
+    opacity:0;
+    transition:opacity 1.2s ease;
+  }
+  #app-3d-bg.loaded{opacity:1;}
+
+  /* Scroll-reveal: applied to idea cards, plan panels, etc. */
+  .reveal-app{
+    opacity:0;
+    transform:translateY(28px);
+    transition:opacity .7s cubic-bezier(.2,.8,.2,1), transform .7s cubic-bezier(.2,.8,.2,1);
+  }
+  .reveal-app.in-view{opacity:1;transform:translateY(0);}
+  .reveal-left-app{
+    opacity:0;
+    transform:translateX(-40px);
+    transition:opacity .7s cubic-bezier(.2,.8,.2,1), transform .7s cubic-bezier(.2,.8,.2,1);
+  }
+  .reveal-left-app.in-view{opacity:1;transform:translateX(0);}
+  .reveal-right-app{
+    opacity:0;
+    transform:translateX(40px);
+    transition:opacity .7s cubic-bezier(.2,.8,.2,1), transform .7s cubic-bezier(.2,.8,.2,1);
+  }
+  .reveal-right-app.in-view{opacity:1;transform:translateX(0);}
+
+  /* 3D tilt on idea / plan cards */
+  .tilt-card{
+    transform-style:preserve-3d;
+    will-change:transform;
+  }
+
+  /* Subtle float-in for the first things the user sees on the page */
+  @keyframes floatInUp{
+    from{opacity:0;transform:translateY(14px);}
+    to{opacity:1;transform:translateY(0);}
+  }
+  .float-in{
+    animation:floatInUp .6s cubic-bezier(.2,.8,.2,1) both;
+  }
+  .float-in.d1{animation-delay:.05s;}
+  .float-in.d2{animation-delay:.12s;}
+  .float-in.d3{animation-delay:.19s;}
+  .float-in.d4{animation-delay:.26s;}
+
+  /* Magnetic CTA */
+  .magnetic-app{will-change:transform;}
+
+  /* Number flash for credit counter */
+  .credit-flash{
+    animation:creditFlash .9s cubic-bezier(.2,.8,.2,1);
+  }
+  @keyframes creditFlash{
+    0%{transform:scale(1); color:var(--accent);}
+    40%{transform:scale(1.25); color:var(--accent-2);}
+    100%{transform:scale(1); color:var(--accent);}
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .float-in{animation:none !important;}
+    #app-3d-bg{opacity:1 !important;}
+  }
 </style>
 </head>
 <body>
+<div class="scroll-progress-app" id="scroll-progress-app"></div>
+<canvas id="app-3d-bg"></canvas>
 <div class="bg-orb one"></div>
 <div class="bg-orb two"></div>
 
@@ -1158,11 +1245,11 @@ document.getElementById('signup-btn').addEventListener('click', async () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'signup', name, email, password })
     });
-    const data = await res.json();
-    if (data.error) throw new Error(data.error);
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || data.error) throw new Error(data.error || ('Sign-up failed (HTTP ' + res.status + ')'));
     onAuthSuccess(data);
   } catch (err) {
-    loginMsg.textContent = err.message || 'Could not create account. Try again.';
+    loginMsg.textContent = friendlyFetchError(err, 'Could not create account');
   } finally {
     btn.disabled = false;
     btn.textContent = 'Sign up';
@@ -1184,16 +1271,32 @@ document.getElementById('login-btn').addEventListener('click', async () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'login', email, password })
     });
-    const data = await res.json();
-    if (data.error) throw new Error(data.error);
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || data.error) throw new Error(data.error || ('Log-in failed (HTTP ' + res.status + ')'));
     onAuthSuccess(data);
   } catch (err) {
-    loginMsg.textContent = err.message || 'Invalid email or password.';
+    loginMsg.textContent = friendlyFetchError(err, 'Invalid email or password');
   } finally {
     btn.disabled = false;
     btn.textContent = 'Log in';
   }
 });
+
+// Translates the many ways a fetch can fail (CORS, offline, server down,
+// HTTP 5xx) into something the user can actually act on.
+function friendlyFetchError(err, fallback) {
+  const msg = (err && err.message) ? String(err.message) : '';
+  if (/Failed to fetch|NetworkError|network/i.test(msg)) {
+    if (!navigator.onLine) {
+      return 'You appear to be offline. Check your connection and try again.';
+    }
+    return 'Could not reach the server (network or CORS issue). If you\'re previewing locally, the worker needs to allow this origin — try the deployed site at https://aryadeep2116.github.io/builditup/.';
+  }
+  if (/401|403/.test(msg)) return 'Your session has expired. Please log in again.';
+  if (/429/.test(msg)) return 'Too many attempts. Wait a minute and try again.';
+  if (/500|502|503|504/.test(msg)) return 'The server hit an error. Please try again in a moment.';
+  return msg || fallback;
+}
 
 function showLoggedInHeader(name) {
   authArea.innerHTML = `
@@ -1911,6 +2014,234 @@ async function triggerGenerate() {
     goLabel.textContent = "Get project ideas (120 credits)";
   }
 }
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
+<script>
+/* ===========================================================
+   BUILD-3D: Scroll progress + 3D background + reveals
+   Designed to coexist with the existing app logic.
+   =========================================================== */
+(function(){
+  if (typeof window === 'undefined') return;
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ---- Scroll progress bar ----
+  const progressBar = document.getElementById('scroll-progress-app');
+  function updateProgressBar() {
+    if (!progressBar) return;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const pct = docHeight > 0 ? (window.scrollY / docHeight) * 100 : 0;
+    progressBar.style.width = pct + '%';
+  }
+  window.addEventListener('scroll', updateProgressBar, { passive: true });
+  updateProgressBar();
+
+  // ---- Scroll reveal observer ----
+  // Auto-tag common content blocks so existing markup reveals too.
+  function autoTag() {
+    const tabContent = document.querySelectorAll('.tab-content, .tab-pane, [data-tab-content]');
+    tabContent.forEach(el => el.classList.add('reveal-app'));
+
+    // Idea / plan cards across tabs
+    const cards = document.querySelectorAll('.idea-card, .plan-step, .overview-card, .workflow-step, .premium-card, [data-idea-card], [data-plan-step]');
+    cards.forEach((el, i) => {
+      if (!el.classList.contains('reveal-app') && !el.classList.contains('reveal-left-app') && !el.classList.contains('reveal-right-app')) {
+        el.classList.add(i % 2 === 0 ? 'reveal-left-app' : 'reveal-right-app');
+        el.classList.add('tilt-card');
+      }
+    });
+  }
+  // Run after a tick so dynamic content has a chance to render
+  setTimeout(autoTag, 50);
+  setTimeout(autoTag, 400);
+  // Also re-run when tabs change
+  document.querySelectorAll('.app-tab').forEach(tab => {
+    tab.addEventListener('click', () => setTimeout(autoTag, 100));
+  });
+
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('in-view');
+        revealObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+
+  function observeReveals() {
+    document.querySelectorAll('.reveal-app, .reveal-left-app, .reveal-right-app').forEach(el => {
+      if (!el.classList.contains('in-view')) revealObserver.observe(el);
+    });
+  }
+  setTimeout(observeReveals, 100);
+  setTimeout(observeReveals, 500);
+
+  // ---- 3D tilt on tilt-card elements ----
+  function attachTilt() {
+    document.querySelectorAll('.tilt-card').forEach(card => {
+      if (card.dataset.tiltReady === '1') return;
+      card.dataset.tiltReady = '1';
+      card.addEventListener('mousemove', (e) => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const rotateX = ((y / rect.height) - 0.5) * -5;
+        const rotateY = ((x / rect.width) - 0.5) * 5;
+        card.style.transform = `perspective(900px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-2px)`;
+      });
+      card.addEventListener('mouseleave', () => {
+        card.style.transform = 'perspective(900px) rotateX(0) rotateY(0) translateY(0)';
+      });
+    });
+  }
+  setTimeout(attachTilt, 100);
+  setTimeout(attachTilt, 500);
+
+  // ---- Magnetic CTAs ----
+  function attachMagnetic() {
+    document.querySelectorAll('.magnetic-app, #generate-btn, #get-ideas-btn, #header-signup-btn').forEach(btn => {
+      if (btn.dataset.magReady === '1') return;
+      btn.dataset.magReady = '1';
+      btn.addEventListener('mousemove', (e) => {
+        const rect = btn.getBoundingClientRect();
+        const x = e.clientX - rect.left - rect.width / 2;
+        const y = e.clientY - rect.top - rect.height / 2;
+        btn.style.transform = `translate(${x * 0.2}px, ${y * 0.3}px)`;
+      });
+      btn.addEventListener('mouseleave', () => {
+        btn.style.transform = 'translate(0, 0)';
+      });
+    });
+  }
+  setTimeout(attachMagnetic, 50);
+
+  // ---- Credit counter flash on change ----
+  const creditNum = document.getElementById('credit-num');
+  if (creditNum && window.MutationObserver) {
+    const obs = new MutationObserver(() => {
+      creditNum.classList.remove('credit-flash');
+      // force reflow
+      void creditNum.offsetWidth;
+      creditNum.classList.add('credit-flash');
+    });
+    obs.observe(creditNum, { childList: true, characterData: true, subtree: true });
+  }
+
+  // ---- 3D background: subtle floating particles + a few wireframe shapes ----
+  function init3DBackground() {
+    if (typeof THREE === 'undefined') return;
+    const canvas = document.getElementById('app-3d-bg');
+    if (!canvas) return;
+
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setClearColor(0x000000, 0);
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 100);
+    camera.position.z = 12;
+
+    function resize() {
+      renderer.setSize(window.innerWidth, window.innerHeight, false);
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    // Particles
+    const particleCount = 300;
+    const positions = new Float32Array(particleCount * 3);
+    const colors = new Float32Array(particleCount * 3);
+    const palette = [
+      new THREE.Color(0x1D4ED8),
+      new THREE.Color(0x1D4ED8),
+      new THREE.Color(0xffffff),
+    ];
+    for (let i = 0; i < particleCount; i++) {
+      positions[i * 3]     = (Math.random() - 0.5) * 30;
+      positions[i * 3 + 1] = (Math.random() - 0.5) * 20;
+      positions[i * 3 + 2] = (Math.random() - 0.5) * 20 - 5;
+      const c = palette[Math.floor(Math.random() * palette.length)];
+      colors[i * 3]     = c.r;
+      colors[i * 3 + 1] = c.g;
+      colors[i * 3 + 2] = c.b;
+    }
+    const particleGeo = new THREE.BufferGeometry();
+    particleGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    particleGeo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+    const particleMat = new THREE.PointsMaterial({
+      size: 0.06,
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.45,
+      sizeAttenuation: true,
+    });
+    const particles = new THREE.Points(particleGeo, particleMat);
+    scene.add(particles);
+
+    // A few wireframe shapes drifting in the background (blue-only, no green).
+    const shapes = [];
+    const geos = [
+      new THREE.OctahedronGeometry(1.0, 0),
+      new THREE.TorusGeometry(0.9, 0.25, 12, 44),
+    ];
+    const cols = [0x1D4ED8, 0x1D4ED8];
+    const offsets = [
+      new THREE.Vector3(-4.8,  2.4, -3),
+      new THREE.Vector3( 4.8, -2.4, -3),
+    ];
+    geos.forEach((g, i) => {
+      const m = new THREE.MeshBasicMaterial({ color: cols[i], wireframe: true, transparent: true, opacity: 0.18 });
+      const mesh = new THREE.Mesh(g, m);
+      mesh.position.copy(offsets[i]);
+      mesh.userData.rot = { x: (Math.random() - 0.5) * 0.003, y: (Math.random() - 0.5) * 0.004 };
+      mesh.userData.basePos = offsets[i].clone();
+      scene.add(mesh);
+      shapes.push(mesh);
+    });
+
+    let mouseX = 0, mouseY = 0, scrollY = 0;
+    window.addEventListener('mousemove', (e) => {
+      mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
+      mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+    });
+    window.addEventListener('scroll', () => { scrollY = window.scrollY; }, { passive: true });
+
+    let frame = 0;
+    function animate() {
+      requestAnimationFrame(animate);
+      frame++;
+
+      if (!prefersReducedMotion) {
+        particles.rotation.y += 0.0003;
+        particles.rotation.x += 0.0001;
+        particles.position.y = -scrollY * 0.12;
+
+        shapes.forEach(s => {
+          s.rotation.x += s.userData.rot.x;
+          s.rotation.y += s.userData.rot.y;
+          s.position.y = s.userData.basePos.y + Math.sin(frame * 0.008) * 0.15;
+          s.position.x = s.userData.basePos.x + mouseX * 0.2;
+        });
+      }
+
+      camera.position.x += (mouseX * 0.3 - camera.position.x) * 0.02;
+      camera.position.y += (-mouseY * 0.25 - camera.position.y) * 0.02;
+      camera.lookAt(0, 0, 0);
+
+      renderer.render(scene, camera);
+    }
+    animate();
+    canvas.classList.add('loaded');
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init3DBackground);
+  } else {
+    init3DBackground();
+  }
+})();
 </script>
 </body>
 </html>

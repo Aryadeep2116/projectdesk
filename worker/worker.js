@@ -1,18 +1,38 @@
 // BuildItUp backend — Cloudflare Worker (FREE version using Workers AI)
 // No API key, no billing, no credit card. Uses Cloudflare's free built-in AI models.
 
-const ALLOWED_ORIGINS = [
+const PRODUCTION_ORIGINS = [
   "https://aryadeep2116.github.io",
   "https://builditup.dpdns.org",
 ];
 
+// Origins we always allow in addition to production: localhost / 127.0.0.1
+// on any port, file:// (opening index.html directly), and common LAN ranges
+// for testing on a phone on the same Wi-Fi.
+function isDevOrigin(origin) {
+  if (!origin) return false;
+  if (origin === "null") return true;                       // file:// or sandboxed iframe
+  if (origin === "file://") return true;
+  if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(origin)) return true;
+  if (/^https?:\/\/10\.\d{1,3}\.\d{1,3}\.\d{1,3}(:\d+)?$/.test(origin)) return true;  // 10.x.x.x LAN
+  if (/^https?:\/\/192\.168\.\d{1,3}\.\d{1,3}(:\d+)?$/.test(origin)) return true;      // 192.168.x.x LAN
+  if (/^https?:\/\/172\.(1[6-9]|2\d|3[0-1])\.\d{1,3}\.\d{1,3}(:\d+)?$/.test(origin)) return true; // 172.16-31.x.x LAN
+  return false;
+}
+
 function corsHeaders(request) {
   const origin = request && request.headers.get("Origin");
-  const allowOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+  let allowOrigin = PRODUCTION_ORIGINS[0]; // safe default
+  if (origin) {
+    if (PRODUCTION_ORIGINS.includes(origin) || isDevOrigin(origin)) {
+      allowOrigin = origin; // echo the requesting origin so the browser is happy
+    }
+  }
   return {
     "Access-Control-Allow-Origin": allowOrigin,
     "Access-Control-Allow-Methods": "POST, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type",
+    "Vary": "Origin",
   };
 }
 
