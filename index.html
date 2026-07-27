@@ -92,72 +92,61 @@
   .nav-cta:hover{background:var(--emerald-deep); transform:translateY(-1px);}
   .nav-mobile-links{display:none;}
 
-  /* ---------- ANIMATED BRAND MARK ---------- */
+  /* ---------- BRAND MARK ---------- */
   .brand-mark{
     display:inline-flex;
     align-items:center;
-    gap:10px;
+    gap:11px;
     text-decoration:none;
   }
-  .brand-blocks{
+  .brand-badge{
     position:relative;
-    width:26px;
-    height:26px;
+    width:32px;
+    height:32px;
+    border-radius:9px;
     flex-shrink:0;
-  }
-  .brand-blocks .blk{
-    position:absolute;
-    width:11px;
-    height:11px;
-    border-radius:3px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:linear-gradient(135deg, var(--emerald,#0EA968) 0%, var(--emerald-deep,#087F4E) 50%, var(--royal,#1D4ED8) 100%);
+    box-shadow:0 2px 10px rgba(14,169,104,.28), inset 0 1px 0 rgba(255,255,255,.28);
     opacity:0;
-    transform:translateY(6px) scale(0.6);
-    animation:blockIn .5s cubic-bezier(.2,.8,.3,1.2) forwards;
+    transform:translateY(4px) scale(.9);
+    animation:badgeIn .5s cubic-bezier(.2,.8,.3,1.2) .05s forwards;
+    transition:transform .35s cubic-bezier(.2,.8,.3,1.2), box-shadow .35s;
   }
-  .brand-blocks .blk1{left:0;bottom:0;background:var(--emerald-deep,#087F4E); animation-delay:.05s;}
-  .brand-blocks .blk2{left:8px;bottom:6px;background:var(--emerald,#0EA968); animation-delay:.18s;}
-  .brand-blocks .blk3{left:16px;bottom:12px;background:var(--royal,#1D4ED8); animation-delay:.31s;}
-  @keyframes blockIn{
-    to{opacity:1;transform:translateY(0) scale(1);}
-  }
-  .brand-mark:hover .blk1{animation:blockBounce 1.1s ease-in-out infinite;}
-  .brand-mark:hover .blk2{animation:blockBounce 1.1s ease-in-out infinite .12s;}
-  .brand-mark:hover .blk3{animation:blockBounce 1.1s ease-in-out infinite .24s;}
-  @keyframes blockBounce{
-    0%,100%{transform:translateY(0) scale(1);}
-    50%{transform:translateY(-4px) scale(1.05);}
+  @keyframes badgeIn{to{opacity:1;transform:translateY(0) scale(1);}}
+  .brand-badge svg{width:17px;height:17px;position:relative;z-index:1;}
+  .brand-mark:hover .brand-badge{
+    transform:scale(1.08) rotate(-4deg);
+    box-shadow:0 6px 18px rgba(14,169,104,.4), inset 0 1px 0 rgba(255,255,255,.32);
   }
   .brand-text{
     font-family:'Sora', sans-serif;
-    font-weight:800;
+    font-weight:700;
     font-size:20px;
     letter-spacing:-0.4px;
+    color:var(--ink);
     white-space:nowrap;
-    background:linear-gradient(100deg, var(--ink) 0%, var(--emerald-deep,#087F4E) 35%, var(--royal,#1D4ED8) 65%, var(--ink) 100%);
-    background-size:220% auto;
-    background-position:15% center;
+    opacity:0;
+    transform:translateY(6px);
+    animation:textIn .5s ease .18s forwards;
+  }
+  @keyframes textIn{to{opacity:1;transform:translateY(0);}}
+  .brand-text .accent{
+    background:linear-gradient(100deg, var(--emerald-deep,#087F4E) 0%, var(--royal,#1D4ED8) 100%);
+    background-size:200% auto;
+    background-position:0 center;
     -webkit-background-clip:text;
     background-clip:text;
     color:transparent;
+    font-weight:800;
+    transition:background-position .6s ease;
   }
-  .brand-text .bl{
-    display:inline-block;
-    opacity:0;
-    transform:translateY(10px);
-    animation:letterIn .5s ease forwards;
-  }
-  @keyframes letterIn{
-    to{opacity:1;transform:translateY(0);}
-  }
-  .brand-mark:hover .brand-text{
-    animation:shimmerSweep 1.4s linear infinite;
-  }
-  @keyframes shimmerSweep{
-    to{background-position:-205% center;}
-  }
+  .brand-mark:hover .brand-text .accent{background-position:-100% center;}
   @media (prefers-reduced-motion: reduce){
-    .brand-blocks .blk, .brand-text .bl{animation:none !important; opacity:1 !important; transform:none !important;}
-    .brand-mark:hover .brand-text{animation:none !important;}
+    .brand-badge, .brand-text{animation:none !important; opacity:1 !important; transform:none !important;}
+    .brand-mark:hover .brand-badge{transform:none;}
   }
 
   @media (max-width:760px){
@@ -601,8 +590,13 @@
 
 <nav class="nav">
   <a href="index.html" class="brand-mark">
-    <span class="brand-blocks"><span class="blk blk1"></span><span class="blk blk2"></span><span class="blk blk3"></span></span>
-    <span class="brand-text"><span class="bl" style="animation-delay:.40s">B</span><span class="bl" style="animation-delay:.43s">u</span><span class="bl" style="animation-delay:.46s">i</span><span class="bl" style="animation-delay:.49s">l</span><span class="bl" style="animation-delay:.52s">d</span><span class="bl" style="animation-delay:.55s">I</span><span class="bl" style="animation-delay:.58s">t</span><span class="bl" style="animation-delay:.61s">U</span><span class="bl" style="animation-delay:.64s">p</span></span>
+    <span class="brand-badge">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 15.5L9.5 10L13 13L20 5.5" stroke="white" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M14.5 5H20V10.5" stroke="white" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </span>
+    <span class="brand-text">Build<span class="accent">ItUp</span></span>
   </a>
   <div class="nav-links">
     <a href="#how-it-works">How it works</a>

@@ -55,38 +55,43 @@
   .hdr-btn-ghost:hover{border-color:var(--accent) !important; color:var(--accent) !important; transform:translateY(-1px);}
   .hdr-btn-solid:hover{background:var(--emerald-deep,#087F4E) !important; transform:translateY(-1px); box-shadow:0 6px 18px rgba(14,169,104,0.25);}
   .hdr-btn:active{transform:translateY(0);}
-  .brand-blocks{position:relative;width:26px;height:26px;flex-shrink:0;}
-  .brand-blocks .blk{position:absolute;width:11px;height:11px;border-radius:3px;opacity:0;transform:translateY(6px) scale(0.6);animation:blockIn .5s cubic-bezier(.2,.8,.3,1.2) forwards;}
-  .brand-blocks .blk1{left:0;bottom:0;background:#087F4E;animation-delay:.05s;}
-  .brand-blocks .blk2{left:8px;bottom:6px;background:#0EA968;animation-delay:.18s;}
-  .brand-blocks .blk3{left:16px;bottom:12px;background:#1D4ED8;animation-delay:.31s;}
-  @keyframes blockIn{to{opacity:1;transform:translateY(0) scale(1);}}
-  .brand-mark:hover .blk1{animation:blockBounce 1.1s ease-in-out infinite;}
-  .brand-mark:hover .blk2{animation:blockBounce 1.1s ease-in-out infinite .12s;}
-  .brand-mark:hover .blk3{animation:blockBounce 1.1s ease-in-out infinite .24s;}
-  @keyframes blockBounce{0%,100%{transform:translateY(0) scale(1);} 50%{transform:translateY(-4px) scale(1.05);}}
+  .brand-badge{
+    position:relative;width:32px;height:32px;border-radius:9px;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(135deg, var(--accent,#0EA968) 0%, #087F4E 50%, var(--accent-2,#1D4ED8) 100%);
+    box-shadow:0 2px 10px rgba(14,169,104,.28), inset 0 1px 0 rgba(255,255,255,.28);
+    opacity:0;transform:translateY(4px) scale(.9);
+    animation:badgeIn .5s cubic-bezier(.2,.8,.3,1.2) .05s forwards;
+    transition:transform .35s cubic-bezier(.2,.8,.3,1.2), box-shadow .35s;
+  }
+  @keyframes badgeIn{to{opacity:1;transform:translateY(0) scale(1);}}
+  .brand-badge svg{width:18px;height:18px;position:relative;z-index:1;}
+  .brand-mark:hover .brand-badge{
+    transform:scale(1.08) rotate(-4deg);
+    box-shadow:0 6px 18px rgba(14,169,104,.4), inset 0 1px 0 rgba(255,255,255,.32);
+  }
   .brand-text{
     font-family:'Sora', sans-serif;
-    font-weight:800;
+    font-weight:700;
     font-size:22px;
     letter-spacing:-0.5px;
+    color:var(--ink);
     white-space:nowrap;
-    background:linear-gradient(100deg, var(--ink) 0%, #087F4E 35%, #1D4ED8 65%, var(--ink) 100%);
-    background-size:220% auto;
-    background-position:15% center;
-    -webkit-background-clip:text;
-    background-clip:text;
-    color:transparent;
+    opacity:0;transform:translateY(6px);
+    animation:textIn .5s ease .18s forwards;
   }
-  .brand-text .bl{display:inline-block;opacity:0;transform:translateY(10px);animation:letterIn .5s ease forwards;}
-  @keyframes letterIn{to{opacity:1;transform:translateY(0);}}
-  .brand-mark:hover .brand-text{
-    animation:shimmerSweep 1.4s linear infinite;
+  @keyframes textIn{to{opacity:1;transform:translateY(0);}}
+  .brand-text .accent{
+    background:linear-gradient(100deg, #087F4E 0%, var(--accent-2,#1D4ED8) 100%);
+    background-size:200% auto;background-position:0 center;
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    font-weight:800;
+    transition:background-position .6s ease;
   }
-  @keyframes shimmerSweep{to{background-position:-205% center;}}
+  .brand-mark:hover .brand-text .accent{background-position:-100% center;}
   @media (prefers-reduced-motion: reduce){
-    .brand-blocks .blk, .brand-text .bl{animation:none !important; opacity:1 !important; transform:none !important;}
-    .brand-mark:hover .brand-text{animation:none !important;}
+    .brand-badge, .brand-text{animation:none !important; opacity:1 !important; transform:none !important;}
+    .brand-mark:hover .brand-badge{transform:none;}
   }
   *{box-sizing:border-box;}
   html{scroll-behavior:smooth;}
@@ -892,8 +897,13 @@
   <div id="app-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;padding:18px 0;border-bottom:1px solid var(--line);margin-bottom:24px;">
     <div style="display:flex;align-items:center;gap:14px;">
       <a href="index.html" class="brand-mark">
-        <span class="brand-blocks"><span class="blk blk1"></span><span class="blk blk2"></span><span class="blk blk3"></span></span>
-        <span class="brand-text"><span class="bl" style="animation-delay:.05s">B</span><span class="bl" style="animation-delay:.08s">u</span><span class="bl" style="animation-delay:.11s">i</span><span class="bl" style="animation-delay:.14s">l</span><span class="bl" style="animation-delay:.17s">d</span><span class="bl" style="animation-delay:.20s">I</span><span class="bl" style="animation-delay:.23s">t</span><span class="bl" style="animation-delay:.26s">U</span><span class="bl" style="animation-delay:.29s">p</span></span>
+        <span class="brand-badge">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 15.5L9.5 10L13 13L20 5.5" stroke="white" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M14.5 5H20V10.5" stroke="white" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="brand-text">Build<span class="accent">ItUp</span></span>
       </a>
       <div id="credit-box" style="display:none;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:6px 14px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-soft);">
         <span id="credit-num" style="color:var(--accent);font-weight:600;">–</span> / <span id="credit-total">360</span> credits
