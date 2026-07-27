@@ -1,4 +1,4 @@
-// ProjectDesk backend — Cloudflare Worker (FREE version using Workers AI)
+// BuildItUp backend — Cloudflare Worker (FREE version using Workers AI)
 // No API key, no billing, no credit card. Uses Cloudflare's free built-in AI models.
 
 const ALLOWED_ORIGINS = [
@@ -59,8 +59,8 @@ async function sendOtpEmail(env, toEmail, name, otp) {
     body: JSON.stringify({
       from: env.RESEND_FROM,
       to: [toEmail],
-      subject: `Your ProjectDesk login code: ${otp}`,
-      text: `Hi ${name || "there"},\n\nYour ProjectDesk login code is: ${otp}\n\nThis code expires in 10 minutes. If you didn't request this, you can ignore this email.`,
+      subject: `Your BuildItUp login code: ${otp}`,
+      text: `Hi ${name || "there"},\n\nYour BuildItUp login code is: ${otp}\n\nThis code expires in 10 minutes. If you didn't request this, you can ignore this email.`,
     }),
   });
   if (!res.ok) {

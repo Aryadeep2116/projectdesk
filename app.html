@@ -3,20 +3,42 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ProjectDesk — Find your next resume project</title>
+<title>BuildItUp — Find your next resume project</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 
   :root{
-    --paper:#0F1310;
-    --paper-2:#171C18;
-    --ink:#EDEFEA;
-    --ink-soft:#8B948A;
-    --line:#2A322C;
-    --accent:#D4F26A;
-    --accent-2:#6E8DFF;
-    --card:#151A16;
-    --gold:#D4F26A;
+    --paper:#FFFFFF;
+    --paper-2:#F7F8FA;
+    --ink:#0B0F0D;
+    --ink-soft:#5B6B63;
+    --line:#E7EAE7;
+    --accent:#0EA968;
+    --accent-2:#1D4ED8;
+    --card:#FFFFFF;
+    --gold:#0EA968;
+  }
+
+  /* ---------- ANIMATED BRAND MARK ---------- */
+  .brand-mark{display:inline-flex;align-items:center;gap:10px;text-decoration:none;}
+  .brand-blocks{position:relative;width:26px;height:26px;flex-shrink:0;}
+  .brand-blocks .blk{position:absolute;width:11px;height:11px;border-radius:3px;opacity:0;transform:translateY(6px) scale(0.6);animation:blockIn .5s cubic-bezier(.2,.8,.3,1.2) forwards;}
+  .brand-blocks .blk1{left:0;bottom:0;background:#087F4E;animation-delay:.05s;}
+  .brand-blocks .blk2{left:8px;bottom:6px;background:#0EA968;animation-delay:.18s;}
+  .brand-blocks .blk3{left:16px;bottom:12px;background:#1D4ED8;animation-delay:.31s;}
+  @keyframes blockIn{to{opacity:1;transform:translateY(0) scale(1);}}
+  .brand-mark:hover .blk1{animation:blockBounce 1.1s ease-in-out infinite;}
+  .brand-mark:hover .blk2{animation:blockBounce 1.1s ease-in-out infinite .12s;}
+  .brand-mark:hover .blk3{animation:blockBounce 1.1s ease-in-out infinite .24s;}
+  @keyframes blockBounce{0%,100%{transform:translateY(0) scale(1);} 50%{transform:translateY(-4px) scale(1.05);}}
+  .brand-text{font-family:'Sora', sans-serif;font-weight:700;font-size:18px;letter-spacing:-0.3px;color:var(--ink);white-space:nowrap;}
+  .brand-text .bl{display:inline-block;opacity:0;transform:translateY(10px);animation:letterIn .5s ease forwards;}
+  @keyframes letterIn{to{opacity:1;transform:translateY(0);}}
+  .brand-mark:hover .brand-text{background:linear-gradient(100deg, var(--ink) 0%, #087F4E 25%, #1D4ED8 50%, var(--ink) 75%);background-size:250% auto;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shimmerSweep 1.6s linear infinite;}
+  @keyframes shimmerSweep{to{background-position:-250% center;}}
+  @media (prefers-reduced-motion: reduce){
+    .brand-blocks .blk, .brand-text .bl{animation:none !important; opacity:1 !important; transform:none !important;}
+    .brand-mark:hover .brand-text{animation:none !important; background:none !important; -webkit-text-fill-color:initial !important; color:var(--ink) !important;}
   }
   *{box-sizing:border-box;}
   html{scroll-behavior:smooth;}
@@ -40,13 +62,13 @@
   .bg-orb.one{
     width:420px;height:420px;
     top:-120px;left:-100px;
-    background:rgba(212,242,106,0.09);
+    background:rgba(14,169,104,0.09);
     animation:floatA 18s ease-in-out infinite;
   }
   .bg-orb.two{
     width:380px;height:380px;
     bottom:-140px;right:-100px;
-    background:rgba(110,141,255,0.08);
+    background:rgba(29,78,216,0.08);
     animation:floatB 22s ease-in-out infinite;
   }
   @keyframes floatA{
@@ -79,7 +101,7 @@
   }
   .shape.plus{
     top:70px;right:6%;
-    font-family:'JetBrains Mono', monospace;
+    font-family:'IBM Plex Mono', monospace;
     font-size:26px;
     color:var(--accent-2);
     animation:floatShape 4.2s ease-in-out infinite .3s;
@@ -97,11 +119,11 @@
     to{opacity:1;transform:translateY(0);}
   }
   .eyebrow{
-    font-family:'JetBrains Mono', monospace;
+    font-family:'IBM Plex Mono', monospace;
     font-size:12px;
     letter-spacing:2px;
     text-transform:uppercase;
-    color:#0F1310;
+    color:#FFFFFF;
     background:var(--accent);
     padding:6px 14px 6px 10px;
     border-radius:20px;
@@ -121,7 +143,7 @@
     content:'';
     width:7px;height:7px;
     border-radius:50%;
-    background:#0F1310;
+    background:#FFFFFF;
     display:inline-block;
     animation:pulseDot 2s ease-in-out infinite;
   }
@@ -130,7 +152,7 @@
     50%{opacity:.4;}
   }
   h1{
-    font-family:'Space Grotesk', sans-serif;
+    font-family:'Sora', sans-serif;
     font-weight:700;
     font-size:clamp(40px, 9vw, 68px);
     line-height:1.02;
@@ -162,7 +184,7 @@
     perspective:1200px;
   }
   .card{
-    background:linear-gradient(180deg, rgba(21,26,22,0.95), rgba(15,19,16,0.98));
+    background:linear-gradient(180deg, rgba(255,255,255,0.95), rgba(247,248,250,0.98));
     border:1px solid var(--line);
     border-radius:14px;
     padding:38px 36px;
@@ -176,7 +198,7 @@
     from{opacity:0;transform:translateY(24px) scale(.97);}
     to{opacity:1;transform:translateY(0) scale(1);}
   }
-  .card:hover{border-color:rgba(212,242,106,0.25);}
+  .card:hover{border-color:rgba(14,169,104,0.25);}
   .card::before{
     content:'';
     position:absolute;
@@ -216,7 +238,7 @@
     padding:11px 18px;
     border-radius:24px;
     border:1px solid var(--line);
-    background:#0D110E;
+    background:#F7F8FA;
     color:var(--ink-soft);
     cursor:pointer;
     transition:all .2s ease;
@@ -225,7 +247,7 @@
   .pill.active{
     background:var(--accent);
     border-color:var(--accent);
-    color:#0F1310;
+    color:#FFFFFF;
     font-weight:600;
     transform:scale(1.03);
   }
@@ -255,7 +277,7 @@
   }
   .land-badge{margin-bottom:26px;}
   .land-h1{
-    font-family:'Space Grotesk', sans-serif;
+    font-family:'Sora', sans-serif;
     font-weight:700;
     font-size:clamp(42px, 10vw, 76px);
     line-height:1.02;
@@ -279,13 +301,13 @@
     animation:riseIn .8s ease .35s forwards;
   }
   .cta-btn{
-    font-family:'JetBrains Mono', monospace;
+    font-family:'IBM Plex Mono', monospace;
     letter-spacing:1px;
     text-transform:uppercase;
     font-size:14.5px;
     font-weight:600;
     background:var(--accent);
-    color:#0F1310;
+    color:#FFFFFF;
     border:none;
     padding:20px 36px;
     border-radius:8px;
@@ -300,8 +322,8 @@
     transition:transform .2s ease, box-shadow .2s ease;
   }
   @keyframes ctaPulse{
-    0%,100%{box-shadow:0 0 0 0 rgba(212,242,106,0.4);}
-    50%{box-shadow:0 0 0 14px rgba(212,242,106,0);}
+    0%,100%{box-shadow:0 0 0 0 rgba(14,169,104,0.4);}
+    50%{box-shadow:0 0 0 14px rgba(14,169,104,0);}
   }
   .cta-btn:hover{transform:translateY(-2px) scale(1.03);}
   .cta-btn::after{
@@ -317,7 +339,7 @@
   .cta-btn .btn-arrow{transition:transform .25s ease;}
   .cta-btn:hover .btn-arrow{transform:translateX(5px);}
   .land-meta{
-    font-family:'JetBrains Mono', monospace;
+    font-family:'IBM Plex Mono', monospace;
     font-size:11.5px;
     letter-spacing:.5px;
     color:var(--ink-soft);
@@ -354,7 +376,7 @@
     display:flex;
     align-items:center;
     gap:9px;
-    font-family:'JetBrains Mono', monospace;
+    font-family:'IBM Plex Mono', monospace;
     font-size:11px;
     text-transform:uppercase;
     letter-spacing:1.5px;
@@ -381,7 +403,7 @@
   .field:focus-within label::before{
     background:var(--accent);
     border-color:var(--accent);
-    color:#0F1310;
+    color:#FFFFFF;
     transform:scale(1.15) rotate(-8deg);
   }
   label .req{color:var(--accent-2);font-size:10px;}
@@ -392,7 +414,7 @@
     padding:12px 14px;
     border:1px solid var(--line);
     border-radius:6px;
-    background:#0D110E;
+    background:#F7F8FA;
     color:var(--ink);
     transition:border-color .2s ease, box-shadow .2s ease, transform .2s ease;
   }
@@ -408,7 +430,7 @@
   input:focus, select:focus, textarea:focus{
     outline:none;
     border-color:var(--accent);
-    box-shadow:0 0 0 3px rgba(212,242,106,0.12);
+    box-shadow:0 0 0 3px rgba(14,169,104,0.12);
     transform:translateY(-1px);
   }
   textarea{resize:vertical;min-height:66px;}
@@ -430,13 +452,13 @@
   .keyfield .hint a{color:var(--accent);}
 
   button{
-    font-family:'JetBrains Mono', monospace;
+    font-family:'IBM Plex Mono', monospace;
     letter-spacing:1px;
     text-transform:uppercase;
     font-size:13px;
     font-weight:600;
     background:var(--accent);
-    color:#0F1310;
+    color:#FFFFFF;
     border:none;
     padding:16px 30px;
     border-radius:4px;
@@ -464,13 +486,13 @@
     display:inline-block;
   }
   button:hover:not(:disabled) .btn-arrow{transform:translateX(4px);}
-  button:hover:not(:disabled){background:#C2E85A;transform:translateY(-1px);}
+  button:hover:not(:disabled){background:#087F4E;transform:translateY(-1px);}
   button:active:not(:disabled){transform:translateY(0);}
-  button:disabled{background:#3A4038;color:#8B948A;cursor:not-allowed;}
+  button:disabled{background:#F7F8FA;color:#5B6B63;cursor:not-allowed;}
   .spinner{
     width:13px;height:13px;
-    border:2px solid rgba(15,19,16,0.3);
-    border-top-color:#0F1310;
+    border:2px solid rgba(11,15,13,0.15);
+    border-top-color:#FFFFFF;
     border-radius:50%;
     animation:spin .7s linear infinite;
     display:none;
@@ -489,7 +511,7 @@
   /* RESULTS */
   .results{margin-top:44px;}
   .results-head{
-    font-family:'Space Grotesk', sans-serif;
+    font-family:'Sora', sans-serif;
     font-size:22px;
     font-weight:600;
     font-style:normal;
@@ -524,7 +546,7 @@
   }
   .idea:hover{
     transform:translateY(-4px) scale(1.008);
-    box-shadow:0 20px 40px -18px rgba(0,0,0,0.5), 0 0 0 1px rgba(212,242,106,0.25);
+    box-shadow:0 20px 40px -18px rgba(0,0,0,0.5), 0 0 0 1px rgba(14,169,104,0.25);
   }
   .idea::before{
     content:'';
@@ -534,13 +556,13 @@
     background:var(--accent-2);
   }
   .idea-num{
-    font-family:'JetBrains Mono', monospace;
+    font-family:'IBM Plex Mono', monospace;
     font-size:11px;
     color:var(--accent-2);
     letter-spacing:1.5px;
   }
   .idea h3{
-    font-family:'Space Grotesk', sans-serif;
+    font-family:'Sora', sans-serif;
     font-weight:600;
     margin:8px 0 10px;
     font-size:21px;
@@ -552,7 +574,7 @@
     margin:6px 0;
   }
   .label-inline{
-    font-family:'JetBrains Mono', monospace;
+    font-family:'IBM Plex Mono', monospace;
     font-size:10.5px;
     text-transform:uppercase;
     letter-spacing:1.5px;
@@ -563,7 +585,7 @@
   .stack-tags{margin-top:8px;}
   .stack-tags span{
     display:inline-block;
-    font-family:'JetBrains Mono', monospace;
+    font-family:'IBM Plex Mono', monospace;
     font-size:12px;
     background:var(--paper-2);
     border:1px solid var(--line);
@@ -572,10 +594,10 @@
     margin:0 6px 6px 0;
     transition:background .15s ease;
   }
-  .idea:hover .stack-tags span{background:#232B24;border-color:var(--accent);}
+  .idea:hover .stack-tags span{background:#F7F8FA;border-color:var(--accent);}
 
   .resume-line{
-    font-family:'JetBrains Mono', monospace;
+    font-family:'IBM Plex Mono', monospace;
     font-size:13px;
     background:var(--paper-2);
     border-left:2px solid var(--accent);
@@ -624,7 +646,7 @@
     margin-top:36px;
     border-radius:8px;
     position:relative;
-    background:linear-gradient(160deg, #1B2119, #12160F);
+    background:linear-gradient(160deg, #F7FDF9, #FFFFFF);
     padding:30px 28px;
     overflow:hidden;
     opacity:0;
@@ -636,7 +658,7 @@
     inset:0;
     border-radius:8px;
     padding:1px;
-    background:conic-gradient(from var(--spin-angle, 0deg), rgba(212,242,106,0.6), rgba(110,141,255,0.4), rgba(212,242,106,0.6));
+    background:conic-gradient(from var(--spin-angle, 0deg), rgba(14,169,104,0.6), rgba(29,78,216,0.4), rgba(14,169,104,0.6));
     -webkit-mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     -webkit-mask-composite:xor;
     mask-composite:exclude;
@@ -657,11 +679,11 @@
     position:absolute;
     top:-40%;right:-20%;
     width:60%;height:180%;
-    background:radial-gradient(circle, rgba(184,134,46,0.16), transparent 65%);
+    background:radial-gradient(circle, rgba(14,169,104,0.14), transparent 65%);
     pointer-events:none;
   }
   .premium-badge{
-    font-family:'JetBrains Mono', monospace;
+    font-family:'IBM Plex Mono', monospace;
     font-size:10.5px;
     letter-spacing:2px;
     text-transform:uppercase;
@@ -673,17 +695,17 @@
   }
   .premium-badge::before{content:'✦';}
   .premium h3{
-    font-family:'Space Grotesk', sans-serif;
+    font-family:'Sora', sans-serif;
     font-weight:600;
     font-style:normal;
-    color:#F5F1E7;
+    color:#0B0F0D;
     font-size:24px;
     margin:0 0 12px;
     filter:blur(5px);
     user-select:none;
   }
   .premium .hook{
-    color:#C9CDC4;
+    color:#5B6B63;
     font-size:14.5px;
     line-height:1.6;
     margin:0 0 18px;
@@ -693,17 +715,17 @@
   .premium .skills-teaser{margin-bottom:22px;}
   .premium .skills-teaser span{
     display:inline-block;
-    font-family:'JetBrains Mono', monospace;
+    font-family:'IBM Plex Mono', monospace;
     font-size:12px;
-    background:rgba(184,134,46,0.14);
-    border:1px solid #4A5A47;
-    color:#E8D9B5;
+    background:rgba(14,169,104,0.10);
+    border:1px solid #E7EAE7;
+    color:#5B6B63;
     padding:4px 10px;
     border-radius:20px;
     margin:0 6px 6px 0;
   }
   .premium-copy{
-    color:#E7E3D6;
+    color:#5B6B63;
     font-size:14px;
     line-height:1.6;
     max-width:460px;
@@ -711,7 +733,7 @@
     position:relative;
     z-index:2;
   }
-  .premium-copy strong{color:#F5F1E7;}
+  .premium-copy strong{color:#0B0F0D;}
   .waitlist-row{
     display:flex;
     gap:10px;
@@ -722,26 +744,26 @@
   .waitlist-row input{
     flex:1;
     min-width:200px;
-    background:rgba(245,241,231,0.06);
-    border:1px solid #3C4B41;
-    color:#F5F1E7;
+    background:rgba(11,15,13,0.05);
+    border:1px solid #E7EAE7;
+    color:#0B0F0D;
   }
-  .waitlist-row input::placeholder{color:#8A9186;}
+  .waitlist-row input::placeholder{color:#5B6B63;}
   .waitlist-row button{
     background:var(--gold);
-    color:#1A241F;
+    color:#FFFFFF;
     margin-top:0;
     white-space:nowrap;
   }
-  .waitlist-row button:hover{background:#CC9838;}
+  .waitlist-row button:hover{background:#087F4E;}
   .waitlist-status{
     font-size:12.5px;
-    color:#B7BEB2;
+    color:#5B6B63;
     margin-top:10px;
     position:relative;
     z-index:2;
   }
-  .waitlist-status.success{color:#8FBF9F;}
+  .waitlist-status.success{color:#087F4E;}
 
   /* RESPONSIVE — mobile */
   @media (max-width: 560px){
@@ -775,7 +797,7 @@
   .skeleton-line{
     height:12px;
     border-radius:8px;
-    background:linear-gradient(90deg, var(--paper-2) 25%, #263029 37%, var(--paper-2) 63%);
+    background:linear-gradient(90deg, var(--paper-2) 25%, #E7EAE7 37%, var(--paper-2) 63%);
     background-size:400% 100%;
     animation:shimmer 1.4s ease infinite;
     margin-bottom:10px;
@@ -805,7 +827,7 @@
     background:var(--line);
   }
   .section-divider span{
-    font-family:'JetBrains Mono', monospace;
+    font-family:'IBM Plex Mono', monospace;
     font-size:11px;
     letter-spacing:1.5px;
     text-transform:uppercase;
@@ -821,46 +843,49 @@
 <div class="wrap">
   <div id="app-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;padding:18px 0;border-bottom:1px solid var(--line);margin-bottom:24px;">
     <div style="display:flex;align-items:center;gap:14px;">
-      <a href="index.html" style="font-family:'Space Grotesk',sans-serif;font-size:19px;font-weight:700;color:var(--ink);text-decoration:none;">ProjectDesk</a>
-      <div id="credit-box" style="display:none;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:6px 14px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink-soft);">
+      <a href="index.html" class="brand-mark">
+        <span class="brand-blocks"><span class="blk blk1"></span><span class="blk blk2"></span><span class="blk blk3"></span></span>
+        <span class="brand-text"><span class="bl" style="animation-delay:.05s">B</span><span class="bl" style="animation-delay:.08s">u</span><span class="bl" style="animation-delay:.11s">i</span><span class="bl" style="animation-delay:.14s">l</span><span class="bl" style="animation-delay:.17s">d</span><span class="bl" style="animation-delay:.20s">I</span><span class="bl" style="animation-delay:.23s">t</span><span class="bl" style="animation-delay:.26s">U</span><span class="bl" style="animation-delay:.29s">p</span></span>
+      </a>
+      <div id="credit-box" style="display:none;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:6px 14px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-soft);">
         <span id="credit-num" style="color:var(--accent);font-weight:600;">–</span> / <span id="credit-total">360</span> credits
       </div>
     </div>
     <div id="auth-area" style="display:flex;align-items:center;gap:8px;">
-      <button id="header-login-btn" style="background:transparent;border:1px solid var(--line);color:var(--ink-soft);font-family:'JetBrains Mono',monospace;font-size:12px;padding:9px 16px;border-radius:8px;cursor:pointer;">Log in</button>
-      <button id="header-signup-btn" style="background:var(--accent);border:none;color:#0F1310;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;padding:9px 16px;border-radius:8px;cursor:pointer;">Sign up</button>
+      <button id="header-login-btn" style="background:transparent;border:1px solid var(--line);color:var(--ink-soft);font-family:'IBM Plex Mono',monospace;font-size:12px;padding:9px 16px;border-radius:8px;cursor:pointer;">Log in</button>
+      <button id="header-signup-btn" style="background:var(--accent);border:none;color:#FFFFFF;font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;padding:9px 16px;border-radius:8px;cursor:pointer;">Sign up</button>
     </div>
   </div>
 
   <div class="tabs-nav" style="display:flex;gap:4px;margin-bottom:28px;border-bottom:1px solid var(--line);overflow-x:auto;">
-    <div class="app-tab active" data-tab="generate" style="padding:12px 18px;font-family:'JetBrains Mono',monospace;font-size:12.5px;letter-spacing:0.5px;color:var(--accent);cursor:pointer;border-bottom:2px solid var(--accent);white-space:nowrap;">Generate</div>
-    <div class="app-tab" data-tab="overview" style="padding:12px 18px;font-family:'JetBrains Mono',monospace;font-size:12.5px;letter-spacing:0.5px;color:var(--ink-soft);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;">Overview</div>
-    <div class="app-tab" data-tab="workflow" style="padding:12px 18px;font-family:'JetBrains Mono',monospace;font-size:12.5px;letter-spacing:0.5px;color:var(--ink-soft);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;">Workflow</div>
-    <div class="app-tab" data-tab="premium" style="padding:12px 18px;font-family:'JetBrains Mono',monospace;font-size:12.5px;letter-spacing:0.5px;color:var(--ink-soft);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;">Premium</div>
+    <div class="app-tab active" data-tab="generate" style="padding:12px 18px;font-family:'IBM Plex Mono',monospace;font-size:12.5px;letter-spacing:0.5px;color:var(--accent);cursor:pointer;border-bottom:2px solid var(--accent);white-space:nowrap;">Generate</div>
+    <div class="app-tab" data-tab="overview" style="padding:12px 18px;font-family:'IBM Plex Mono',monospace;font-size:12.5px;letter-spacing:0.5px;color:var(--ink-soft);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;">Overview</div>
+    <div class="app-tab" data-tab="workflow" style="padding:12px 18px;font-family:'IBM Plex Mono',monospace;font-size:12.5px;letter-spacing:0.5px;color:var(--ink-soft);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;">Workflow</div>
+    <div class="app-tab" data-tab="premium" style="padding:12px 18px;font-family:'IBM Plex Mono',monospace;font-size:12.5px;letter-spacing:0.5px;color:var(--ink-soft);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;">Premium</div>
   </div>
 
   <div id="login-modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:100;align-items:center;justify-content:center;">
     <div id="login-modal" style="background:var(--card);border:1px solid var(--line);border-radius:14px;padding:30px;max-width:380px;width:90%;position:relative;">
       <button id="login-close-btn" style="position:absolute;top:14px;right:16px;background:none;border:none;color:var(--ink-soft);font-size:18px;cursor:pointer;">×</button>
-      <h3 id="auth-heading" style="font-family:'Space Grotesk',sans-serif;font-size:18px;margin:0 0 6px;">Create a free account</h3>
+      <h3 id="auth-heading" style="font-family:'Sora',sans-serif;font-size:18px;margin:0 0 6px;">Create a free account</h3>
       <p style="color:var(--ink-soft);font-size:12.5px;margin:0 0 20px;line-height:1.5;">360 free credits every 30 days — generating ideas and detailed guides both draw from the same pool.</p>
 
       <div id="auth-signup">
         <input id="signup-name" type="text" placeholder="Your name" style="width:100%;padding:11px 13px;margin-bottom:10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-2);color:var(--ink);font-family:'Inter',sans-serif;font-size:14px;outline:none;">
         <input id="signup-email" type="email" placeholder="Your email" style="width:100%;padding:11px 13px;margin-bottom:10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-2);color:var(--ink);font-family:'Inter',sans-serif;font-size:14px;outline:none;">
         <input id="signup-password" type="password" placeholder="Password (min 8 characters)" style="width:100%;padding:11px 13px;margin-bottom:14px;border-radius:8px;border:1px solid var(--line);background:var(--paper-2);color:var(--ink);font-family:'Inter',sans-serif;font-size:14px;outline:none;">
-        <button id="signup-btn" style="width:100%;padding:12px;border-radius:8px;border:none;background:var(--accent);color:#0F1310;font-weight:600;font-size:14px;cursor:pointer;">Sign up</button>
+        <button id="signup-btn" style="width:100%;padding:12px;border-radius:8px;border:none;background:var(--accent);color:#FFFFFF;font-weight:600;font-size:14px;cursor:pointer;">Sign up</button>
         <div style="text-align:center;margin-top:14px;font-size:12px;color:var(--ink-soft);">Already have an account? <a href="#" id="show-login-link" style="color:var(--accent-2);">Log in</a></div>
       </div>
 
       <div id="auth-login" style="display:none;">
         <input id="login-email" type="email" placeholder="Your email" style="width:100%;padding:11px 13px;margin-bottom:10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-2);color:var(--ink);font-family:'Inter',sans-serif;font-size:14px;outline:none;">
         <input id="login-password" type="password" placeholder="Password" style="width:100%;padding:11px 13px;margin-bottom:14px;border-radius:8px;border:1px solid var(--line);background:var(--paper-2);color:var(--ink);font-family:'Inter',sans-serif;font-size:14px;outline:none;">
-        <button id="login-btn" style="width:100%;padding:12px;border-radius:8px;border:none;background:var(--accent);color:#0F1310;font-weight:600;font-size:14px;cursor:pointer;">Log in</button>
+        <button id="login-btn" style="width:100%;padding:12px;border-radius:8px;border:none;background:var(--accent);color:#FFFFFF;font-weight:600;font-size:14px;cursor:pointer;">Log in</button>
         <div style="text-align:center;margin-top:14px;font-size:12px;color:var(--ink-soft);">New here? <a href="#" id="show-signup-link" style="color:var(--accent-2);">Create an account</a></div>
       </div>
 
-      <div id="login-msg" style="margin-top:14px;font-size:12.5px;font-family:'JetBrains Mono',monospace;color:var(--error, #FF8A7A);"></div>
+      <div id="login-msg" style="margin-top:14px;font-size:12.5px;font-family:'IBM Plex Mono',monospace;color:var(--error, #DC2626);"></div>
     </div>
   </div>
 
@@ -928,7 +953,7 @@
 
   <div id="tab-panel-overview" class="app-tab-panel" style="display:none;">
     <div style="margin-bottom:24px;">
-      <h2 style="font-family:'Space Grotesk',sans-serif;font-size:22px;margin:0 0 6px;">Your project ideas</h2>
+      <h2 style="font-family:'Sora',sans-serif;font-size:22px;margin:0 0 6px;">Your project ideas</h2>
       <p style="color:var(--ink-soft);font-size:13.5px;margin:0;line-height:1.6;">Every set of ideas you've generated lives here. Click one to pull it back up — costs nothing to revisit.</p>
     </div>
     <div id="overview-list"></div>
@@ -936,7 +961,7 @@
 
   <div id="tab-panel-workflow" class="app-tab-panel" style="display:none;">
     <div style="margin-bottom:24px;">
-      <h2 style="font-family:'Space Grotesk',sans-serif;font-size:22px;margin:0 0 6px;">Your build guide</h2>
+      <h2 style="font-family:'Sora',sans-serif;font-size:22px;margin:0 0 6px;">Your build guide</h2>
       <p style="color:var(--ink-soft);font-size:13.5px;margin:0;line-height:1.6;">The one detailed guide you've unlocked this cycle — architecture, skills, and a phased checklist from zero to done.</p>
     </div>
     <div id="workflow-mount"></div>
@@ -944,14 +969,14 @@
 
   <div id="tab-panel-premium" class="app-tab-panel" style="display:none;">
     <div style="margin-bottom:24px;">
-      <h2 style="font-family:'Space Grotesk',sans-serif;font-size:22px;margin:0 0 6px;">Premium</h2>
+      <h2 style="font-family:'Sora',sans-serif;font-size:22px;margin:0 0 6px;">Premium</h2>
       <p style="color:var(--ink-soft);font-size:13.5px;margin:0;line-height:1.6;">A preview of your flagship project — the one that would really set you apart. Full access launches soon.</p>
     </div>
     <div style="position:relative;background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;min-height:320px;">
       <div id="premium" class="premium" style="filter:blur(5px);pointer-events:none;user-select:none;opacity:0.7;padding:24px;"></div>
-      <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;background:rgba(15,19,16,0.35);">
+      <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;background:rgba(255,255,255,0.55);">
         <div style="font-size:26px;margin-bottom:12px;">🔒</div>
-        <div style="font-family:'Space Grotesk',sans-serif;font-size:19px;margin-bottom:8px;">Premium — coming soon</div>
+        <div style="font-family:'Sora',sans-serif;font-size:19px;margin-bottom:8px;">Premium — coming soon</div>
         <p style="color:var(--ink-soft);font-size:13px;max-width:380px;margin:0 0 20px;">More credits, more guides per month, and features we're still deciding on.</p>
         <div class="waitlist-row" style="max-width:380px;">
           <input id="premium-waitlist-email" type="email" placeholder="your email — get early access + launch discount">
@@ -972,7 +997,7 @@ let currentResultId = null; // set once a result is saved/loaded, used by "Get f
 function emptyStateCard(icon, title, msg) {
   return `<div style="text-align:center;padding:56px 24px;background:var(--card);border:1px solid var(--line);border-radius:14px;">
     <div style="font-size:28px;margin-bottom:14px;">${icon}</div>
-    <div style="font-family:'Space Grotesk',sans-serif;font-size:16px;color:var(--ink);margin-bottom:8px;">${title}</div>
+    <div style="font-family:'Sora',sans-serif;font-size:16px;color:var(--ink);margin-bottom:8px;">${title}</div>
     <div style="color:var(--ink-soft);font-size:13px;max-width:380px;margin:0 auto;line-height:1.6;">${msg}</div>
   </div>`;
 }
@@ -1114,8 +1139,8 @@ document.getElementById('login-btn').addEventListener('click', async () => {
 
 function showLoggedInHeader(name) {
   authArea.innerHTML = `
-    <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink-soft);margin-right:4px;">Hi, ${name}</span>
-    <button id="logout-btn" style="background:transparent;border:1px solid var(--line);color:var(--ink-soft);font-family:'JetBrains Mono',monospace;font-size:12px;padding:9px 14px;border-radius:8px;cursor:pointer;">Log out</button>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-soft);margin-right:4px;">Hi, ${name}</span>
+    <button id="logout-btn" style="background:transparent;border:1px solid var(--line);color:var(--ink-soft);font-family:'IBM Plex Mono',monospace;font-size:12px;padding:9px 14px;border-radius:8px;cursor:pointer;">Log out</button>
   `;
   document.getElementById('logout-btn').addEventListener('click', () => {
     localStorage.removeItem('pd_session_token');
@@ -1165,7 +1190,7 @@ async function loadOverview() {
     list.innerHTML = data.results.map(r => `
       <div class="overview-item" data-id="${r.id}" style="background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin-bottom:10px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;">
         <span style="color:var(--accent);font-weight:600;font-size:13.5px;">${r.roleTitle || 'Untitled'}</span>
-        <span style="color:var(--ink-soft);font-family:'JetBrains Mono',monospace;font-size:11px;">${new Date(r.ts).toLocaleDateString()}</span>
+        <span style="color:var(--ink-soft);font-family:'IBM Plex Mono',monospace;font-size:11px;">${new Date(r.ts).toLocaleDateString()}</span>
       </div>
     `).join('') + `<div id="overview-detail" style="margin-top:20px;"></div>`;
 
@@ -1177,7 +1202,7 @@ async function loadOverview() {
 
 async function loadOverviewDetail(id) {
   const detail = document.getElementById('overview-detail');
-  detail.innerHTML = `<div style="padding:20px 0;color:var(--ink-soft);font-family:'JetBrains Mono',monospace;font-size:12px;">Loading...</div>`;
+  detail.innerHTML = `<div style="padding:20px 0;color:var(--ink-soft);font-family:'IBM Plex Mono',monospace;font-size:12px;">Loading...</div>`;
   try {
     const res = await fetch(WORKER_URL, {
       method: 'POST',
@@ -1185,11 +1210,11 @@ async function loadOverviewDetail(id) {
       body: JSON.stringify({ action: 'get_result', id })
     });
     const data = await res.json();
-    if (data.error) { detail.innerHTML = `<div style="color:#FF8A7A;font-size:12.5px;">${data.error}</div>`; return; }
+    if (data.error) { detail.innerHTML = `<div style="color:#DC2626;font-size:12.5px;">${data.error}</div>`; return; }
     currentResultId = id;
     detail.innerHTML = '';
     renderIdeas(data.ideas, detail);
-  } catch (e) { detail.innerHTML = `<div style="color:#FF8A7A;font-size:12.5px;">Could not load this project set.</div>`; }
+  } catch (e) { detail.innerHTML = `<div style="color:#DC2626;font-size:12.5px;">Could not load this project set.</div>`; }
 }
 
 function populateWorkflowFromDashboard(data) {
@@ -1198,7 +1223,7 @@ function populateWorkflowFromDashboard(data) {
     mount.innerHTML = emptyStateCard('🗺️', "You haven't unlocked a guide this cycle", 'Go to a project idea in the Generate or Overview tab and click "Get the full step-by-step guide" — it costs 200 credits.');
     return;
   }
-  mount.innerHTML = `<div style="font-family:'Space Grotesk',sans-serif;font-size:17px;margin-bottom:16px;">${data.latestGuide.projectTitle}</div>`;
+  mount.innerHTML = `<div style="font-family:'Sora',sans-serif;font-size:17px;margin-bottom:16px;">${data.latestGuide.projectTitle}</div>`;
   renderGuide(mount, data.latestGuide);
 }
 
@@ -1288,7 +1313,7 @@ async function loadSavedResult(id) {
       : (data.greeting || 'Shared project ideas');
     resultsSub.textContent = isOwner
       ? 'Bookmark this page anytime to come back to this exact set.'
-      : 'Someone shared this ProjectDesk result with you.';
+      : 'Someone shared this BuildItUp result with you.';
     resultsHead.classList.add('show');
     resultsSub.classList.add('show');
 
@@ -1313,9 +1338,9 @@ function showShareBox(id) {
   box.id = 'share-box';
   box.style.cssText = 'margin:22px 0;padding:16px 18px;background:var(--card);border:1px solid var(--line);border-radius:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;';
   box.innerHTML = `
-    <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink-soft);">Save this link to come back anytime:</span>
-    <input readonly value="${shareUrl}" style="flex:1;min-width:180px;background:var(--paper-2);border:1px solid var(--line);border-radius:6px;padding:8px 10px;color:var(--ink);font-family:'JetBrains Mono',monospace;font-size:12px;">
-    <button id="copy-share-link" style="background:var(--accent);color:#0F1310;border:none;border-radius:6px;padding:8px 14px;font-weight:600;font-size:12px;cursor:pointer;">Copy link</button>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-soft);">Save this link to come back anytime:</span>
+    <input readonly value="${shareUrl}" style="flex:1;min-width:180px;background:var(--paper-2);border:1px solid var(--line);border-radius:6px;padding:8px 10px;color:var(--ink);font-family:'IBM Plex Mono',monospace;font-size:12px;">
+    <button id="copy-share-link" style="background:var(--accent);color:#FFFFFF;border:none;border-radius:6px;padding:8px 14px;font-weight:600;font-size:12px;cursor:pointer;">Copy link</button>
   `;
   resultsHead.after(box);
   document.getElementById('copy-share-link').addEventListener('click', (e) => {
@@ -1356,7 +1381,7 @@ function renderIdeas(ideas, mountEl) {
         <button class="copy-btn">Copy</button>
         ${idea.resume_line}
       </div>
-      <button class="guide-btn" data-idea-key="${i}" style="margin-top:14px;width:100%;padding:10px;border-radius:8px;border:1px solid var(--accent-2);background:transparent;color:var(--accent-2);font-family:'JetBrains Mono',monospace;font-size:12px;cursor:pointer;">Get the full step-by-step guide (200 credits) →</button>
+      <button class="guide-btn" data-idea-key="${i}" style="margin-top:14px;width:100%;padding:10px;border-radius:8px;border:1px solid var(--accent-2);background:transparent;color:var(--accent-2);font-family:'IBM Plex Mono',monospace;font-size:12px;cursor:pointer;">Get the full step-by-step guide (200 credits) →</button>
     `;
     target.appendChild(div);
     setTimeout(() => div.classList.add('show'), i * 110);
@@ -1384,7 +1409,7 @@ function renderFlagship(flagship, inputs, resultId, progress) {
       <div class="skills-checklist" style="margin:18px 0;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
           <span class="label-inline" style="margin:0;">Roadmap progress</span>
-          <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--accent);">${pct}% (${doneCount}/${skills.length})</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--accent);">${pct}% (${doneCount}/${skills.length})</span>
         </div>
         <div style="height:6px;background:var(--paper-2);border-radius:4px;overflow:hidden;margin-bottom:14px;">
           <div class="progress-fill" style="height:100%;width:${pct}%;background:var(--accent);transition:width .3s;"></div>
@@ -1460,7 +1485,7 @@ async function requestGuide(resultId, ideaKey, triggerBtn) {
   const originalLabel = triggerBtn.textContent;
   triggerBtn.disabled = true;
   triggerBtn.textContent = 'Building your guide...';
-  mount.innerHTML = `<div style="padding:40px 0;text-align:center;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink-soft);">Putting together the architecture, skills, and step-by-step plan — this can take a few seconds.</div>`;
+  mount.innerHTML = `<div style="padding:40px 0;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-soft);">Putting together the architecture, skills, and step-by-step plan — this can take a few seconds.</div>`;
 
   try {
     let res = await fetch(WORKER_URL, {
@@ -1487,11 +1512,11 @@ async function requestGuide(resultId, ideaKey, triggerBtn) {
       throw new Error(data.error);
     }
 
-    mount.innerHTML = `<div style="font-family:'Space Grotesk',sans-serif;font-size:17px;margin-bottom:16px;">${data.projectTitle}</div>`;
+    mount.innerHTML = `<div style="font-family:'Sora',sans-serif;font-size:17px;margin-bottom:16px;">${data.projectTitle}</div>`;
     renderGuide(mount, data);
     refreshCreditsDisplay();
   } catch (err) {
-    mount.innerHTML = `<div style="padding:10px 0;color:#FF8A7A;font-family:'JetBrains Mono',monospace;font-size:12px;">${err.message || 'Could not build the guide right now. Try again.'}</div>`;
+    mount.innerHTML = `<div style="padding:10px 0;color:#DC2626;font-family:'IBM Plex Mono',monospace;font-size:12px;">${err.message || 'Could not build the guide right now. Try again.'}</div>`;
   } finally {
     triggerBtn.disabled = false;
     triggerBtn.textContent = originalLabel;
@@ -1500,13 +1525,13 @@ async function requestGuide(resultId, ideaKey, triggerBtn) {
 
 // Node type -> accent color + short tag, kept consistent with the site's palette.
 const DIAGRAM_TYPE_STYLE = {
-  client:   { color: '#6E8DFF', tag: 'CLIENT' },
-  server:   { color: '#D4F26A', tag: 'SERVER' },
-  database: { color: '#F2C94C', tag: 'DATABASE' },
-  external: { color: '#FF8A7A', tag: 'EXTERNAL' },
-  storage:  { color: '#8B948A', tag: 'STORAGE' },
-  queue:    { color: '#B89EFF', tag: 'QUEUE' },
-  other:    { color: '#8B948A', tag: '' },
+  client:   { color: '#1D4ED8', tag: 'CLIENT' },
+  server:   { color: '#0EA968', tag: 'SERVER' },
+  database: { color: '#D97706', tag: 'DATABASE' },
+  external: { color: '#DC2626', tag: 'EXTERNAL' },
+  storage:  { color: '#5B6B63', tag: 'STORAGE' },
+  queue:    { color: '#7C3AED', tag: 'QUEUE' },
+  other:    { color: '#5B6B63', tag: '' },
 };
 
 // Simple auto-layout: layer nodes left-to-right by longest path from a root,
@@ -1570,7 +1595,7 @@ function renderArchitectureDiagram(container, diagram) {
   });
 
   let svg = `<svg viewBox="0 0 ${width} ${height}" style="width:100%;height:auto;font-family:'Inter',sans-serif;">`;
-  svg += `<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6E8DFF"/></marker></defs>`;
+  svg += `<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1D4ED8"/></marker></defs>`;
 
   edges.forEach(e => {
     const a = pos[e.from], b = pos[e.to];
@@ -1578,10 +1603,10 @@ function renderArchitectureDiagram(container, diagram) {
     const x1 = a.x + nodeW, y1 = a.y + nodeH / 2;
     const x2 = b.x, y2 = b.y + nodeH / 2;
     const midX = (x1 + x2) / 2;
-    svg += `<path d="M${x1},${y1} C${midX},${y1} ${midX},${y2} ${x2},${y2}" fill="none" stroke="#3A443C" stroke-width="1.5" marker-end="url(#arrow)"/>`;
+    svg += `<path d="M${x1},${y1} C${midX},${y1} ${midX},${y2} ${x2},${y2}" fill="none" stroke="#E7EAE7" stroke-width="1.5" marker-end="url(#arrow)"/>`;
     if (e.label) {
-      svg += `<rect x="${midX - e.label.length * 2.8}" y="${(y1 + y2) / 2 - 9}" width="${e.label.length * 5.6}" height="16" fill="#0F1310" opacity="0.85"/>`;
-      svg += `<text x="${midX}" y="${(y1 + y2) / 2 + 3}" text-anchor="middle" font-size="9.5" fill="#8B948A" font-family="'JetBrains Mono',monospace">${e.label}</text>`;
+      svg += `<rect x="${midX - e.label.length * 2.8}" y="${(y1 + y2) / 2 - 9}" width="${e.label.length * 5.6}" height="16" fill="#FFFFFF" opacity="0.85"/>`;
+      svg += `<text x="${midX}" y="${(y1 + y2) / 2 + 3}" text-anchor="middle" font-size="9.5" fill="#5B6B63" font-family="'IBM Plex Mono',monospace">${e.label}</text>`;
     }
   });
 
@@ -1589,11 +1614,11 @@ function renderArchitectureDiagram(container, diagram) {
     const p = pos[n.id];
     if (!p) return;
     const style = DIAGRAM_TYPE_STYLE[n.type] || DIAGRAM_TYPE_STYLE.other;
-    svg += `<rect x="${p.x}" y="${p.y}" width="${nodeW}" height="${nodeH}" rx="10" fill="#151A16" stroke="${style.color}" stroke-width="1.5"/>`;
+    svg += `<rect x="${p.x}" y="${p.y}" width="${nodeW}" height="${nodeH}" rx="10" fill="#FFFFFF" stroke="${style.color}" stroke-width="1.5"/>`;
     if (style.tag) {
-      svg += `<text x="${p.x + 12}" y="${p.y + 18}" font-size="8.5" letter-spacing="1" fill="${style.color}" font-family="'JetBrains Mono',monospace">${style.tag}</text>`;
+      svg += `<text x="${p.x + 12}" y="${p.y + 18}" font-size="8.5" letter-spacing="1" fill="${style.color}" font-family="'IBM Plex Mono',monospace">${style.tag}</text>`;
     }
-    svg += `<text x="${p.x + 12}" y="${p.y + (style.tag ? 38 : 30)}" font-size="12.5" fill="#EDEFEA" font-weight="600">${escapeXml(n.label).slice(0, 22)}</text>`;
+    svg += `<text x="${p.x + 12}" y="${p.y + (style.tag ? 38 : 30)}" font-size="12.5" fill="#0B0F0D" font-weight="600">${escapeXml(n.label).slice(0, 22)}</text>`;
   });
 
   svg += `</svg>`;
@@ -1619,10 +1644,10 @@ function renderGuide(mount, guide) {
       <div class="label-inline" style="margin-bottom:10px;">Skills you'll need — foundational to advanced</div>
       <div style="margin-bottom:20px;">
         ${guide.skills.map(s => {
-          const levelColor = s.level === 'advanced' ? '#FF8A7A' : s.level === 'core' ? '#6E8DFF' : '#D4F26A';
+          const levelColor = s.level === 'advanced' ? '#DC2626' : s.level === 'core' ? '#1D4ED8' : '#0EA968';
           return `
           <div style="padding:8px 0;border-top:1px solid var(--line);font-size:13px;">
-            <span style="display:inline-block;font-size:9px;letter-spacing:0.5px;font-family:'JetBrains Mono',monospace;color:${levelColor};border:1px solid ${levelColor};border-radius:4px;padding:1px 6px;margin-right:8px;vertical-align:middle;">${(s.level || '').toUpperCase()}</span>
+            <span style="display:inline-block;font-size:9px;letter-spacing:0.5px;font-family:'IBM Plex Mono',monospace;color:${levelColor};border:1px solid ${levelColor};border-radius:4px;padding:1px 6px;margin-right:8px;vertical-align:middle;">${(s.level || '').toUpperCase()}</span>
             <span style="color:var(--accent);font-weight:600;">${s.name}</span>
             <span style="color:var(--ink-soft);"> — ${s.why}</span>
           </div>
@@ -1632,7 +1657,7 @@ function renderGuide(mount, guide) {
 
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
         <div class="label-inline" style="margin:0;">Build plan</div>
-        <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--accent);">${pct}% (${doneSteps}/${totalSteps})</span>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--accent);">${pct}% (${doneSteps}/${totalSteps})</span>
       </div>
       <div style="height:6px;background:var(--paper);border-radius:4px;overflow:hidden;margin-bottom:16px;">
         <div class="guide-progress-fill" style="height:100%;width:${pct}%;background:var(--accent);transition:width .3s;"></div>
@@ -1640,7 +1665,7 @@ function renderGuide(mount, guide) {
 
       ${guide.phases.map((phase, pi) => `
         <div style="margin-bottom:16px;">
-          <div style="font-family:'Space Grotesk',sans-serif;font-size:14px;margin-bottom:2px;">${phase.title}</div>
+          <div style="font-family:'Sora',sans-serif;font-size:14px;margin-bottom:2px;">${phase.title}</div>
           <div style="font-size:12px;color:var(--ink-soft);margin-bottom:10px;">${phase.description}</div>
           ${phase.steps.map((step, si) => {
             const stepId = `${pi}-${si}`;
