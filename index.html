@@ -616,8 +616,23 @@
   }
   .terminal-body{
     padding:22px 22px 26px;
-    min-height:200px;
+    /* FIXED height (not min-height). The largest idea is ~17 lines of
+       mono at 14.5px / 1.7 line-height ≈ 420px; lock to 460px so the
+       container never grows after the page is laid out. This prevents
+       the typewriter from pushing the page down under the user. */
+    height:460px;
+    overflow:hidden;
     position:relative;
+  }
+  /* Soft fade at the bottom so the cursor doesn't appear cut off
+     when many lines are typed. */
+  .terminal-body::after{
+    content:'';
+    position:absolute;
+    left:0; right:0; bottom:0;
+    height:48px;
+    background:linear-gradient(to bottom, transparent, #0B0F0D 80%);
+    pointer-events:none;
   }
   .terminal-line{
     white-space:pre-wrap;
@@ -722,6 +737,9 @@
     aspect-ratio:1.1/1;
     perspective:1400px;
     cursor:grab;
+    /* Stop the browser from treating drags as page-scroll on touch devices */
+    touch-action:none;
+    -ms-touch-action:none;
   }
   .flipcard-stage.dragging{cursor:grabbing;}
   .flipcard{
@@ -1242,7 +1260,7 @@
     background:var(--bg);
     border-top:1px solid var(--line);
     border-bottom:1px solid var(--line);
-    padding:90px 0 100px;
+    padding:100px 0 120px;
     position:relative;
     overflow:hidden;
   }
@@ -1258,33 +1276,33 @@
   }
   .hscroll-track{
     display:flex;
-    gap:24px;
+    gap:28px;
     width:max-content;
     will-change:transform;
   }
   .hscroll-card{
-    width:340px;
+    width:420px;
     flex-shrink:0;
     background:#fff;
     border:1px solid var(--line);
-    border-radius:18px;
-    padding:28px 24px;
-    box-shadow:0 14px 30px -20px rgba(11,15,13,0.12);
-    transition:transform .3s ease, box-shadow .3s ease, border-color .3s ease;
+    border-radius:22px;
+    padding:36px 30px;
+    box-shadow:0 18px 36px -22px rgba(11,15,13,0.12);
+    transition:transform .35s cubic-bezier(.2,.8,.2,1), box-shadow .35s ease, border-color .35s ease;
   }
   .hscroll-card:hover{
-    transform:translateY(-6px);
-    box-shadow:0 22px 40px -18px rgba(11,15,13,0.18);
-    border-color:rgba(29,78,216,0.3);
+    transform:translateY(-8px);
+    box-shadow:0 28px 50px -20px rgba(11,15,13,0.20);
+    border-color:rgba(29,78,216,0.35);
   }
   .hscroll-card .hscroll-icon{
-    width:42px; height:42px;
-    border-radius:11px;
+    width:52px; height:52px;
+    border-radius:13px;
     display:flex;
     align-items:center;
     justify-content:center;
-    margin-bottom:18px;
-    font-size:20px;
+    margin-bottom:22px;
+    font-size:24px;
   }
   .hscroll-icon.green{background:var(--emerald-soft); color:var(--emerald-deep);}
   .hscroll-icon.blue{background:var(--royal-soft); color:var(--royal);}
@@ -1292,14 +1310,14 @@
   .hscroll-card h4{
     font-family:'Sora', sans-serif;
     font-weight:700;
-    font-size:18px;
-    margin:0 0 8px;
-    letter-spacing:-0.3px;
+    font-size:22px;
+    margin:0 0 10px;
+    letter-spacing:-0.4px;
   }
   .hscroll-card p{
     color:var(--ink-soft);
-    font-size:13.5px;
-    line-height:1.6;
+    font-size:15px;
+    line-height:1.65;
     margin:0;
   }
 
@@ -1832,10 +1850,13 @@ document.querySelectorAll('.word-reveal:not(#hero-headline)').forEach(el => word
   let targetFlipY = 0; // for flip animation
 
   function applyTransform() {
-    if (!dragging) {
-      rotY += (targetY - rotY) * 0.18;
-      rotX += (targetX - rotX) * 0.18;
-    }
+    // Always lerp toward the target. While dragging, use a higher
+    // coefficient so the rotation tracks the cursor 1:1 (the
+    // previous version skipped the lerp entirely during drag,
+    // which is why the card didn't appear to rotate).
+    const k = dragging ? 0.55 : 0.18;
+    rotY += (targetY - rotY) * k;
+    rotX += (targetX - rotX) * k;
     const baseY = flipped ? 180 : 0;
     card.style.transform = `rotateY(${rotY + baseY}deg) rotateX(${rotX}deg)`;
     requestAnimationFrame(applyTransform);
@@ -1846,7 +1867,10 @@ document.querySelectorAll('.word-reveal:not(#hero-headline)').forEach(el => word
   let idleTimer = null;
   function scheduleIdle() {
     clearTimeout(idleTimer);
-    idleTimer = setTimeout(() => { targetY = -12; targetX = 6; }, 1500);
+    // Only return to neutral if the user *isn't* currently dragging.
+    idleTimer = setTimeout(() => {
+      if (!dragging) { targetY = -12; targetX = 6; }
+    }, 1500);
   }
 
   function setDragging(on) {
@@ -2023,6 +2047,10 @@ document.querySelectorAll('.word-reveal:not(#hero-headline)').forEach(el => word
       // Slightly faster per-char typing so it doesn't drag
       const perChar = Math.max(8, Math.min(28, 900 / (html.length || 1)));
       await typeLine(line, html, perChar);
+      // Scroll the terminal body so the current line is always visible.
+      // The body has a fixed height + overflow:hidden, so the typed
+      // content scrolls *inside* the box — the page layout never shifts.
+      body.scrollTop = body.scrollHeight;
       if (isLast) {
         // Pause with the cursor on screen
         await sleep(2400);
@@ -2186,6 +2214,9 @@ if (statsRow) countObserver.observe(statsRow);
 
 /* ===========================================================
    HORIZONTAL SCROLL TRACK
+   Vertical scroll through this section moves the cards
+   horizontally. We also add a drag-to-pan fallback so users
+   on touch / trackpads can swipe the cards directly.
    =========================================================== */
 const hscrollTrack = document.getElementById('hscroll-track');
 const hscrollSection = document.getElementById('what-you-get');
@@ -2194,12 +2225,15 @@ if (hscrollTrack && hscrollSection) {
   function updateHScroll() {
     const rect = hscrollSection.getBoundingClientRect();
     const vh = window.innerHeight;
-    const total = rect.height - vh;
+    // Use the *full section* as the scroll runway (not "rect.height - vh")
+    // so the user has plenty of vertical distance to traverse all cards.
+    const total = rect.height;
     const scrolled = -rect.top;
     let progress = 0;
     if (total > 0) progress = Math.max(0, Math.min(1, scrolled / total));
     const trackWidth = hscrollTrack.scrollWidth;
-    const wrapWidth = hscrollSection.querySelector('.hscroll-track-wrap').clientWidth;
+    const wrapEl = hscrollSection.querySelector('.hscroll-track-wrap');
+    const wrapWidth = wrapEl ? wrapEl.clientWidth : window.innerWidth;
     const maxOffset = Math.max(0, trackWidth - wrapWidth);
     hscrollTrack.style.transform = `translateX(${-progress * maxOffset}px)`;
     hscrollTicking = false;
@@ -2212,6 +2246,36 @@ if (hscrollTrack && hscrollSection) {
   }, { passive: true });
   window.addEventListener('resize', updateHScroll);
   updateHScroll();
+
+  // Drag-to-pan fallback: lets users swipe the cards horizontally
+  // (especially useful on trackpads / touch where vertical scroll
+  // might not engage the section's sticky feel).
+  const wrap = hscrollSection.querySelector('.hscroll-track-wrap');
+  if (wrap) {
+    let isDown = false, startX = 0, scrollStart = 0, dragging = false;
+    wrap.style.cursor = 'grab';
+    wrap.addEventListener('pointerdown', (e) => {
+      isDown = true; dragging = false;
+      startX = e.clientX;
+      scrollStart = window.scrollY;
+      wrap.setPointerCapture(e.pointerId);
+    });
+    wrap.addEventListener('pointermove', (e) => {
+      if (!isDown) return;
+      const dx = e.clientX - startX;
+      // Treat a clear horizontal drag as a manual scroll-into-section
+      if (Math.abs(dx) > 6) {
+        dragging = true;
+        // Move the *page* scroll based on horizontal drag distance,
+        // multiplied by 1.5 so a short swipe traverses more cards.
+        const target = scrollStart + dx * 1.5;
+        const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+        window.scrollTo({ top: Math.max(0, Math.min(maxScroll, target)), behavior: 'auto' });
+      }
+    });
+    wrap.addEventListener('pointerup', () => { isDown = false; dragging = false; });
+    wrap.addEventListener('pointercancel', () => { isDown = false; dragging = false; });
+  }
 }
 
 /* ===========================================================
@@ -2377,9 +2441,14 @@ function initPinned3D() {
   const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
   camera.position.set(0, 0, 9);
 
+  // 4 polished, smooth spheres (one per step). Replaces the
+  // earlier faceted icosahedrons — these read as premium orbs
+  // rather than blocky crystals, with a glassy clearcoat and a
+  // soft additive glow halo around each one.
   const cubeGroup = new THREE.Group();
   const cubeColors = [0x1D4ED8, 0x1D4ED8, 0x1D4ED8, 0x1D4ED8];
-  const icoSizes = [1.05, 0.85, 0.95, 0.75];
+  // Different sizes (radius) per orb so the cluster feels layered.
+  const orbSizes = [0.95, 0.78, 0.88, 0.68];
   const cubeOffsets = [
     new THREE.Vector3(-2.4,  1.6, 0),
     new THREE.Vector3( 2.4,  1.6, 0),
@@ -2388,26 +2457,29 @@ function initPinned3D() {
   ];
   const cubes = [];
   cubeOffsets.forEach((offset, i) => {
-    const sz = icoSizes[i];
-    // Solid glassy icosahedron
-    const geo = new THREE.IcosahedronGeometry(sz, 0);
-    const faceMat = new THREE.MeshPhysicalMaterial({
+    const r = orbSizes[i];
+    // High-segment sphere so the surface is buttery smooth
+    const geo = new THREE.SphereGeometry(r, 64, 48);
+    const mat = new THREE.MeshPhysicalMaterial({
       color: cubeColors[i],
-      transparent: true,
-      opacity: 0.55,
-      roughness: 0.15,
-      metalness: 0.35,
+      roughness: 0.08,
+      metalness: 0.15,
       clearcoat: 1.0,
-      clearcoatRoughness: 0.1,
-      flatShading: true,
+      clearcoatRoughness: 0.05,
+      transmission: 0.35,    // glassy translucency
+      thickness: 0.6,
+      ior: 1.4,
+      reflectivity: 0.6,
+      transparent: true,
+      opacity: 0.95,
     });
-    const mesh = new THREE.Mesh(geo, faceMat);
-    // Soft glow halo (additive-blended sphere)
-    const haloGeo = new THREE.SphereGeometry(sz * 1.7, 24, 16);
+    const mesh = new THREE.Mesh(geo, mat);
+    // Soft outer glow halo
+    const haloGeo = new THREE.SphereGeometry(r * 1.8, 32, 20);
     const haloMat = new THREE.MeshBasicMaterial({
       color: cubeColors[i],
       transparent: true,
-      opacity: 0.18,
+      opacity: 0.16,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
     });
@@ -2439,7 +2511,16 @@ function initPinned3D() {
     lines.push({ line, a, b });
   });
 
-  scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+  scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+  // Add a key light + rim light so the transmission/clearcoat
+  // material on the orbs has highlights to bounce. Without these
+  // the spheres look flat and matte.
+  const keyLight = new THREE.DirectionalLight(0xffffff, 1.2);
+  keyLight.position.set(3, 4, 5);
+  scene.add(keyLight);
+  const rimLight = new THREE.DirectionalLight(0x8ab4ff, 0.7);
+  rimLight.position.set(-4, -2, 3);
+  scene.add(rimLight);
 
   function resize() {
     const w = section.querySelector('.pinned-sticky').clientWidth;
