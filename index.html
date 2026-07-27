@@ -202,6 +202,157 @@
     .cta-btn{padding:17px 24px;font-size:13px;text-align:center;}
     .land-shape-1, .land-shape-2, .land-shape-3{display:none;}
   }
+
+  .scroll-cue{
+    position:absolute;
+    bottom:36px;
+    left:50%;
+    transform:translateX(-50%);
+    font-family:'JetBrains Mono', monospace;
+    font-size:10.5px;
+    letter-spacing:1px;
+    color:var(--ink-soft);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:8px;
+    opacity:0;
+    animation:riseIn .8s ease .9s forwards;
+  }
+  .scroll-cue .dash{
+    width:1px;height:26px;
+    background:linear-gradient(var(--accent), transparent);
+    animation:dashPulse 1.8s ease-in-out infinite;
+  }
+  @keyframes dashPulse{
+    0%,100%{opacity:.3;}
+    50%{opacity:1;}
+  }
+
+  .about-wrap{
+    max-width:980px;
+    margin:0 auto;
+    padding:100px 22px 120px;
+    position:relative;
+    z-index:1;
+  }
+  .about-head{
+    text-align:center;
+    margin-bottom:56px;
+  }
+  .about-head .eyebrow{margin-bottom:18px;}
+  .about-head h2{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:700;
+    font-size:clamp(28px, 5vw, 40px);
+    letter-spacing:-1px;
+    margin:0 0 14px;
+  }
+  .about-head p{
+    color:var(--ink-soft);
+    font-size:15.5px;
+    max-width:560px;
+    margin:0 auto;
+    line-height:1.65;
+  }
+  .steps-grid{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:20px;
+    margin-bottom:64px;
+  }
+  .step-card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:28px 24px;
+    position:relative;
+    overflow:hidden;
+    opacity:0;
+    transform:translateY(20px);
+    transition:opacity .6s ease, transform .6s ease, border-color .2s ease;
+  }
+  .step-card.in-view{opacity:1;transform:translateY(0);}
+  .step-card:hover{border-color:var(--accent-2);}
+  .step-num{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    letter-spacing:1px;
+    color:var(--accent);
+    background:rgba(212,242,106,0.08);
+    border:1px solid rgba(212,242,106,0.25);
+    display:inline-block;
+    padding:4px 10px;
+    border-radius:6px;
+    margin-bottom:16px;
+  }
+  .step-card h3{
+    font-family:'Space Grotesk', sans-serif;
+    font-size:17px;
+    margin:0 0 8px;
+  }
+  .step-card p{
+    color:var(--ink-soft);
+    font-size:13.5px;
+    line-height:1.6;
+    margin:0;
+  }
+  .why-strip{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:16px;
+  }
+  .why-item{
+    display:flex;
+    gap:14px;
+    align-items:flex-start;
+    padding:18px;
+    background:var(--paper-2);
+    border-radius:12px;
+    opacity:0;
+    transform:translateY(16px);
+    transition:opacity .6s ease, transform .6s ease;
+  }
+  .why-item.in-view{opacity:1;transform:translateY(0);}
+  .why-icon{
+    width:34px;height:34px;
+    flex-shrink:0;
+    border-radius:9px;
+    background:rgba(110,141,255,0.1);
+    border:1px solid rgba(110,141,255,0.25);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:15px;
+  }
+  .why-item h4{
+    font-family:'Space Grotesk', sans-serif;
+    font-size:14px;
+    margin:0 0 4px;
+  }
+  .why-item p{
+    color:var(--ink-soft);
+    font-size:12.5px;
+    line-height:1.55;
+    margin:0;
+  }
+  .final-cta{
+    text-align:center;
+    margin-top:70px;
+    padding-top:56px;
+    border-top:1px solid var(--line);
+  }
+  .final-cta h3{
+    font-family:'Space Grotesk', sans-serif;
+    font-size:24px;
+    margin:0 0 24px;
+    letter-spacing:-0.5px;
+  }
+
+  @media (max-width:760px){
+    .steps-grid, .why-strip{grid-template-columns:1fr;}
+    .about-wrap{padding:70px 20px 90px;}
+  }
 </style>
 </head>
 <body>
@@ -217,7 +368,54 @@
   <p class="land-sub">Get project ideas matched to the role you actually want — not another generic list you'll scroll past. Takes 30 seconds.</p>
   <a href="app.html" id="cta-btn" class="cta-btn">Build Projects For My Resume <span class="btn-arrow">→</span></a>
   <div class="land-meta">Free to start · Sign up in seconds · 360 credits every month</div>
+  <div class="scroll-cue"><span>See how it works</span><span class="dash"></span></div>
 </section>
+
+<div class="about-wrap">
+  <div class="about-head">
+    <div class="eyebrow">How it actually works</div>
+    <h2>Three inputs. Real project ideas. A guide that walks you through building it.</h2>
+    <p>Most "project idea" lists are generic and forgettable. ProjectDesk asks what role you're targeting, what's missing from your resume, and how much time you have — then builds ideas around <em style="color:var(--ink);font-style:normal;">that</em>, not a stock template.</p>
+  </div>
+
+  <div class="steps-grid">
+    <div class="step-card scroll-reveal">
+      <div class="step-num">Step 01</div>
+      <h3>Tell it your target</h3>
+      <p>Your role, current skills, resume gap, and dream company. Takes about 30 seconds — no essay required.</p>
+    </div>
+    <div class="step-card scroll-reveal">
+      <div class="step-num">Step 02</div>
+      <h3>Get 4 tailored ideas</h3>
+      <p>Each one comes with a stack, a realistic scope for your timeframe, and a resume-ready bullet point you can copy straight away.</p>
+    </div>
+    <div class="step-card scroll-reveal">
+      <div class="step-num">Step 03</div>
+      <h3>Build with a real guide</h3>
+      <p>Pick one and unlock a full step-by-step build plan — architecture, skills to learn, and a phased checklist from zero to done.</p>
+    </div>
+  </div>
+
+  <div class="why-strip">
+    <div class="why-item scroll-reveal">
+      <div class="why-icon">🎯</div>
+      <div><h4>Actually specific</h4><p>Ideas reference your stated gap and goal, not a generic "build a to-do app."</p></div>
+    </div>
+    <div class="why-item scroll-reveal">
+      <div class="why-icon">🗺️</div>
+      <div><h4>No more guessing</h4><p>Every guide includes a real architecture map, not just a vague outline.</p></div>
+    </div>
+    <div class="why-item scroll-reveal">
+      <div class="why-icon">💸</div>
+      <div><h4>Free to start</h4><p>360 credits every month — enough for a full idea set plus a detailed build guide.</p></div>
+    </div>
+  </div>
+
+  <div class="final-cta">
+    <h3>Ready to see what you should actually build?</h3>
+    <a href="app.html" class="cta-btn cta-btn-secondary">Build Projects For My Resume <span class="btn-arrow">→</span></a>
+  </div>
+</div>
 
 <script>
 const WORKER_URL = "https://projectdesk-api.aryadeepbiswas014.workers.dev";
@@ -229,14 +427,23 @@ fetch(WORKER_URL, {
   body: JSON.stringify({ action: 'track', type: 'landing_view' })
 }).catch(() => {});
 
-document.getElementById('cta-btn').addEventListener('click', () => {
-  fetch(WORKER_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ action: 'track', type: 'cta_click' })
-  }).catch(() => {});
-  // Navigation to app.html happens natively via the href — no need to preventDefault.
+document.querySelectorAll('.cta-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    fetch(WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'track', type: 'cta_click' })
+    }).catch(() => {});
+    // Navigation to app.html happens natively via the href — no need to preventDefault.
+  });
 });
+
+const scrollObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) entry.target.classList.add('in-view');
+  });
+}, { threshold: 0.15 });
+document.querySelectorAll('.scroll-reveal').forEach(el => scrollObserver.observe(el));
 </script>
 </body>
 </html>

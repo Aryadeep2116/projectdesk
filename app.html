@@ -927,20 +927,31 @@
   </div>
 
   <div id="tab-panel-overview" class="app-tab-panel" style="display:none;">
-    <div class="label-inline" style="font-family:'JetBrains Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--ink-soft);margin-bottom:14px;">Your generated project sets</div>
+    <div style="margin-bottom:24px;">
+      <h2 style="font-family:'Space Grotesk',sans-serif;font-size:22px;margin:0 0 6px;">Your project ideas</h2>
+      <p style="color:var(--ink-soft);font-size:13.5px;margin:0;line-height:1.6;">Every set of ideas you've generated lives here. Click one to pull it back up — costs nothing to revisit.</p>
+    </div>
     <div id="overview-list"></div>
   </div>
 
   <div id="tab-panel-workflow" class="app-tab-panel" style="display:none;">
+    <div style="margin-bottom:24px;">
+      <h2 style="font-family:'Space Grotesk',sans-serif;font-size:22px;margin:0 0 6px;">Your build guide</h2>
+      <p style="color:var(--ink-soft);font-size:13.5px;margin:0;line-height:1.6;">The one detailed guide you've unlocked this cycle — architecture, skills, and a phased checklist from zero to done.</p>
+    </div>
     <div id="workflow-mount"></div>
   </div>
 
   <div id="tab-panel-premium" class="app-tab-panel" style="display:none;">
-    <div style="position:relative;">
-      <div id="premium" class="premium" style="filter:blur(5px);pointer-events:none;user-select:none;opacity:0.7;"></div>
-      <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;">
-        <div style="font-size:24px;margin-bottom:10px;">🔒</div>
-        <div style="font-family:'Space Grotesk',sans-serif;font-size:18px;margin-bottom:8px;">Premium — coming soon</div>
+    <div style="margin-bottom:24px;">
+      <h2 style="font-family:'Space Grotesk',sans-serif;font-size:22px;margin:0 0 6px;">Premium</h2>
+      <p style="color:var(--ink-soft);font-size:13.5px;margin:0;line-height:1.6;">A preview of your flagship project — the one that would really set you apart. Full access launches soon.</p>
+    </div>
+    <div style="position:relative;background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;min-height:320px;">
+      <div id="premium" class="premium" style="filter:blur(5px);pointer-events:none;user-select:none;opacity:0.7;padding:24px;"></div>
+      <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;background:rgba(15,19,16,0.35);">
+        <div style="font-size:26px;margin-bottom:12px;">🔒</div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:19px;margin-bottom:8px;">Premium — coming soon</div>
         <p style="color:var(--ink-soft);font-size:13px;max-width:380px;margin:0 0 20px;">More credits, more guides per month, and features we're still deciding on.</p>
         <div class="waitlist-row" style="max-width:380px;">
           <input id="premium-waitlist-email" type="email" placeholder="your email — get early access + launch discount">
@@ -957,6 +968,14 @@
 // "https://projectdesk-api.YOUR_SUBDOMAIN.workers.dev"
 const WORKER_URL = "https://projectdesk-api.aryadeepbiswas014.workers.dev";
 let currentResultId = null; // set once a result is saved/loaded, used by "Get full guide" buttons
+
+function emptyStateCard(icon, title, msg) {
+  return `<div style="text-align:center;padding:56px 24px;background:var(--card);border:1px solid var(--line);border-radius:14px;">
+    <div style="font-size:28px;margin-bottom:14px;">${icon}</div>
+    <div style="font-family:'Space Grotesk',sans-serif;font-size:16px;color:var(--ink);margin-bottom:8px;">${title}</div>
+    <div style="color:var(--ink-soft);font-size:13px;max-width:380px;margin:0 auto;line-height:1.6;">${msg}</div>
+  </div>`;
+}
 
 const btn = document.getElementById('go');
 
@@ -1102,7 +1121,8 @@ function showLoggedInHeader(name) {
     localStorage.removeItem('pd_session_token');
     localStorage.removeItem('pd_user_name');
     localStorage.removeItem('pd_user_email');
-    location.reload();
+    localStorage.removeItem('pd_last_result_id');
+    window.location.href = 'app.html'; // clean URL, no lingering ?r= from before logout
   });
 }
 
@@ -1130,7 +1150,7 @@ let latestDashboardData = null;
 async function loadOverview() {
   const token = localStorage.getItem('pd_session_token');
   const list = document.getElementById('overview-list');
-  if (!token) { list.innerHTML = `<div class="empty-state" style="padding:40px 20px;text-align:center;color:var(--ink-soft);font-family:'JetBrains Mono',monospace;font-size:12.5px;">Log in to see your generated project ideas here.</div>`; return; }
+  if (!token) { list.innerHTML = emptyStateCard('👋', 'Log in to see your ideas here', 'Every set of project ideas you generate gets saved to your account automatically.'); return; }
   try {
     const res = await fetch(WORKER_URL, {
       method: 'POST',
@@ -1139,7 +1159,7 @@ async function loadOverview() {
     });
     const data = await res.json();
     if (data.error || !data.results.length) {
-      list.innerHTML = `<div style="padding:40px 20px;text-align:center;color:var(--ink-soft);font-family:'JetBrains Mono',monospace;font-size:12.5px;">No project ideas generated yet — head to the Generate tab.</div>`;
+      list.innerHTML = emptyStateCard('💡', 'Nothing here yet', 'Head to the Generate tab and get your first set of project ideas — they will show up here right after.');
       return;
     }
     list.innerHTML = data.results.map(r => `
@@ -1175,7 +1195,7 @@ async function loadOverviewDetail(id) {
 function populateWorkflowFromDashboard(data) {
   const mount = document.getElementById('workflow-mount');
   if (!data.latestGuide) {
-    mount.innerHTML = `<div style="padding:40px 20px;text-align:center;color:var(--ink-soft);font-family:'JetBrains Mono',monospace;font-size:12.5px;">You haven't unlocked a detailed guide this cycle yet. Go to a project idea and click "Get the full step-by-step guide" — it costs ${200} credits.</div>`;
+    mount.innerHTML = emptyStateCard('🗺️', "You haven't unlocked a guide this cycle", 'Go to a project idea in the Generate or Overview tab and click "Get the full step-by-step guide" — it costs 200 credits.');
     return;
   }
   mount.innerHTML = `<div style="font-family:'Space Grotesk',sans-serif;font-size:17px;margin-bottom:16px;">${data.latestGuide.projectTitle}</div>`;
@@ -1352,14 +1372,6 @@ function renderIdeas(ideas, mountEl) {
 }
 
 function renderFlagship(flagship, inputs, resultId, progress) {
-  const oldDivider = document.querySelector('.section-divider');
-  if (oldDivider) oldDivider.remove();
-  const dividerEl = document.createElement('div');
-  dividerEl.className = 'section-divider';
-  dividerEl.innerHTML = '<span>What would actually set you apart</span>';
-  resultsEl.after(dividerEl);
-  setTimeout(() => dividerEl.classList.add('show'), 100);
-
   const premiumEl = document.getElementById('premium');
   premiumEl.style.display = 'block';
 

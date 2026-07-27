@@ -1,11 +1,16 @@
 // ProjectDesk backend — Cloudflare Worker (FREE version using Workers AI)
 // No API key, no billing, no credit card. Uses Cloudflare's free built-in AI models.
 
-const ALLOWED_ORIGIN = "https://aryadeep2116.github.io";
+const ALLOWED_ORIGINS = [
+  "https://aryadeep2116.github.io",
+  "https://builditup.dpdns.org",
+];
 
-function corsHeaders() {
+function corsHeaders(request) {
+  const origin = request && request.headers.get("Origin");
+  const allowOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
   return {
-    "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
+    "Access-Control-Allow-Origin": allowOrigin,
     "Access-Control-Allow-Methods": "POST, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type",
   };
@@ -147,11 +152,11 @@ function parseAiJson(aiResponse) {
 export default {
   async fetch(request, env) {
     if (request.method === "OPTIONS") {
-      return new Response(null, { headers: corsHeaders() });
+      return new Response(null, { headers: corsHeaders(request) });
     }
 
     if (request.method !== "POST") {
-      return new Response("Method not allowed", { status: 405, headers: corsHeaders() });
+      return new Response("Method not allowed", { status: 405, headers: corsHeaders(request) });
     }
 
 
@@ -165,7 +170,7 @@ export default {
         if (await isRateLimited(env, ip, "waitlist", 5, 3600)) {
           return new Response(JSON.stringify({ error: "Too many requests. Try again later." }), {
             status: 429,
-            headers: { ...corsHeaders(), "Content-Type": "application/json" },
+            headers: { ...corsHeaders(request), "Content-Type": "application/json" },
           });
         }
 
@@ -173,7 +178,7 @@ export default {
         if (!email || !email.includes("@") || email.length > 200) {
           return new Response(JSON.stringify({ error: "Valid email required" }), {
             status: 400,
-            headers: { ...corsHeaders(), "Content-Type": "application/json" },
+            headers: { ...corsHeaders(request), "Content-Type": "application/json" },
           });
         }
         const entry = {
@@ -189,7 +194,7 @@ export default {
         await env.WAITLIST.put(key, JSON.stringify(entry));
 
         return new Response(JSON.stringify({ ok: true }), {
-          headers: { ...corsHeaders(), "Content-Type": "application/json" },
+          headers: { ...corsHeaders(request), "Content-Type": "application/json" },
         });
       }
 
@@ -198,7 +203,7 @@ export default {
         if (await isRateLimited(env, ip, "track", 60, 3600)) {
           return new Response(JSON.stringify({ error: "Too many requests." }), {
             status: 429,
-            headers: { ...corsHeaders(), "Content-Type": "application/json" },
+            headers: { ...corsHeaders(request), "Content-Type": "application/json" },
           });
         }
 
@@ -206,13 +211,13 @@ export default {
         if (!type || typeof type !== "string" || type.length > 50) {
           return new Response(JSON.stringify({ error: "type required" }), {
             status: 400,
-            headers: { ...corsHeaders(), "Content-Type": "application/json" },
+            headers: { ...corsHeaders(request), "Content-Type": "application/json" },
           });
         }
         const key = `event:${type}:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`;
         await env.WAITLIST.put(key, JSON.stringify({ type, ts: new Date().toISOString() }));
         return new Response(JSON.stringify({ ok: true }), {
-          headers: { ...corsHeaders(), "Content-Type": "application/json" },
+          headers: { ...corsHeaders(request), "Content-Type": "application/json" },
         });
       }
 
@@ -221,7 +226,7 @@ export default {
         if (await isRateLimited(env, ip, "signup", 10, 3600)) {
           return new Response(JSON.stringify({ error: "Too many attempts. Try again later." }), {
             status: 429,
-            headers: { ...corsHeaders(), "Content-Type": "application/json" },
+            headers: { ...corsHeaders(request), "Content-Type": "application/json" },
           });
         }
 
@@ -229,19 +234,19 @@ export default {
         if (!name || !name.trim()) {
           return new Response(JSON.stringify({ error: "Name required" }), {
             status: 400,
-            headers: { ...corsHeaders(), "Content-Type": "application/json" },
+            headers: { ...corsHeaders(request), "Content-Type": "application/json" },
           });
         }
         if (!email || !email.includes("@") || email.length > 200) {
           return new Response(JSON.stringify({ error: "Valid email required" }), {
             status: 400,
-            headers: { ...corsHeaders(), "Content-Type": "application/json" },
+            headers: { ...corsHeaders(request), "Content-Type": "application/json" },
           });
         }
         if (!password || password.length < 8) {
           return new Response(JSON.stringify({ error: "Password must be at least 8 characters" }), {
             status: 400,
-            headers: { ...corsHeaders(), "Content-Type": "application/json" },
+            headers: { ...corsHeaders(request), "Content-Type": "application/json" },
           });
         }
 
@@ -250,7 +255,7 @@ export default {
         if (existing) {
           return new Response(JSON.stringify({ error: "An account with this email already exists. Log in instead." }), {
             status: 409,
-            headers: { ...corsHeaders(), "Content-Type": "application/json" },
+            headers: { ...corsHeaders(request), "Content-Type": "application/json" },
           });
         }
 
@@ -272,7 +277,7 @@ export default {
         await env.WAITLIST.put(`session:${token}`, JSON.stringify({ email: userRecord.email, name: userRecord.name }), { expirationTtl: 60 * 60 * 24 * 30 });
 
         return new Response(JSON.stringify({ ok: true, token, name: userRecord.name, email: userRecord.email }), {
-          headers: { ...corsHeaders(), "Content-Type": "application/json" },
+          headers: { ...corsHeaders(request), "Content-Type": "application/json" },
         });
       }
 
@@ -281,7 +286,7 @@ export default {
         if (await isRateLimited(env, ip, "login", 15, 3600)) {
           return new Response(JSON.stringify({ error: "Too many attempts. Try again later." }), {
             status: 429,
-            headers: { ...corsHeaders(), "Content-Type": "application/json" },
+            headers: { ...corsHeaders(request), "Content-Type": "application/json" },
           });
         }
 
@@ -289,7 +294,7 @@ export default {
         if (!email || !password) {
           return new Response(JSON.stringify({ error: "Email and password required" }), {
             status: 400,
-            headers: { ...corsHeaders(), "Content-Type": "application/json" },
+            headers: { ...corsHeaders(request), "Content-Type": "application/json" },
           });
         }
 
@@ -298,7 +303,7 @@ export default {
         if (!stored) {
           return new Response(JSON.stringify({ error: "Invalid email or password." }), {
             status: 401,
-            headers: { ...corsHeaders(), "Content-Type": "application/json" },
+            headers: { ...corsHeaders(request), "Content-Type": "application/json" },
           });
         }
         const userRecord = JSON.parse(stored);
@@ -306,7 +311,7 @@ export default {
         if (hash !== userRecord.hash) {
           return new Response(JSON.stringify({ error: "Invalid email or password." }), {
             status: 401,
-            headers: { ...corsHeaders(), "Content-Type": "application/json" },
+            headers: { ...corsHeaders(request), "Content-Type": "application/json" },
           });
         }
 
@@ -314,7 +319,7 @@ export default {
         await env.WAITLIST.put(`session:${token}`, JSON.stringify({ email: userRecord.email, name: userRecord.name }), { expirationTtl: 60 * 60 * 24 * 30 });
 
         return new Response(JSON.stringify({ ok: true, token, name: userRecord.name, email: userRecord.email }), {
-          headers: { ...corsHeaders(), "Content-Type": "application/json" },
+          headers: { ...corsHeaders(request), "Content-Type": "application/json" },
         });
       }
 
@@ -323,7 +328,7 @@ export default {
         if (await isRateLimited(env, ip, "request_otp", 5, 3600)) {
           return new Response(JSON.stringify({ error: "Too many code requests. Try again later." }), {
             status: 429,
-            headers: { ...corsHeaders(), "Content-Type": "application/json" },
+            headers: { ...corsHeaders(request), "Content-Type": "application/json" },
           });
         }
 
@@ -331,13 +336,13 @@ export default {
         if (!email || !email.includes("@") || email.length > 200) {
           return new Response(JSON.stringify({ error: "Valid email required" }), {
             status: 400,
-            headers: { ...corsHeaders(), "Content-Type": "application/json" },
+            headers: { ...corsHeaders(request), "Content-Type": "application/json" },
           });
         }
         if (!name || !name.trim()) {
           return new Response(JSON.stringify({ error: "Name required" }), {
             status: 400,
-            headers: { ...corsHeaders(), "Content-Type": "application/json" },
+            headers: { ...corsHeaders(request), "Content-Type": "application/json" },
           });
         }
 
@@ -346,7 +351,7 @@ export default {
         if (await isRateLimited(env, email.toLowerCase(), "request_otp_email", 5, 3600)) {
           return new Response(JSON.stringify({ error: "Too many code requests for this email. Try again later." }), {
             status: 429,
-            headers: { ...corsHeaders(), "Content-Type": "application/json" },
+            headers: { ...corsHeaders(request), "Content-Type": "application/json" },
           });
         }
 
@@ -363,12 +368,12 @@ export default {
         } catch (e) {
           return new Response(JSON.stringify({ error: "Could not send email.", detail: String(e.message || e) }), {
             status: 500,
-            headers: { ...corsHeaders(), "Content-Type": "application/json" },
+            headers: { ...corsHeaders(request), "Content-Type": "application/json" },
           });
         }
 
         return new Response(JSON.stringify({ ok: true }), {
-          headers: { ...corsHeaders(), "Content-Type": "application/json" },
+          headers: { ...corsHeaders(request), "Content-Type": "application/json" },
         });
       }
 
@@ -377,7 +382,7 @@ export default {
         if (await isRateLimited(env, ip, "verify_otp", 20, 3600)) {
           return new Response(JSON.stringify({ error: "Too many attempts. Try again later." }), {
             status: 429,
-            headers: { ...corsHeaders(), "Content-Type": "application/json" },
+            headers: { ...corsHeaders(request), "Content-Type": "application/json" },
           });
         }
 
@@ -385,7 +390,7 @@ export default {
         if (!email || !otp) {
           return new Response(JSON.stringify({ error: "Email and code required" }), {
             status: 400,
-            headers: { ...corsHeaders(), "Content-Type": "application/json" },
+            headers: { ...corsHeaders(request), "Content-Type": "application/json" },
           });
         }
 
@@ -394,14 +399,14 @@ export default {
         if (!stored) {
           return new Response(JSON.stringify({ error: "Code expired or not found. Request a new one." }), {
             status: 400,
-            headers: { ...corsHeaders(), "Content-Type": "application/json" },
+            headers: { ...corsHeaders(request), "Content-Type": "application/json" },
           });
         }
         const record = JSON.parse(stored);
         if (String(otp).trim() !== record.otp) {
           return new Response(JSON.stringify({ error: "Incorrect code." }), {
             status: 401,
-            headers: { ...corsHeaders(), "Content-Type": "application/json" },
+            headers: { ...corsHeaders(request), "Content-Type": "application/json" },
           });
         }
 
@@ -415,7 +420,7 @@ export default {
         );
 
         return new Response(JSON.stringify({ ok: true, token, name: record.name, email: email.toLowerCase() }), {
-          headers: { ...corsHeaders(), "Content-Type": "application/json" },
+          headers: { ...corsHeaders(request), "Content-Type": "application/json" },
         });
       }
 
@@ -425,11 +430,11 @@ export default {
         if (!session) {
           return new Response(JSON.stringify({ error: "Session expired or invalid." }), {
             status: 401,
-            headers: { ...corsHeaders(), "Content-Type": "application/json" },
+            headers: { ...corsHeaders(request), "Content-Type": "application/json" },
           });
         }
         return new Response(JSON.stringify({ ok: true, ...session }), {
-          headers: { ...corsHeaders(), "Content-Type": "application/json" },
+          headers: { ...corsHeaders(request), "Content-Type": "application/json" },
         });
       }
 
@@ -439,7 +444,7 @@ export default {
         if (!session) {
           return new Response(JSON.stringify({ error: "Not logged in." }), {
             status: 401,
-            headers: { ...corsHeaders(), "Content-Type": "application/json" },
+            headers: { ...corsHeaders(request), "Content-Type": "application/json" },
           });
         }
 
@@ -447,7 +452,7 @@ export default {
         if (!userRecord) {
           return new Response(JSON.stringify({ error: "Account not found." }), {
             status: 404,
-            headers: { ...corsHeaders(), "Content-Type": "application/json" },
+            headers: { ...corsHeaders(request), "Content-Type": "application/json" },
           });
         }
         const beforeReset = userRecord.creditsResetAt;
@@ -487,7 +492,7 @@ export default {
           results: results.filter(Boolean).reverse(),
           latestGuide,
         }), {
-          headers: { ...corsHeaders(), "Content-Type": "application/json" },
+          headers: { ...corsHeaders(request), "Content-Type": "application/json" },
         });
       }
 
@@ -497,7 +502,7 @@ export default {
         if (!session) {
           return new Response(JSON.stringify({ error: "Not logged in." }), {
             status: 401,
-            headers: { ...corsHeaders(), "Content-Type": "application/json" },
+            headers: { ...corsHeaders(request), "Content-Type": "application/json" },
           });
         }
         const indexKey = `user_results:${session.email}`;
@@ -514,7 +519,7 @@ export default {
         );
 
         return new Response(JSON.stringify({ ok: true, results: results.filter(Boolean).reverse() }), {
-          headers: { ...corsHeaders(), "Content-Type": "application/json" },
+          headers: { ...corsHeaders(request), "Content-Type": "application/json" },
         });
       }
 
@@ -524,13 +529,13 @@ export default {
         if (!session) {
           return new Response(JSON.stringify({ error: "Log in to unlock the full step-by-step guide." }), {
             status: 401,
-            headers: { ...corsHeaders(), "Content-Type": "application/json" },
+            headers: { ...corsHeaders(request), "Content-Type": "application/json" },
           });
         }
         if (await isRateLimited(env, session.email, "generate_guide", 15, 3600)) {
           return new Response(JSON.stringify({ error: "Too many guide requests. Try again later." }), {
             status: 429,
-            headers: { ...corsHeaders(), "Content-Type": "application/json" },
+            headers: { ...corsHeaders(request), "Content-Type": "application/json" },
           });
         }
 
@@ -538,7 +543,7 @@ export default {
         if (!resultId || !ideaKey) {
           return new Response(JSON.stringify({ error: "resultId and ideaKey required" }), {
             status: 400,
-            headers: { ...corsHeaders(), "Content-Type": "application/json" },
+            headers: { ...corsHeaders(request), "Content-Type": "application/json" },
           });
         }
 
@@ -548,7 +553,7 @@ export default {
         // and, importantly, does NOT cost a credit (viewing is free, generating isn't).
         const existing = await env.WAITLIST.get(guideKey);
         if (existing) {
-          return new Response(existing, { headers: { ...corsHeaders(), "Content-Type": "application/json" } });
+          return new Response(existing, { headers: { ...corsHeaders(request), "Content-Type": "application/json" } });
         }
 
         // This is a brand-new guide — check credits before spending an AI call.
@@ -556,7 +561,7 @@ export default {
         if (!userRecord) {
           return new Response(JSON.stringify({ error: "Account not found." }), {
             status: 404,
-            headers: { ...corsHeaders(), "Content-Type": "application/json" },
+            headers: { ...corsHeaders(request), "Content-Type": "application/json" },
           });
         }
         userRecord = refreshCredits(userRecord);
@@ -567,7 +572,7 @@ export default {
             creditsResetAt: userRecord.creditsResetAt,
           }), {
             status: 402,
-            headers: { ...corsHeaders(), "Content-Type": "application/json" },
+            headers: { ...corsHeaders(request), "Content-Type": "application/json" },
           });
         }
 
@@ -575,7 +580,7 @@ export default {
         if (!resultStored) {
           return new Response(JSON.stringify({ error: "Original result not found." }), {
             status: 404,
-            headers: { ...corsHeaders(), "Content-Type": "application/json" },
+            headers: { ...corsHeaders(request), "Content-Type": "application/json" },
           });
         }
         const resultRecord = JSON.parse(resultStored);
@@ -583,7 +588,7 @@ export default {
         if (!project) {
           return new Response(JSON.stringify({ error: "Project not found in this result." }), {
             status: 404,
-            headers: { ...corsHeaders(), "Content-Type": "application/json" },
+            headers: { ...corsHeaders(request), "Content-Type": "application/json" },
           });
         }
         const inputs = resultRecord.inputs || {};
@@ -704,7 +709,7 @@ Valid values for a node's "type" field: "client", "server", "database", "externa
         } catch (e) {
           return new Response(JSON.stringify({ error: "Could not generate guide right now.", detail: String(e.message || e) }), {
             status: 500,
-            headers: { ...corsHeaders(), "Content-Type": "application/json" },
+            headers: { ...corsHeaders(request), "Content-Type": "application/json" },
           });
         }
 
@@ -729,7 +734,7 @@ Valid values for a node's "type" field: "client", "server", "database", "externa
         await saveUser(env, userRecord);
 
         return new Response(JSON.stringify(guideRecord), {
-          headers: { ...corsHeaders(), "Content-Type": "application/json" },
+          headers: { ...corsHeaders(request), "Content-Type": "application/json" },
         });
       }
 
@@ -739,23 +744,23 @@ Valid values for a node's "type" field: "client", "server", "database", "externa
         if (!session) {
           return new Response(JSON.stringify({ error: "Log in to view this guide." }), {
             status: 401,
-            headers: { ...corsHeaders(), "Content-Type": "application/json" },
+            headers: { ...corsHeaders(request), "Content-Type": "application/json" },
           });
         }
         const { resultId, ideaKey } = body;
         if (!resultId || !ideaKey) {
           return new Response(JSON.stringify({ error: "resultId and ideaKey required" }), {
             status: 400,
-            headers: { ...corsHeaders(), "Content-Type": "application/json" },
+            headers: { ...corsHeaders(request), "Content-Type": "application/json" },
           });
         }
         const stored = await env.WAITLIST.get(`guide:${resultId}:${ideaKey}`);
         if (!stored) {
           return new Response(JSON.stringify({ exists: false }), {
-            headers: { ...corsHeaders(), "Content-Type": "application/json" },
+            headers: { ...corsHeaders(request), "Content-Type": "application/json" },
           });
         }
-        return new Response(stored, { headers: { ...corsHeaders(), "Content-Type": "application/json" } });
+        return new Response(stored, { headers: { ...corsHeaders(request), "Content-Type": "application/json" } });
       }
 
       // --- UPDATE_GUIDE_PROGRESS: toggle a step checked state on a guide (login required) ---
@@ -764,14 +769,14 @@ Valid values for a node's "type" field: "client", "server", "database", "externa
         if (!session) {
           return new Response(JSON.stringify({ error: "Log in to track progress." }), {
             status: 401,
-            headers: { ...corsHeaders(), "Content-Type": "application/json" },
+            headers: { ...corsHeaders(request), "Content-Type": "application/json" },
           });
         }
         const { resultId, ideaKey, stepId, completed } = body;
         if (!resultId || !ideaKey || !stepId) {
           return new Response(JSON.stringify({ error: "resultId, ideaKey and stepId required" }), {
             status: 400,
-            headers: { ...corsHeaders(), "Content-Type": "application/json" },
+            headers: { ...corsHeaders(request), "Content-Type": "application/json" },
           });
         }
         const guideKey = `guide:${resultId}:${ideaKey}`;
@@ -779,7 +784,7 @@ Valid values for a node's "type" field: "client", "server", "database", "externa
         if (!stored) {
           return new Response(JSON.stringify({ error: "Guide not found." }), {
             status: 404,
-            headers: { ...corsHeaders(), "Content-Type": "application/json" },
+            headers: { ...corsHeaders(request), "Content-Type": "application/json" },
           });
         }
         const guideRecord = JSON.parse(stored);
@@ -788,7 +793,7 @@ Valid values for a node's "type" field: "client", "server", "database", "externa
         await env.WAITLIST.put(guideKey, JSON.stringify(guideRecord), { expirationTtl: 60 * 60 * 24 * 180 });
 
         return new Response(JSON.stringify({ ok: true, progress: guideRecord.progress }), {
-          headers: { ...corsHeaders(), "Content-Type": "application/json" },
+          headers: { ...corsHeaders(request), "Content-Type": "application/json" },
         });
       }
 
@@ -797,7 +802,7 @@ Valid values for a node's "type" field: "client", "server", "database", "externa
         if (await isRateLimited(env, ip, "save_result", 20, 3600)) {
           return new Response(JSON.stringify({ error: "Too many requests. Try again later." }), {
             status: 429,
-            headers: { ...corsHeaders(), "Content-Type": "application/json" },
+            headers: { ...corsHeaders(request), "Content-Type": "application/json" },
           });
         }
 
@@ -805,7 +810,7 @@ Valid values for a node's "type" field: "client", "server", "database", "externa
         if (!ideas || !flagship) {
           return new Response(JSON.stringify({ error: "ideas and flagship required" }), {
             status: 400,
-            headers: { ...corsHeaders(), "Content-Type": "application/json" },
+            headers: { ...corsHeaders(request), "Content-Type": "application/json" },
           });
         }
 
@@ -838,7 +843,7 @@ Valid values for a node's "type" field: "client", "server", "database", "externa
         }
 
         return new Response(JSON.stringify({ ok: true, id }), {
-          headers: { ...corsHeaders(), "Content-Type": "application/json" },
+          headers: { ...corsHeaders(request), "Content-Type": "application/json" },
         });
       }
 
@@ -848,18 +853,18 @@ Valid values for a node's "type" field: "client", "server", "database", "externa
         if (!id || typeof id !== "string" || id.length > 64) {
           return new Response(JSON.stringify({ error: "Valid id required" }), {
             status: 400,
-            headers: { ...corsHeaders(), "Content-Type": "application/json" },
+            headers: { ...corsHeaders(request), "Content-Type": "application/json" },
           });
         }
         const stored = await env.WAITLIST.get(`result:${id}`);
         if (!stored) {
           return new Response(JSON.stringify({ error: "Result not found. It may have expired." }), {
             status: 404,
-            headers: { ...corsHeaders(), "Content-Type": "application/json" },
+            headers: { ...corsHeaders(request), "Content-Type": "application/json" },
           });
         }
         return new Response(stored, {
-          headers: { ...corsHeaders(), "Content-Type": "application/json" },
+          headers: { ...corsHeaders(request), "Content-Type": "application/json" },
         });
       }
 
@@ -868,7 +873,7 @@ Valid values for a node's "type" field: "client", "server", "database", "externa
         if (await isRateLimited(env, ip, "update_progress", 120, 3600)) {
           return new Response(JSON.stringify({ error: "Too many requests." }), {
             status: 429,
-            headers: { ...corsHeaders(), "Content-Type": "application/json" },
+            headers: { ...corsHeaders(request), "Content-Type": "application/json" },
           });
         }
 
@@ -876,7 +881,7 @@ Valid values for a node's "type" field: "client", "server", "database", "externa
         if (!id || typeof id !== "string" || typeof stepIndex !== "number") {
           return new Response(JSON.stringify({ error: "id and stepIndex required" }), {
             status: 400,
-            headers: { ...corsHeaders(), "Content-Type": "application/json" },
+            headers: { ...corsHeaders(request), "Content-Type": "application/json" },
           });
         }
         const key = `result:${id}`;
@@ -884,7 +889,7 @@ Valid values for a node's "type" field: "client", "server", "database", "externa
         if (!stored) {
           return new Response(JSON.stringify({ error: "Result not found." }), {
             status: 404,
-            headers: { ...corsHeaders(), "Content-Type": "application/json" },
+            headers: { ...corsHeaders(request), "Content-Type": "application/json" },
           });
         }
         const record = JSON.parse(stored);
@@ -893,7 +898,7 @@ Valid values for a node's "type" field: "client", "server", "database", "externa
         await env.WAITLIST.put(key, JSON.stringify(record), { expirationTtl: 60 * 60 * 24 * 180 });
 
         return new Response(JSON.stringify({ ok: true, progress: record.progress }), {
-          headers: { ...corsHeaders(), "Content-Type": "application/json" },
+          headers: { ...corsHeaders(request), "Content-Type": "application/json" },
         });
       }
 
@@ -902,14 +907,14 @@ Valid values for a node's "type" field: "client", "server", "database", "externa
         if (await isRateLimited(env, ip, "admin", 20, 3600)) {
           return new Response(JSON.stringify({ error: "Too many attempts. Try again later." }), {
             status: 429,
-            headers: { ...corsHeaders(), "Content-Type": "application/json" },
+            headers: { ...corsHeaders(request), "Content-Type": "application/json" },
           });
         }
 
         if (body.password !== env.ADMIN_PASSWORD) {
           return new Response(JSON.stringify({ error: "Unauthorized" }), {
             status: 401,
-            headers: { ...corsHeaders(), "Content-Type": "application/json" },
+            headers: { ...corsHeaders(request), "Content-Type": "application/json" },
           });
         }
         const list = await env.WAITLIST.list({ prefix: "waitlist:" });
@@ -928,7 +933,7 @@ Valid values for a node's "type" field: "client", "server", "database", "externa
         });
 
         return new Response(JSON.stringify({ entries, eventCounts }), {
-          headers: { ...corsHeaders(), "Content-Type": "application/json" },
+          headers: { ...corsHeaders(request), "Content-Type": "application/json" },
         });
       }
 
@@ -936,7 +941,7 @@ Valid values for a node's "type" field: "client", "server", "database", "externa
       if (await isRateLimited(env, ip, "generate", 10, 3600)) {
         return new Response(JSON.stringify({ error: "Too many requests. Please try again in a bit." }), {
           status: 429,
-          headers: { ...corsHeaders(), "Content-Type": "application/json" },
+          headers: { ...corsHeaders(request), "Content-Type": "application/json" },
         });
       }
 
@@ -944,7 +949,7 @@ Valid values for a node's "type" field: "client", "server", "database", "externa
       if (!session) {
         return new Response(JSON.stringify({ error: "Log in to generate project ideas." }), {
           status: 401,
-          headers: { ...corsHeaders(), "Content-Type": "application/json" },
+          headers: { ...corsHeaders(request), "Content-Type": "application/json" },
         });
       }
 
@@ -952,7 +957,7 @@ Valid values for a node's "type" field: "client", "server", "database", "externa
       if (!userRecordForGen) {
         return new Response(JSON.stringify({ error: "Account not found." }), {
           status: 404,
-          headers: { ...corsHeaders(), "Content-Type": "application/json" },
+          headers: { ...corsHeaders(request), "Content-Type": "application/json" },
         });
       }
       userRecordForGen = refreshCredits(userRecordForGen);
@@ -963,7 +968,7 @@ Valid values for a node's "type" field: "client", "server", "database", "externa
           creditsResetAt: userRecordForGen.creditsResetAt,
         }), {
           status: 402,
-          headers: { ...corsHeaders(), "Content-Type": "application/json" },
+          headers: { ...corsHeaders(request), "Content-Type": "application/json" },
         });
       }
 
@@ -972,7 +977,7 @@ Valid values for a node's "type" field: "client", "server", "database", "externa
       if (!role) {
         return new Response(JSON.stringify({ error: "role is required" }), {
           status: 400,
-          headers: { ...corsHeaders(), "Content-Type": "application/json" },
+          headers: { ...corsHeaders(request), "Content-Type": "application/json" },
         });
       }
 
@@ -1062,12 +1067,12 @@ Respond ONLY with valid JSON, no markdown fences, no preamble, in this exact str
       parsed.creditsResetAt = userRecordForGen.creditsResetAt;
 
       return new Response(JSON.stringify(parsed), {
-        headers: { ...corsHeaders(), "Content-Type": "application/json" },
+        headers: { ...corsHeaders(request), "Content-Type": "application/json" },
       });
     } catch (err) {
       return new Response(JSON.stringify({ error: "Server error", detail: String(err) }), {
         status: 500,
-        headers: { ...corsHeaders(), "Content-Type": "application/json" },
+        headers: { ...corsHeaders(request), "Content-Type": "application/json" },
       });
     }
   },
