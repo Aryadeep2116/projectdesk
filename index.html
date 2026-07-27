@@ -684,13 +684,20 @@
      A drag-to-rotate 3D card. Front = "flagship project idea".
      Back = tiny architecture diagram. Click card to flip.
      =========================================================== */
+  /* ===========================================================
+     TIER 1 / #1 — DEEP CARD TILT (Aikawa-style)
+     Mouse-tracking 3D tilt with parallax depth layers. The card
+     itself rotates around X and Y axes based on cursor position;
+     inner content layers shift at different rates to give an
+     iOS-parallax "deep" feel. Click / space flips to the back.
+     =========================================================== */
   .flipcard-section{
     max-width:1120px;
     margin:0 auto;
-    padding:80px 24px 100px;
+    padding:90px 24px 110px;
     display:grid;
     grid-template-columns:1fr 1fr;
-    gap:60px;
+    gap:70px;
     align-items:center;
   }
   .flipcard-text .section-eyebrow{margin-bottom:14px;}
@@ -732,44 +739,66 @@
     font-size:11px;
     color:var(--ink);
   }
+
+  /* The card wrapper. CSS variables --mx and --my (range -1 to 1)
+     drive both the outer card rotation and the inner parallax layers. */
   .flipcard-stage{
     position:relative;
     aspect-ratio:1.1/1;
-    perspective:1400px;
-    cursor:grab;
-    /* Stop the browser from treating drags as page-scroll on touch devices */
-    touch-action:none;
-    -ms-touch-action:none;
-  }
-  .flipcard-stage.dragging{cursor:grabbing;}
-  .flipcard{
-    position:relative;
-    width:100%;
-    height:100%;
-    transform-style:preserve-3d;
-    transition:transform .15s ease-out;
-  }
-  .flipcard-face{
-    position:absolute;
-    inset:0;
-    backface-visibility:hidden;
-    -webkit-backface-visibility:hidden;
-    border-radius:22px;
-    background:#fff;
-    border:1px solid var(--line);
-    box-shadow:0 30px 60px -22px rgba(11,15,13,0.25);
-    padding:28px;
-    display:flex;
-    flex-direction:column;
-    /* Prevent the browser from selecting text while the user is dragging
-       the card — otherwise a quick drag would highlight the heading and
-       the flip would feel "sticky". */
+    perspective:1200px;
+    perspective-origin:50% 40%;
     -webkit-user-select:none;
     -moz-user-select:none;
     -ms-user-select:none;
     user-select:none;
     -webkit-touch-callout:none;
+    --mx:0;
+    --my:0;
+    --rX:0deg;
+    --rY:0deg;
   }
+  .flipcard{
+    position:relative;
+    width:100%;
+    height:100%;
+    transform-style:preserve-3d;
+    transform:rotateX(var(--rX)) rotateY(var(--rY));
+    transition:transform .55s cubic-bezier(.2,.8,.2,1);
+    will-change:transform;
+  }
+  .flipcard-stage:hover .flipcard{transition:transform .15s ease-out;}
+
+  /* Both faces share the same base */
+  .flipcard-face{
+    position:absolute;
+    inset:0;
+    backface-visibility:hidden;
+    -webkit-backface-visibility:hidden;
+    border-radius:24px;
+    background:#fff;
+    border:1px solid var(--line);
+    box-shadow:0 30px 60px -22px rgba(11,15,13,0.25), 0 2px 6px rgba(11,15,13,0.05);
+    padding:32px;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+    transform-style:preserve-3d;
+  }
+  /* Soft animated background that drifts a little on hover */
+  .flipcard-face::before{
+    content:'';
+    position:absolute;
+    inset:-2px;
+    background:
+      radial-gradient(60% 50% at calc(50% + var(--mx,0) * 25%) calc(20% + var(--my,0) * 15%), rgba(29,78,216,0.10), transparent 70%),
+      radial-gradient(50% 40% at calc(50% - var(--mx,0) * 20%) calc(85% - var(--my,0) * 15%), rgba(14,169,104,0.08), transparent 70%);
+    z-index:0;
+    pointer-events:none;
+    transition:opacity .35s ease;
+  }
+  .flipcard-face > *{position:relative; z-index:1;}
+
+  /* Tag pill (Layer 1 — slowest parallax) */
   .flipcard-face .flip-tag{
     font-family:'IBM Plex Mono', monospace;
     font-size:11px;
@@ -779,30 +808,36 @@
     background:var(--royal-soft);
     border:1px solid rgba(29,78,216,0.18);
     display:inline-block;
-    padding:5px 11px;
+    padding:6px 12px;
     border-radius:7px;
     align-self:flex-start;
     margin-bottom:18px;
+    transform:translateZ(20px) translate(calc(var(--mx,0) * -4px), calc(var(--my,0) * -4px));
   }
+  /* Title (Layer 2 — medium parallax) */
   .flipcard-face h3{
     font-family:'Sora', sans-serif;
     font-weight:700;
-    font-size:24px;
+    font-size:26px;
     line-height:1.15;
     letter-spacing:-0.5px;
     margin:0 0 14px;
+    transform:translateZ(40px) translate(calc(var(--mx,0) * -8px), calc(var(--my,0) * -8px));
   }
+  /* Subtitle / description (Layer 3 — more parallax) */
   .flipcard-face .flip-hook{
     color:var(--ink-soft);
     font-size:14.5px;
     line-height:1.6;
-    margin:0 0 18px;
+    margin:0 0 22px;
+    transform:translateZ(55px) translate(calc(var(--mx,0) * -12px), calc(var(--my,0) * -12px));
   }
   .flipcard-face .flip-stack{
     display:flex;
     flex-wrap:wrap;
     gap:7px;
     margin-bottom:auto;
+    transform:translateZ(30px) translate(calc(var(--mx,0) * -6px), calc(var(--my,0) * -6px));
   }
   .flipcard-face .flip-stack span{
     font-family:'IBM Plex Mono', monospace;
@@ -810,7 +845,7 @@
     background:var(--bg-soft);
     border:1px solid var(--line);
     color:var(--ink);
-    padding:4px 9px;
+    padding:5px 10px;
     border-radius:6px;
   }
   .flipcard-face .flip-foot{
@@ -821,36 +856,59 @@
     font-size:11.5px;
     color:var(--ink-soft);
     line-height:1.55;
+    transform:translateZ(25px) translate(calc(var(--mx,0) * -5px), calc(var(--my,0) * -5px));
   }
   .flipcard-face .flip-foot b{color:var(--ink); font-weight:600;}
+
+  /* Subtle moving highlight that catches the "light" as you move */
+  .flipcard-highlight{
+    position:absolute;
+    inset:0;
+    border-radius:24px;
+    pointer-events:none;
+    background:radial-gradient(120px 120px at calc(50% + var(--mx,0) * 50%) calc(20% + var(--my,0) * 30%), rgba(255,255,255,0.55), transparent 70%);
+    mix-blend-mode:soft-light;
+    opacity:0;
+    transition:opacity .35s ease;
+    z-index:2;
+  }
+  .flipcard-stage:hover .flipcard-highlight{opacity:1;}
+
+  /* Back face */
   .flipcard-back{transform:rotateY(180deg);}
-  .flipcard.flipped{transform:rotateY(180deg);}
-  .flipcard-stage.dragging .flipcard{transition:none;}
+  .flipcard.flipped{transform:rotateX(calc(var(--rX) * 1)) rotateY(calc(180deg + var(--rY)));}
+
+  /* SVG diagram inside the back face gets its own gentle parallax */
   .flipcard-arch{
     flex:1;
     width:100%;
     height:100%;
     min-height:0;
+    transform:translateZ(35px) translate(calc(var(--mx,0) * -7px), calc(var(--my,0) * -7px));
   }
+
+  /* Flip button — small chip at the bottom-right of the card */
   .flipcard-stage .flip-btn{
     position:absolute;
-    bottom:-16px;
-    right:14px;
+    bottom:-18px;
+    right:18px;
     background:var(--ink);
     color:#fff;
     border:none;
     border-radius:999px;
-    padding:8px 16px;
+    padding:10px 18px;
     font-family:'IBM Plex Mono', monospace;
     font-size:11.5px;
     letter-spacing:0.5px;
     cursor:pointer;
-    box-shadow:0 10px 24px -10px rgba(11,15,13,0.4);
+    box-shadow:0 12px 28px -10px rgba(11,15,13,0.45);
     transition:transform .2s ease, background .2s ease;
+    z-index:3;
   }
   .flipcard-stage .flip-btn:hover{background:var(--emerald-deep); transform:translateY(-2px);}
+
   @media (max-width:820px){
-    .flipcard-section{grid-template-columns:1fr; gap:30px; padding:60px 24px 80px;}
+    .flipcard-section{grid-template-columns:1fr; gap:40px; padding:60px 24px 80px;}
     .flipcard-stage{max-width:480px; margin:0 auto; width:100%;}
   }
 
@@ -1480,14 +1538,14 @@
   </div>
 </section>
 
-<!-- Tier 1 / #1 — Interactive 3D project card -->
-<section class="flipcard-section" data-journey="Card" data-journey-label="Grab a project">
+<!-- Tier 1 / #1 — Deep card tilt (Aikawa-style) -->
+<section class="flipcard-section" data-journey="Card" data-journey-label="Sample project">
   <div class="flipcard-text reveal-left">
-    <span class="section-eyebrow">Grab a project</span>
-    <h2>Pick it up.<br>See it from any angle.</h2>
-    <p>Every BuildItUp idea is a real, scoped project — stack, architecture, and a resume line already drafted. Drag this card to inspect it, or flip it over to see the architecture underneath.</p>
+    <span class="section-eyebrow">Sample project</span>
+    <h2>Every idea is<br>a real project.</h2>
+    <p>Hover to look around. Each BuildItUp idea is a fully scoped project — stack, architecture, and a resume-ready line already drafted. Click the card to see the architecture underneath.</p>
     <div class="flip-hint">
-      Drag · or hit <span class="kbd">F</span> to flip
+      Hover · or hit <span class="kbd">F</span> to flip
     </div>
   </div>
   <div class="flipcard-stage reveal-right" id="flipcard-stage">
@@ -1502,6 +1560,7 @@
         <div class="flip-foot">
           <b>Resume line:</b> Built a real-time check-in system handling 5k+ concurrent users with sub-200ms latency using WebSockets and Redis pub/sub.
         </div>
+        <div class="flipcard-highlight" aria-hidden="true"></div>
       </div>
       <div class="flipcard-face flipcard-back">
         <span class="flip-tag">Architecture</span>
@@ -1548,6 +1607,7 @@
             <line x1="205" y1="224" x2="225" y2="40"  stroke="#5B6B63" stroke-width="1.2" stroke-dasharray="3,3"/>
           </g>
         </svg>
+        <div class="flipcard-highlight" aria-hidden="true"></div>
       </div>
     </div>
     <button class="flip-btn" id="flip-btn">Flip card</button>
@@ -1830,9 +1890,12 @@ document.querySelectorAll('.word-reveal:not(#hero-headline)').forEach(el => word
 })();
 
 /* ===========================================================
-   TIER 1 / #1 — INTERACTIVE 3D PROJECT CARD
-   Drag to rotate (Y axis primarily, with a little X), click
-   the Flip button or press F to flip front/back.
+   TIER 1 / #1 — DEEP CARD TILT (Aikawa-style)
+   Mouse position drives CSS variables --mx, --my on the stage
+   (range -1..+1). The card itself uses rotateX/rotateY from
+   those vars. Inner content layers each have their own
+   translate3d offsets so they move at different rates (the
+   "deep" / parallax feel). No dragging. Click / F to flip.
    =========================================================== */
 (function initFlipCard() {
   const stage = document.getElementById('flipcard-stage');
@@ -1840,77 +1903,72 @@ document.querySelectorAll('.word-reveal:not(#hero-headline)').forEach(el => word
   const flipBtn = document.getElementById('flip-btn');
   if (!stage || !card) return;
 
-  let rotY = -12;     // initial Y rotation (degrees)
-  let rotX = 6;       // initial X rotation (degrees)
-  let targetY = rotY;
-  let targetX = rotX;
-  let dragging = false;
-  let startX = 0, startY = 0;
+  // Maximum rotation angles, in degrees
+  const MAX_TILT_X = 12;   // pitch
+  const MAX_TILT_Y = 18;   // yaw
+
+  // Animation state (we tween the rotation even though the parallax
+  // layers follow the cursor directly via CSS, so the card has a
+  // nice springy feel instead of feeling locked to the mouse).
+  let curX = 0, curY = 0;          // current displayed rotation (deg)
+  let tgtX = 0, tgtY = 0;          // target rotation driven by mouse
   let flipped = false;
-  let targetFlipY = 0; // for flip animation
 
   function applyTransform() {
-    // Always lerp toward the target. While dragging, use a higher
-    // coefficient so the rotation tracks the cursor 1:1 (the
-    // previous version skipped the lerp entirely during drag,
-    // which is why the card didn't appear to rotate).
-    const k = dragging ? 0.55 : 0.18;
-    rotY += (targetY - rotY) * k;
-    rotX += (targetX - rotX) * k;
-    const baseY = flipped ? 180 : 0;
-    card.style.transform = `rotateY(${rotY + baseY}deg) rotateX(${rotX}deg)`;
+    // Spring the displayed rotation toward the target
+    curX += (tgtX - curX) * 0.18;
+    curY += (tgtY - curY) * 0.18;
+    if (flipped) {
+      card.style.transform = `rotateX(${curX}deg) rotateY(${180 + curY}deg)`;
+    } else {
+      card.style.transform = `rotateX(${curX}deg) rotateY(${curY}deg)`;
+    }
     requestAnimationFrame(applyTransform);
   }
   applyTransform();
 
-  // Subtle idle wobble when not dragged — pulls targetY back toward -12 slowly
-  let idleTimer = null;
-  function scheduleIdle() {
-    clearTimeout(idleTimer);
-    // Only return to neutral if the user *isn't* currently dragging.
-    idleTimer = setTimeout(() => {
-      if (!dragging) { targetY = -12; targetX = 6; }
-    }, 1500);
+  function onPointerMove(e) {
+    const rect = stage.getBoundingClientRect();
+    // Normalize mouse position to -1..+1 across the card
+    const mx = ((e.clientX - rect.left) / rect.width)  * 2 - 1;
+    const my = ((e.clientY - rect.top)  / rect.height) * 2 - 1;
+    // Map to rotation targets
+    tgtY = mx * MAX_TILT_Y;   // mouse X → yaw
+    tgtX = -my * MAX_TILT_X;  // mouse Y → pitch (inverted)
+    // Push raw values to CSS vars so the inner layers can parallax
+    stage.style.setProperty('--mx', mx.toFixed(3));
+    stage.style.setProperty('--my', my.toFixed(3));
+    stage.style.setProperty('--rX', curX.toFixed(2) + 'deg');
+    stage.style.setProperty('--rY', curY.toFixed(2) + 'deg');
+  }
+  function onPointerLeave() {
+    tgtX = 0; tgtY = 0;
+    stage.style.setProperty('--mx', '0');
+    stage.style.setProperty('--my', '0');
   }
 
-  function setDragging(on) {
-    dragging = on;
-    stage.classList.toggle('dragging', on);
-  }
+  stage.addEventListener('pointermove', onPointerMove);
+  stage.addEventListener('pointerleave', onPointerLeave);
+  // Touch: also respond to touch move
+  stage.addEventListener('touchmove', (e) => {
+    if (e.touches[0]) onPointerMove(e.touches[0]);
+  }, { passive: true });
+  stage.addEventListener('touchend', onPointerLeave);
 
-  // Pointer events work for both mouse and touch
-  stage.addEventListener('pointerdown', (e) => {
-    // Don't initiate drag if the user clicked the flip button
-    if (e.target.closest('.flip-btn')) return;
-    setDragging(true);
-    startX = e.clientX;
-    startY = e.clientY;
-    stage.setPointerCapture(e.pointerId);
-    scheduleIdle();
-  });
-  stage.addEventListener('pointermove', (e) => {
-    if (!dragging) return;
-    const dx = e.clientX - startX;
-    const dy = e.clientY - startY;
-    targetY = rotY + dx * 0.6;
-    targetX = Math.max(-25, Math.min(25, rotX - dy * 0.4));
-    startX = e.clientX;
-    startY = e.clientY;
-  });
-  stage.addEventListener('pointerup', (e) => {
-    setDragging(false);
-    try { stage.releasePointerCapture(e.pointerId); } catch (_) {}
-    scheduleIdle();
-  });
-  stage.addEventListener('pointercancel', () => setDragging(false));
-
-  // Flip
+  // Flip front/back
   function toggleFlip() {
     flipped = !flipped;
     card.classList.toggle('flipped', flipped);
   }
-  if (flipBtn) flipBtn.addEventListener('click', toggleFlip);
-  stage.addEventListener('dblclick', toggleFlip);
+  if (flipBtn) flipBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    toggleFlip();
+  });
+  // Click anywhere on the card flips it (but not on the button)
+  stage.addEventListener('click', (e) => {
+    if (e.target.closest('.flip-btn')) return;
+    toggleFlip();
+  });
   document.addEventListener('keydown', (e) => {
     if (e.key === 'f' || e.key === 'F') {
       // Don't flip if user is typing in an input
