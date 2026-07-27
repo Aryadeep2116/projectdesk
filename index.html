@@ -308,38 +308,42 @@
     .journey-map{display:none;}
   }
 
-  /* ---------- HERO ---------- */
+  /* ---------- HERO (wide split) ----------
+     Two-column layout: text on the left (55%), decorative
+     2D illustration on the right (45%). No 3D — the hero is
+     fast and reads instantly. The illustration is a gradient
+     circle (royal blue) with floating tech fragments. */
   .hero{
     position:relative;
     min-height:calc(100vh - 65px);
-    display:flex;
-    flex-direction:column;
+    display:grid;
+    grid-template-columns: 1.15fr 1fr;
     align-items:center;
-    justify-content:center;
-    text-align:center;
-    padding:60px 24px;
+    gap:0;
+    padding:0;
     overflow:hidden;
+  /* Soft cream background with a subtle warm gradient */
+  background:
+    radial-gradient(60vw 80% at 100% 50%, rgba(238,242,255,0.55) 0%, rgba(238,242,255,0) 60%),
+    linear-gradient(180deg, #FFFFFF 0%, #FBFBFD 100%);
   }
-  #hero-canvas{
-    position:absolute;
-    inset:0;
-    z-index:0;
-    opacity:0;
-    transition:opacity 1.2s ease;
-  }
-  #hero-canvas.loaded{opacity:1;}
-  .hero-fallback-glow{
-    position:absolute;
-    inset:0;
-    z-index:0;
-    background:
-      radial-gradient(circle at 25% 30%, rgba(14,169,104,0.10), transparent 45%),
-      radial-gradient(circle at 75% 65%, rgba(29,78,216,0.09), transparent 45%);
-  }
-  .hero-content{
+
+  .hero-left{
     position:relative;
     z-index:2;
+    padding:80px 24px 80px max(64px, 6vw);
     max-width:760px;
+    justify-self:start;
+  }
+  .hero-right{
+    position:relative;
+    z-index:1;
+    height:100%;
+    min-height:520px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:40px max(40px, 4vw) 40px 24px;
   }
   .hero-eyebrow{
     display:inline-flex;
@@ -348,15 +352,15 @@
     font-family:'IBM Plex Mono', monospace;
     font-size:12px;
     letter-spacing:0.5px;
-    color:var(--emerald-deep);
-    background:var(--emerald-soft);
-    border:1px solid rgba(14,169,104,0.25);
-    padding:7px 14px;
-    border-radius:20px;
-    margin-bottom:28px;
+    color:var(--ink-soft);
+    background:transparent;
+    border:none;
+    padding:0;
+    margin-bottom:24px;
     opacity:0;
     animation:riseIn .7s ease .1s forwards;
   }
+  .hero-eyebrow b{color:var(--royal); font-weight:600;}
   .hero-eyebrow .pulse{
     width:6px;height:6px;border-radius:50%;
     background:var(--emerald);
@@ -372,10 +376,11 @@
   .hero h1{
     font-family:'Sora', sans-serif;
     font-weight:800;
-    font-size:clamp(40px, 6.5vw, 68px);
-    line-height:1.05;
-    letter-spacing:-2px;
+    font-size:clamp(40px, 6.2vw, 80px);
+    line-height:1.02;
+    letter-spacing:-2.5px;
     margin:0 0 22px;
+    text-align:left;
     opacity:0;
     animation:riseIn .8s ease .22s forwards;
   }
@@ -385,19 +390,22 @@
     background-clip:text;
     color:transparent;
   }
-  .hero p{
-    font-size:18px;
+  .hero p.hero-lede{
+    font-family:'Inter', sans-serif;
+    font-weight:500;
+    font-size:19px;
     color:var(--ink-soft);
     max-width:520px;
-    margin:0 auto 40px;
+    margin:0 0 36px;
     line-height:1.6;
+    text-align:left;
     opacity:0;
     animation:riseIn .8s ease .34s forwards;
   }
   .hero-actions{
     display:flex;
     gap:14px;
-    justify-content:center;
+    justify-content:flex-start;
     flex-wrap:wrap;
     opacity:0;
     animation:riseIn .8s ease .46s forwards;
@@ -446,19 +454,19 @@
   }
   .btn-secondary:hover{border-color:var(--royal); transform:translateY(-2px);}
   .hero-meta{
-    margin-top:28px;
+    margin-top:24px;
     font-family:'IBM Plex Mono', monospace;
     font-size:11.5px;
     letter-spacing:0.4px;
     color:var(--ink-soft);
     opacity:0;
     animation:riseIn .8s ease .56s forwards;
+    text-align:left;
   }
   .hero-scroll-cue{
     position:absolute;
-    bottom:24px;
-    left:50%;
-    transform:translateX(-50%);
+    bottom:28px;
+    right:48px;
     font-family:'IBM Plex Mono', monospace;
     font-size:10.5px;
     letter-spacing:1.2px;
@@ -480,6 +488,218 @@
     0%{transform:scaleY(0);}
     50%{transform:scaleY(1);}
     100%{transform:scaleY(0); transform-origin:bottom;}
+  }
+
+  /* ---------- HERO ILLUSTRATION (right side) — mock product preview ----------
+     A light "app preview" card on the right showing 4 project
+     idea cards stacked inside. Looks like a real screenshot of
+     the BuildItUp product, distinctly different from the dark
+     terminal block in the section that follows. A few floating
+     "code tag" pills stay around it for tech credibility. */
+  .hero-illu{
+    position:relative;
+    width:100%;
+    max-width:560px;
+    aspect-ratio:1/1;
+  }
+
+  /* Floating tech tag pills around the preview card */
+  .hero-tag{
+    position:absolute;
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:999px;
+    padding:8px 14px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11.5px;
+    letter-spacing:0.5px;
+    color:var(--ink);
+    box-shadow:0 10px 24px -12px rgba(11,15,13,0.30);
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    white-space:nowrap;
+    animation:heroFrag 7s ease-in-out infinite;
+  }
+  .hero-tag .dot{
+    width:7px; height:7px; border-radius:50%;
+  }
+  .hero-tag.t1{top:6%;  left:-4%;  animation-delay:-0.0s;}
+  .hero-tag.t1 .dot{background:#0EA968;}        /* emerald — "live" dot */
+  .hero-tag.t2{top:34%; right:-2%; animation-delay:-1.4s;}
+  .hero-tag.t2 .dot{background:#1D4ED8;}        /* royal */
+  .hero-tag.t3{top:60%; left:-8%; animation-delay:-2.8s;}
+  .hero-tag.t3 .dot{background:#F59E0B;}        /* amber */
+  .hero-tag.t4{bottom:4%; right:6%; animation-delay:-4.2s;}
+  .hero-tag.t4 .dot{background:#A855F7;}        /* violet */
+  .hero-tag.t5{top:46%; right:-10%; animation-delay:-2.1s; padding:6px 11px; font-size:10.5px;}
+  .hero-tag.t5 .dot{background:#EC4899;}        /* pink — extra */
+  @keyframes heroFrag{
+    0%, 100%{ transform:translateY(0px); }
+    50%     { transform:translateY(-10px); }
+  }
+
+  /* The product-preview card itself — a light, slightly off-white
+     panel with a soft drop shadow + a top nav bar + a feed of
+     mini project-idea cards. Looks like a real app screenshot. */
+  .hero-preview{
+    position:absolute;
+    inset:6% 4% 6% 4%;
+    background:#fff;
+    border:1px solid rgba(11,15,13,0.08);
+    border-radius:18px;
+    box-shadow:
+      0 30px 60px -18px rgba(11,15,13,0.30),
+      0 2px 4px rgba(11,15,13,0.04);
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+  }
+  .hero-preview-bar{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:11px 14px;
+    background:#F7F8FA;
+    border-bottom:1px solid var(--line);
+  }
+  .hero-preview-bar .logo{
+    display:inline-flex; align-items:center; gap:7px;
+    font-family:'Sora', sans-serif;
+    font-weight:700;
+    font-size:12.5px;
+    color:var(--ink);
+    letter-spacing:-0.3px;
+  }
+  .hero-preview-bar .logo .b{
+    width:18px; height:18px; border-radius:5px;
+    background:linear-gradient(135deg, var(--emerald), var(--royal));
+  }
+  .hero-preview-bar .sep{
+    width:1px; height:14px; background:var(--line);
+    margin:0 4px;
+  }
+  .hero-preview-bar .crumb{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    color:var(--ink-soft);
+    letter-spacing:0.3px;
+  }
+  .hero-preview-bar .crumb b{color:var(--ink); font-weight:600;}
+  .hero-preview-bar .live{
+    margin-left:auto;
+    display:inline-flex; align-items:center; gap:6px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10.5px;
+    color:var(--emerald-deep);
+    background:var(--emerald-soft);
+    padding:3px 9px;
+    border-radius:999px;
+    letter-spacing:0.5px;
+  }
+  .hero-preview-bar .live .pulse{
+    width:6px; height:6px; border-radius:50%;
+    background:var(--emerald);
+    animation:heroLivePulse 1.6s ease-in-out infinite;
+  }
+  @keyframes heroLivePulse{
+    0%, 100%{ opacity:1; transform:scale(1); }
+    50%     { opacity:0.5; transform:scale(1.4); }
+  }
+  .hero-preview-body{
+    flex:1;
+    padding:14px 16px 16px;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  /* Header row: "4 ideas" with a small sort chip */
+  .hero-preview-meta{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 2px 4px;
+  }
+  .hero-preview-meta .label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10.5px;
+    letter-spacing:0.6px;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+  }
+  .hero-preview-meta .label b{
+    color:var(--emerald-deep);
+    font-weight:600;
+  }
+  .hero-preview-meta .sort{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10px;
+    color:var(--royal);
+    background:var(--royal-soft);
+    border:1px solid rgba(29,78,216,0.18);
+    padding:2px 8px;
+    border-radius:5px;
+  }
+  /* Mini project-idea card */
+  .hero-idea{
+    display:grid;
+    grid-template-columns: 28px 1fr auto;
+    align-items:center;
+    gap:10px;
+    padding:10px 12px;
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:10px;
+    transition:transform .2s ease;
+  }
+  .hero-idea:hover{transform:translateX(2px); border-color:rgba(29,78,216,0.3);}
+  .hero-idea .num{
+    width:22px; height:22px;
+    border-radius:50%;
+    background:linear-gradient(135deg, var(--royal-soft), #DBEAFE);
+    color:var(--royal);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:'Sora', sans-serif;
+    font-weight:700;
+    font-size:11.5px;
+  }
+  .hero-idea .body{ min-width:0; }
+  .hero-idea .ttl{
+    font-family:'Sora', sans-serif;
+    font-weight:600;
+    font-size:12.5px;
+    color:var(--ink);
+    line-height:1.25;
+    margin-bottom:3px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .hero-idea .meta{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10px;
+    color:var(--ink-soft);
+    letter-spacing:0.3px;
+  }
+  .hero-idea .scope{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10px;
+    color:var(--emerald-deep);
+    background:var(--emerald-soft);
+    padding:3px 7px;
+    border-radius:5px;
+    white-space:nowrap;
+    font-weight:600;
+    letter-spacing:0.3px;
+  }
+
+  @media (max-width:980px){
+    .hero{grid-template-columns:1fr; min-height:auto;}
+    .hero-right{min-height:480px; order:-1; padding:40px 24px;}
+    .hero-illu{max-width:420px; margin:0 auto;}
   }
 
   /* ---------- SECTIONS SHARED ---------- */
@@ -685,231 +905,206 @@
      Back = tiny architecture diagram. Click card to flip.
      =========================================================== */
   /* ===========================================================
-     TIER 1 / #1 — DEEP CARD TILT (Aikawa-style)
-     Mouse-tracking 3D tilt with parallax depth layers. The card
-     itself rotates around X and Y axes based on cursor position;
-     inner content layers shift at different rates to give an
-     iOS-parallax "deep" feel. Click / space flips to the back.
+     TIER 1 / #1 — ROLLING HORIZONTAL PROJECT CARDS
+     Vertical scroll through this section rolls the cards
+     horizontally. The section itself is taller than the
+     viewport (height: 320vh) so there's real scroll runway.
+     A sticky inner div keeps the cards in place while the
+     translateX is driven by scroll progress. Each card is a
+     mini project showcase: numbered, colored top stripe, title,
+     subtitle, stack chips, scope.
      =========================================================== */
-  .flipcard-section{
-    max-width:1120px;
-    margin:0 auto;
-    padding:90px 24px 110px;
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:70px;
-    align-items:center;
+  .roll-section{
+    position:relative;
+    background:linear-gradient(180deg, var(--bg) 0%, var(--bg-soft) 50%, var(--bg) 100%);
+    border-top:1px solid var(--line);
+    border-bottom:1px solid var(--line);
   }
-  .flipcard-text .section-eyebrow{margin-bottom:14px;}
-  .flipcard-text h2{
+  /* Tall section: gives the user vertical scroll distance that
+     maps 1:1 to the cards' horizontal travel. 320vh means we
+     get ~2.2 viewports of vertical scroll to traverse all cards. */
+  .roll-sticky{
+    position:relative;
+    height:320vh;
+  }
+  .roll-sticky-inner{
+    position:sticky;
+    top:0;
+    height:100vh;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    overflow:hidden;
+  }
+  .roll-head{
+    max-width:1120px;
+    margin:0 auto 36px;
+    padding:0 24px;
+    text-align:center;
+    position:relative;
+    z-index:2;
+  }
+  .roll-head h2{
     font-family:'Sora', sans-serif;
     font-weight:700;
     font-size:clamp(28px, 4.5vw, 40px);
     letter-spacing:-1px;
-    margin:0 0 16px;
-    line-height:1.1;
+    margin:14px 0 14px;
   }
-  .flipcard-text p{
+  .roll-head p{
     color:var(--ink-soft);
     font-size:15.5px;
+    max-width:520px;
+    margin:0 auto;
     line-height:1.65;
-    margin:0 0 18px;
-    max-width:440px;
   }
-  .flipcard-text .flip-hint{
-    display:inline-flex;
-    align-items:center;
-    gap:8px;
-    font-family:'IBM Plex Mono', monospace;
-    font-size:12px;
-    color:var(--ink-soft);
-    margin-top:8px;
-    background:var(--bg-soft);
-    border:1px solid var(--line);
-    padding:7px 12px;
-    border-radius:8px;
+  /* Progress bar at the top of the sticky area, just below the
+     section header. Fills as the user scrolls through. */
+  .roll-progress{
+    position:absolute;
+    top:24px;
+    left:50%;
+    transform:translateX(-50%);
+    width:240px;
+    height:3px;
+    background:rgba(11,15,13,0.08);
+    border-radius:2px;
+    overflow:hidden;
+    z-index:3;
   }
-  .flipcard-text .flip-hint .kbd{
-    font-family:'IBM Plex Mono', monospace;
-    background:#fff;
-    border:1px solid var(--line);
-    border-bottom-width:2px;
-    border-radius:5px;
-    padding:2px 7px;
-    font-size:11px;
-    color:var(--ink);
-  }
-
-  /* The card wrapper. CSS variables --mx and --my (range -1 to 1)
-     drive both the outer card rotation and the inner parallax layers. */
-  .flipcard-stage{
-    position:relative;
-    aspect-ratio:1.1/1;
-    perspective:1200px;
-    perspective-origin:50% 40%;
-    -webkit-user-select:none;
-    -moz-user-select:none;
-    -ms-user-select:none;
-    user-select:none;
-    -webkit-touch-callout:none;
-    --mx:0;
-    --my:0;
-    --rX:0deg;
-    --rY:0deg;
-  }
-  .flipcard{
-    position:relative;
-    width:100%;
+  .roll-progress-fill{
+    width:0%;
     height:100%;
-    transform-style:preserve-3d;
-    transform:rotateX(var(--rX)) rotateY(var(--rY));
-    transition:transform .55s cubic-bezier(.2,.8,.2,1);
+    background:linear-gradient(90deg, var(--emerald-deep), var(--royal));
+    border-radius:2px;
+    transition:width 60ms linear;
+  }
+  .roll-progress-label{
+    position:absolute;
+    top:36px;
+    left:50%;
+    transform:translateX(-50%);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10.5px;
+    letter-spacing:1px;
+    color:var(--ink-soft);
+    text-transform:uppercase;
+    z-index:3;
+  }
+  .roll-track-wrap{
+    width:100%;
+    overflow:hidden;
+    padding:0 24px;
+  }
+  .roll-track{
+    display:flex;
+    gap:28px;
+    width:max-content;
     will-change:transform;
   }
-  .flipcard-stage:hover .flipcard{transition:transform .15s ease-out;}
-
-  /* Both faces share the same base */
-  .flipcard-face{
-    position:absolute;
-    inset:0;
-    backface-visibility:hidden;
-    -webkit-backface-visibility:hidden;
-    border-radius:24px;
+  /* Project card */
+  .roll-card{
+    width:420px;
+    flex-shrink:0;
     background:#fff;
     border:1px solid var(--line);
-    box-shadow:0 30px 60px -22px rgba(11,15,13,0.25), 0 2px 6px rgba(11,15,13,0.05);
-    padding:32px;
+    border-radius:22px;
+    box-shadow:0 18px 36px -22px rgba(11,15,13,0.12);
+    overflow:hidden;
     display:flex;
     flex-direction:column;
-    overflow:hidden;
-    transform-style:preserve-3d;
+    transition:transform .35s cubic-bezier(.2,.8,.2,1), box-shadow .35s ease;
   }
-  /* Soft animated background that drifts a little on hover */
-  .flipcard-face::before{
-    content:'';
-    position:absolute;
-    inset:-2px;
-    background:
-      radial-gradient(60% 50% at calc(50% + var(--mx,0) * 25%) calc(20% + var(--my,0) * 15%), rgba(29,78,216,0.10), transparent 70%),
-      radial-gradient(50% 40% at calc(50% - var(--mx,0) * 20%) calc(85% - var(--my,0) * 15%), rgba(14,169,104,0.08), transparent 70%);
-    z-index:0;
-    pointer-events:none;
-    transition:opacity .35s ease;
+  .roll-card:hover{
+    transform:translateY(-8px);
+    box-shadow:0 28px 50px -20px rgba(11,15,13,0.22);
   }
-  .flipcard-face > *{position:relative; z-index:1;}
-
-  /* Tag pill (Layer 1 — slowest parallax) */
-  .flipcard-face .flip-tag{
+  /* Top color band — different per card */
+  .roll-card-band{
+    height:6px;
+    width:100%;
+  }
+  .roll-card-band.blue{background:linear-gradient(90deg, #1D4ED8, #60A5FA);}
+  .roll-card-band.green{background:linear-gradient(90deg, #087F4E, #0EA968);}
+  .roll-card-band.amber{background:linear-gradient(90deg, #B45309, #F59E0B);}
+  .roll-card-band.violet{background:linear-gradient(90deg, #6D28D9, #A78BFA);}
+  .roll-card-body{
+    padding:32px 30px 28px;
+    display:flex;
+    flex-direction:column;
+    flex:1;
+  }
+  .roll-card-top{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:18px;
+  }
+  .roll-card-num{
     font-family:'IBM Plex Mono', monospace;
     font-size:11px;
+    letter-spacing:1px;
+    color:var(--ink-soft);
+  }
+  .roll-card-tag{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10.5px;
     letter-spacing:1px;
     text-transform:uppercase;
     color:var(--royal);
     background:var(--royal-soft);
     border:1px solid rgba(29,78,216,0.18);
-    display:inline-block;
-    padding:6px 12px;
-    border-radius:7px;
-    align-self:flex-start;
-    margin-bottom:18px;
-    transform:translateZ(20px) translate(calc(var(--mx,0) * -4px), calc(var(--my,0) * -4px));
+    padding:5px 10px;
+    border-radius:6px;
   }
-  /* Title (Layer 2 — medium parallax) */
-  .flipcard-face h3{
+  .roll-card-tag.green{color:var(--emerald-deep); background:var(--emerald-soft); border-color:rgba(14,169,104,0.2);}
+  .roll-card-tag.amber{color:#B45309; background:#FEF3C7; border-color:rgba(180,83,9,0.2);}
+  .roll-card-tag.violet{color:#6D28D9; background:#EDE9FE; border-color:rgba(109,40,217,0.2);}
+  .roll-card h3{
     font-family:'Sora', sans-serif;
     font-weight:700;
-    font-size:26px;
-    line-height:1.15;
+    font-size:24px;
+    line-height:1.18;
     letter-spacing:-0.5px;
-    margin:0 0 14px;
-    transform:translateZ(40px) translate(calc(var(--mx,0) * -8px), calc(var(--my,0) * -8px));
+    margin:0 0 12px;
   }
-  /* Subtitle / description (Layer 3 — more parallax) */
-  .flipcard-face .flip-hook{
+  .roll-card-desc{
     color:var(--ink-soft);
     font-size:14.5px;
     line-height:1.6;
     margin:0 0 22px;
-    transform:translateZ(55px) translate(calc(var(--mx,0) * -12px), calc(var(--my,0) * -12px));
   }
-  .flipcard-face .flip-stack{
+  .roll-card-stack{
     display:flex;
     flex-wrap:wrap;
     gap:7px;
-    margin-bottom:auto;
-    transform:translateZ(30px) translate(calc(var(--mx,0) * -6px), calc(var(--my,0) * -6px));
+    margin-bottom:24px;
   }
-  .flipcard-face .flip-stack span{
+  .roll-card-stack span{
     font-family:'IBM Plex Mono', monospace;
-    font-size:11px;
+    font-size:11.5px;
     background:var(--bg-soft);
     border:1px solid var(--line);
     color:var(--ink);
     padding:5px 10px;
     border-radius:6px;
   }
-  .flipcard-face .flip-foot{
-    margin-top:18px;
+  .roll-card-foot{
+    margin-top:auto;
     padding-top:18px;
     border-top:1px dashed var(--line);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
     font-family:'IBM Plex Mono', monospace;
     font-size:11.5px;
     color:var(--ink-soft);
-    line-height:1.55;
-    transform:translateZ(25px) translate(calc(var(--mx,0) * -5px), calc(var(--my,0) * -5px));
   }
-  .flipcard-face .flip-foot b{color:var(--ink); font-weight:600;}
+  .roll-card-foot b{color:var(--ink); font-weight:600;}
 
-  /* Subtle moving highlight that catches the "light" as you move */
-  .flipcard-highlight{
-    position:absolute;
-    inset:0;
-    border-radius:24px;
-    pointer-events:none;
-    background:radial-gradient(120px 120px at calc(50% + var(--mx,0) * 50%) calc(20% + var(--my,0) * 30%), rgba(255,255,255,0.55), transparent 70%);
-    mix-blend-mode:soft-light;
-    opacity:0;
-    transition:opacity .35s ease;
-    z-index:2;
-  }
-  .flipcard-stage:hover .flipcard-highlight{opacity:1;}
-
-  /* Back face */
-  .flipcard-back{transform:rotateY(180deg);}
-  .flipcard.flipped{transform:rotateX(calc(var(--rX) * 1)) rotateY(calc(180deg + var(--rY)));}
-
-  /* SVG diagram inside the back face gets its own gentle parallax */
-  .flipcard-arch{
-    flex:1;
-    width:100%;
-    height:100%;
-    min-height:0;
-    transform:translateZ(35px) translate(calc(var(--mx,0) * -7px), calc(var(--my,0) * -7px));
-  }
-
-  /* Flip button — small chip at the bottom-right of the card */
-  .flipcard-stage .flip-btn{
-    position:absolute;
-    bottom:-18px;
-    right:18px;
-    background:var(--ink);
-    color:#fff;
-    border:none;
-    border-radius:999px;
-    padding:10px 18px;
-    font-family:'IBM Plex Mono', monospace;
-    font-size:11.5px;
-    letter-spacing:0.5px;
-    cursor:pointer;
-    box-shadow:0 12px 28px -10px rgba(11,15,13,0.45);
-    transition:transform .2s ease, background .2s ease;
-    z-index:3;
-  }
-  .flipcard-stage .flip-btn:hover{background:var(--emerald-deep); transform:translateY(-2px);}
-
-  @media (max-width:820px){
-    .flipcard-section{grid-template-columns:1fr; gap:40px; padding:60px 24px 80px;}
-    .flipcard-stage{max-width:480px; margin:0 auto; width:100%;}
+  @media (max-width:760px){
+    .roll-sticky{height:260vh;}
+    .roll-card{width:340px;}
   }
 
   /* ---------- FEATURE CARDS ---------- */
@@ -1216,119 +1411,71 @@
     .stat:nth-child(1), .stat:nth-child(2){border-bottom:1px solid var(--line);}
   }
 
-  /* ---------- SCROLL-PINNED 3D SECTION ---------- */
-  .pinned-section{
+  /* ---------- HORIZONTAL SCROLL SECTION (pinned) ----------
+     The whole section is taller than the viewport (260vh) so the
+     user has real scroll runway to traverse the cards. A sticky
+     inner div keeps the cards in view while translateX is driven
+     by scroll progress. */
+  .hscroll-section{
+    background:linear-gradient(180deg, var(--bg) 0%, var(--bg-soft) 50%, var(--bg) 100%);
+    border-top:1px solid var(--line);
+    border-bottom:1px solid var(--line);
     position:relative;
-    height:280vh; /* gives us scroll runway */
-    background:linear-gradient(180deg, var(--bg-soft) 0%, #ffffff 50%, var(--bg-soft) 100%);
   }
-  .pinned-sticky{
+  .hscroll-sticky{
+    position:relative;
+    height:260vh;
+  }
+  .hscroll-sticky-inner{
     position:sticky;
     top:0;
     height:100vh;
     display:flex;
-    align-items:center;
-    justify-content:center;
-    overflow:hidden;
-  }
-  .pinned-canvas-wrap{
-    position:absolute;
-    inset:0;
-    z-index:1;
-  }
-  #pinned-canvas{
-    width:100%;
-    height:100%;
-    display:block;
-  }
-  .pinned-content{
-    position:relative;
-    z-index:2;
-    max-width:520px;
-    text-align:center;
-    padding:0 24px;
-    pointer-events:none;
-  }
-  .pinned-step{
-    position:absolute;
-    inset:0;
-    display:flex;
     flex-direction:column;
-    align-items:center;
     justify-content:center;
-    text-align:center;
-    padding:0 24px;
-    opacity:0;
-    transform:translateY(40px);
-    transition:opacity .6s ease, transform .6s ease;
-    pointer-events:none;
-  }
-  .pinned-step.active{
-    opacity:1;
-    transform:translateY(0);
-    pointer-events:auto;
-  }
-  .pinned-step .step-tag{
-    font-family:'IBM Plex Mono', monospace;
-    font-size:12px;
-    letter-spacing:1px;
-    text-transform:uppercase;
-    color:var(--emerald-deep);
-    background:var(--emerald-soft);
-    border:1px solid rgba(14,169,104,0.2);
-    display:inline-block;
-    padding:5px 12px;
-    border-radius:7px;
-    margin-bottom:18px;
-  }
-  .pinned-step h3{
-    font-family:'Sora', sans-serif;
-    font-weight:700;
-    font-size:clamp(26px, 3.5vw, 36px);
-    letter-spacing:-1px;
-    margin:0 0 14px;
-    line-height:1.15;
-  }
-  .pinned-step p{
-    color:var(--ink-soft);
-    font-size:15.5px;
-    line-height:1.65;
-    margin:0;
-    max-width:440px;
-  }
-  .pinned-progress{
-    position:absolute;
-    bottom:32px;
-    left:50%;
-    transform:translateX(-50%);
-    display:flex;
-    gap:10px;
-    z-index:3;
-  }
-  .pinned-progress .dot{
-    width:8px; height:8px;
-    border-radius:50%;
-    background:var(--line);
-    transition:background .3s ease, transform .3s ease;
-  }
-  .pinned-progress .dot.active{background:var(--royal); transform:scale(1.4);}
-
-  /* ---------- HORIZONTAL SCROLL SECTION ---------- */
-  .hscroll-section{
-    background:var(--bg);
-    border-top:1px solid var(--line);
-    border-bottom:1px solid var(--line);
-    padding:100px 0 120px;
-    position:relative;
     overflow:hidden;
   }
   .hscroll-head{
     max-width:1120px;
-    margin:0 auto 50px;
+    margin:0 auto 36px;
     padding:0 24px;
     text-align:center;
+    position:relative;
+    z-index:2;
+  }
+  .hscroll-progress{
+    position:absolute;
+    top:24px;
+    left:50%;
+    transform:translateX(-50%);
+    width:240px;
+    height:3px;
+    background:rgba(11,15,13,0.08);
+    border-radius:2px;
+    overflow:hidden;
+    z-index:3;
+  }
+  .hscroll-progress-fill{
+    width:0%;
+    height:100%;
+    background:linear-gradient(90deg, var(--emerald-deep), var(--royal));
+    border-radius:2px;
+    transition:width 60ms linear;
+  }
+  .hscroll-progress-label{
+    position:absolute;
+    top:36px;
+    left:50%;
+    transform:translateX(-50%);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10.5px;
+    letter-spacing:1px;
+    color:var(--ink-soft);
+    text-transform:uppercase;
+    z-index:3;
   }
   .hscroll-track-wrap{
+    width:100%;
     overflow:hidden;
     padding:0 24px;
   }
@@ -1377,6 +1524,10 @@
     font-size:15px;
     line-height:1.65;
     margin:0;
+  }
+  @media (max-width:760px){
+    .hscroll-sticky{height:220vh;}
+    .hscroll-card{width:340px;}
   }
 
   /* ---------- TESTIMONIAL / QUOTE FLOAT ---------- */
@@ -1455,20 +1606,83 @@
 </nav>
 
 <section class="hero" data-journey="Hero" data-journey-label="Hero">
-  <div class="hero-fallback-glow"></div>
-  <canvas id="hero-canvas"></canvas>
-  <div class="hero-content">
-    <div class="hero-eyebrow"><span class="pulse"></span>Free to start · 360 credits every month</div>
+  <div class="hero-left">
+    <div class="hero-eyebrow"><span class="pulse"></span>HELLO WORLD, <b>WE ARE</b></div>
     <h1 class="word-reveal" id="hero-headline">
       <span class="word-reveal-wrap"><span class="word">Stop</span></span> <span class="word-reveal-wrap"><span class="word">guessing</span></span><br>
       <span class="word-reveal-wrap"><span class="word">what</span></span> <span class="word-reveal-wrap"><span class="word">to</span></span> <span class="word-reveal-wrap"><span class="word grad">build.</span></span>
     </h1>
-    <p>Tell BuildItUp your target role and skill gap — get 4 resume-worthy project ideas, then a full AI-guided build plan for the one you pick.</p>
+    <p class="hero-lede">Tell BuildItUp your target role and skill gap — get 4 resume-worthy project ideas, then a full AI-guided build plan for the one you pick.</p>
     <div class="hero-actions">
       <a href="app.html" class="btn-primary magnetic">Start Building — Free →</a>
       <a href="#how-it-works" class="btn-secondary magnetic">See how it works</a>
     </div>
     <div class="hero-meta">NO CREDIT CARD · SIGN UP IN SECONDS</div>
+  </div>
+  <div class="hero-right">
+    <div class="hero-illu">
+
+      <!-- Floating capability tags around the preview -->
+      <span class="hero-tag t1"><span class="dot"></span>Live preview</span>
+      <span class="hero-tag t2"><span class="dot"></span>Resume-ready</span>
+      <span class="hero-tag t3"><span class="dot"></span>4 tailored</span>
+      <span class="hero-tag t4"><span class="dot"></span>Stack-aware</span>
+      <span class="hero-tag t5"><span class="dot"></span>Free forever</span>
+
+      <!-- The product-preview card -->
+      <div class="hero-preview">
+        <div class="hero-preview-bar">
+          <span class="logo"><span class="b"></span>BuildItUp</span>
+          <span class="sep"></span>
+          <span class="crumb">projects / <b>for you</b></span>
+          <span class="live"><span class="pulse"></span>LIVE</span>
+        </div>
+        <div class="hero-preview-body">
+          <div class="hero-preview-meta">
+            <span class="label">4 <b>tailored</b> ideas</span>
+            <span class="sort">↓ newest</span>
+          </div>
+
+          <div class="hero-idea">
+            <span class="num">1</span>
+            <div class="body">
+              <div class="ttl">Real-time captioning app</div>
+              <div class="meta">React · WebSockets · Postgres</div>
+            </div>
+            <span class="scope">1 wk</span>
+          </div>
+
+          <div class="hero-idea">
+            <span class="num">2</span>
+            <div class="body">
+              <div class="ttl">Food calorie estimator</div>
+              <div class="meta">PyTorch · ONNX · Flutter</div>
+            </div>
+            <span class="scope">3 wks</span>
+          </div>
+
+          <div class="hero-idea">
+            <span class="num">3</span>
+            <div class="body">
+              <div class="ttl">Distributed rate-limiter</div>
+              <div class="meta">Redis · Kafka · Spring</div>
+            </div>
+            <span class="scope">2 wks</span>
+          </div>
+
+          <div class="hero-idea">
+            <span class="num">4</span>
+            <div class="body">
+              <div class="ttl">Log search engine</div>
+              <div class="meta">Elastic · Go · gRPC</div>
+            </div>
+            <span class="scope">1 mo</span>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
   </div>
   <div class="hero-scroll-cue">SCROLL<span class="line"></span></div>
 </section>
@@ -1538,162 +1752,157 @@
   </div>
 </section>
 
-<!-- Tier 1 / #1 — Deep card tilt (Aikawa-style) -->
-<section class="flipcard-section" data-journey="Card" data-journey-label="Sample project">
-  <div class="flipcard-text reveal-left">
-    <span class="section-eyebrow">Sample project</span>
-    <h2>Every idea is<br>a real project.</h2>
-    <p>Hover to look around. Each BuildItUp idea is a fully scoped project — stack, architecture, and a resume-ready line already drafted. Click the card to see the architecture underneath.</p>
-    <div class="flip-hint">
-      Hover · or hit <span class="kbd">F</span> to flip
-    </div>
-  </div>
-  <div class="flipcard-stage reveal-right" id="flipcard-stage">
-    <div class="flipcard" id="flipcard">
-      <div class="flipcard-face">
-        <span class="flip-tag">Flagship project</span>
-        <h3>Real-time event check-in for college fests</h3>
-        <p class="flip-hook">A QR-based attendance app that handles 5,000+ check-ins per hour without dropping a beat, with a live dashboard for organizers.</p>
-        <div class="flip-stack">
-          <span>Next.js</span><span>WebSockets</span><span>Postgres</span><span>Redis</span><span>QR</span>
-        </div>
-        <div class="flip-foot">
-          <b>Resume line:</b> Built a real-time check-in system handling 5k+ concurrent users with sub-200ms latency using WebSockets and Redis pub/sub.
-        </div>
-        <div class="flipcard-highlight" aria-hidden="true"></div>
+<!-- Tier 1 / #1 — Rolling horizontal project cards -->
+<section class="roll-section" data-journey="Projects" data-journey-label="Sample projects">
+  <div class="roll-sticky">
+    <div class="roll-sticky-inner">
+      <div class="roll-head">
+        <span class="section-eyebrow">Sample projects</span>
+        <h2>Real ideas.<br>Real stacks. Real resume lines.</h2>
+        <p>Scroll to roll through 4 of the kinds of project ideas BuildItUp generates for you. Every one is fully scoped, ready to build.</p>
       </div>
-      <div class="flipcard-face flipcard-back">
-        <span class="flip-tag">Architecture</span>
-        <svg class="flipcard-arch" viewBox="0 0 400 280" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-              <path d="M0,0 L10,5 L0,10 z" fill="#5B6B63"/>
-            </marker>
-          </defs>
-          <g font-family="Inter, sans-serif" font-size="11" fill="#0B0F0D">
-            <rect x="20"  y="110" width="100" height="44" rx="9" fill="#EEF2FF" stroke="#1D4ED8"/>
-            <text x="70"  y="135" text-anchor="middle" fill="#1D4ED8" font-weight="600">Attendee</text>
-            <text x="70"  y="148" text-anchor="middle" fill="#5B6B63" font-size="9">(mobile)</text>
-
-            <rect x="150" y="60"  width="110" height="44" rx="9" fill="#E6F7EF" stroke="#0EA968"/>
-            <text x="205" y="85"  text-anchor="middle" fill="#087F4E" font-weight="600">Next.js app</text>
-            <text x="205" y="98"  text-anchor="middle" fill="#5B6B63" font-size="9">(UI + API)</text>
-
-            <rect x="150" y="180" width="110" height="44" rx="9" fill="#EEF2FF" stroke="#1D4ED8"/>
-            <text x="205" y="205" text-anchor="middle" fill="#1D4ED8" font-weight="600">WebSocket</text>
-            <text x="205" y="218" text-anchor="middle" fill="#5B6B63" font-size="9">server</text>
-
-            <rect x="290" y="120" width="100" height="44" rx="9" fill="#E6F7EF" stroke="#0EA968"/>
-            <text x="340" y="142" text-anchor="middle" fill="#087F4E" font-weight="600">Postgres</text>
-            <text x="340" y="155" text-anchor="middle" fill="#5B6B63" font-size="9">(check-ins)</text>
-
-            <rect x="200" y="0" width="100" height="40" rx="9" fill="#F7F8FA" stroke="#5B6B63"/>
-            <text x="250" y="22" text-anchor="middle" fill="#0B0F0D" font-weight="600">Redis</text>
-            <text x="250" y="34" text-anchor="middle" fill="#5B6B63" font-size="9">(pub/sub)</text>
-
-            <line x1="120" y1="132" x2="150" y2="82"  stroke="#5B6B63" stroke-width="1.2" marker-end="url(#arr)"/>
-            <text x="125" y="105" font-size="9" fill="#5B6B63">QR scan</text>
-
-            <line x1="260" y1="82"  x2="290" y2="132" stroke="#5B6B63" stroke-width="1.2" marker-end="url(#arr)"/>
-            <text x="265" y="105" font-size="9" fill="#5B6B63">read/write</text>
-
-            <line x1="205" y1="104" x2="205" y2="180" stroke="#5B6B63" stroke-width="1.2" marker-end="url(#arr)"/>
-            <text x="212" y="148" font-size="9" fill="#5B6B63">events</text>
-
-            <line x1="260" y1="202" x2="290" y2="156" stroke="#5B6B63" stroke-width="1.2" marker-end="url(#arr)"/>
-            <text x="270" y="186" font-size="9" fill="#5B6B63">push</text>
-
-            <line x1="205" y1="60"  x2="225" y2="40"  stroke="#5B6B63" stroke-width="1.2" stroke-dasharray="3,3"/>
-            <line x1="205" y1="224" x2="225" y2="40"  stroke="#5B6B63" stroke-width="1.2" stroke-dasharray="3,3"/>
-          </g>
-        </svg>
-        <div class="flipcard-highlight" aria-hidden="true"></div>
+      <div class="roll-progress" aria-hidden="true">
+        <div class="roll-progress-fill" id="roll-progress-fill"></div>
       </div>
-    </div>
-    <button class="flip-btn" id="flip-btn">Flip card</button>
-  </div>
-</section>
+      <div class="roll-progress-label" id="roll-progress-label">01 / 04</div>
+      <div class="roll-track-wrap">
+        <div class="roll-track" id="roll-track">
 
-<!-- Scroll-pinned 3D section -->
-<section class="pinned-section" id="capabilities" data-journey="Path" data-journey-label="Your path">
-  <div class="pinned-sticky">
-    <div class="pinned-canvas-wrap">
-      <canvas id="pinned-canvas"></canvas>
-    </div>
-    <div class="pinned-step active" data-step="0">
-      <span class="step-tag">01 · Discover</span>
-      <h3>Find the gap<br>in your resume</h3>
-      <p>We compare your current skills, target role, and dream company — then surface the projects that actually move the needle.</p>
-    </div>
-    <div class="pinned-step" data-step="1">
-      <span class="step-tag">02 · Choose</span>
-      <h3>Pick from 4 ideas<br>tailored to you</h3>
-      <p>Every idea comes with a stack, a realistic scope, and a resume bullet you can paste straight in.</p>
-    </div>
-    <div class="pinned-step" data-step="2">
-      <span class="step-tag">03 · Build</span>
-      <h3>Follow a full<br>step-by-step guide</h3>
-      <p>Architecture, skills to learn, phased checklist, and progress tracking — from zero to a project worth shipping.</p>
-    </div>
-    <div class="pinned-step" data-step="3">
-      <span class="step-tag">04 · Ship</span>
-      <h3>Walk into your<br>next interview ready</h3>
-      <p>Talk confidently about a real thing you built, with the technical depth to back it up under any follow-up question.</p>
-    </div>
-    <div class="pinned-progress">
-      <span class="dot active" data-dot="0"></span>
-      <span class="dot" data-dot="1"></span>
-      <span class="dot" data-dot="2"></span>
-      <span class="dot" data-dot="3"></span>
+          <div class="roll-card">
+            <div class="roll-card-band blue"></div>
+            <div class="roll-card-body">
+              <div class="roll-card-top">
+                <span class="roll-card-num">01</span>
+                <span class="roll-card-tag">WEB · FRONTEND</span>
+              </div>
+              <h3>Real-time captioning app for college lectures</h3>
+              <p class="roll-card-desc">Streams captions to every student's phone with sub-300ms latency. Works on the shaky hostel Wi-Fi everyone actually has.</p>
+              <div class="roll-card-stack">
+                <span>React</span><span>Vite</span><span>WebSockets</span><span>Postgres</span>
+              </div>
+              <div class="roll-card-foot">
+                <span><b>Scope:</b> 1 weekend → 2 wks</span>
+                <span>120 cr</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="roll-card">
+            <div class="roll-card-band green"></div>
+            <div class="roll-card-body">
+              <div class="roll-card-top">
+                <span class="roll-card-num">02</span>
+                <span class="roll-card-tag green">ML · MOBILE</span>
+              </div>
+              <h3>Calorie estimator from a single food photo</h3>
+              <p class="roll-card-desc">On-device inference that works offline, trained on Indian food datasets — not just pizza and burgers.</p>
+              <div class="roll-card-stack">
+                <span>PyTorch</span><span>ONNX</span><span>Flutter</span><span>FastAPI</span>
+              </div>
+              <div class="roll-card-foot">
+                <span><b>Scope:</b> 3–4 weekends</span>
+                <span>120 cr</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="roll-card">
+            <div class="roll-card-band amber"></div>
+            <div class="roll-card-body">
+              <div class="roll-card-top">
+                <span class="roll-card-num">03</span>
+                <span class="roll-card-tag amber">BACKEND · INFRA</span>
+              </div>
+              <h3>Distributed rate-limiter (token bucket, Redis)</h3>
+              <p class="roll-card-desc">Handles 50k req/s across 8 regions with a live admin dashboard and p99 latency tracking.</p>
+              <div class="roll-card-stack">
+                <span>Spring Boot</span><span>Redis</span><span>Kafka</span><span>Grafana</span>
+              </div>
+              <div class="roll-card-foot">
+                <span><b>Scope:</b> 2 weeks</span>
+                <span>120 cr</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="roll-card">
+            <div class="roll-card-band violet"></div>
+            <div class="roll-card-body">
+              <div class="roll-card-top">
+                <span class="roll-card-num">04</span>
+                <span class="roll-card-tag violet">DATA · SEARCH</span>
+              </div>
+              <h3>Log search engine for your side project</h3>
+              <p class="roll-card-desc">Indexes millions of log lines, surfaces the one line that matters. Beats scrolling through stdout in production.</p>
+              <div class="roll-card-stack">
+                <span>Elastic</span><span>Go</span><span>gRPC</span><span>React</span>
+              </div>
+              <div class="roll-card-foot">
+                <span><b>Scope:</b> 1 month</span>
+                <span>120 cr</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- Horizontal scroll showcase -->
+<!-- Building blocks (pinned horizontal scroll) -->
 <section class="hscroll-section" id="what-you-get" data-journey="Building blocks" data-journey-label="Building blocks">
-  <div class="hscroll-head reveal">
-    <span class="section-eyebrow">What you get</span>
-    <h2 style="font-family:'Sora',sans-serif;font-weight:700;font-size:clamp(28px,4.5vw,40px);letter-spacing:-1px;margin:14px 0;">
-      Everything between <em style="font-style:normal;background:linear-gradient(100deg,var(--emerald-deep),var(--royal));-webkit-background-clip:text;background-clip:text;color:transparent;">idea</em> and <em style="font-style:normal;background:linear-gradient(100deg,var(--emerald-deep),var(--royal));-webkit-background-clip:text;background-clip:text;color:transparent;">shipped</em>
-    </h2>
-    <p style="color:var(--ink-soft);max-width:520px;margin:0 auto;font-size:15.5px;line-height:1.65;">Drag, scroll, or use arrow keys — every guide includes these building blocks, pre-tailored to your pick.</p>
-  </div>
-  <div class="hscroll-track-wrap">
-    <div class="hscroll-track" id="hscroll-track">
-      <div class="hscroll-card">
-        <div class="hscroll-icon green">🎯</div>
-        <h4>Targeted scope</h4>
-        <p>Each project is sized to a realistic timeframe — weekend, two weeks, or a month — so you never over-commit.</p>
+  <div class="hscroll-sticky">
+    <div class="hscroll-sticky-inner">
+      <div class="hscroll-head reveal">
+        <span class="section-eyebrow">What you get</span>
+        <h2 style="font-family:'Sora',sans-serif;font-weight:700;font-size:clamp(28px,4.5vw,40px);letter-spacing:-1px;margin:14px 0;">
+          Everything between <em style="font-style:normal;background:linear-gradient(100deg,var(--emerald-deep),var(--royal));-webkit-background-clip:text;background-clip:text;color:transparent;">idea</em> and <em style="font-style:normal;background:linear-gradient(100deg,var(--emerald-deep),var(--royal));-webkit-background-clip:text;background-clip:text;color:transparent;">shipped</em>
+        </h2>
+        <p style="color:var(--ink-soft);max-width:520px;margin:0 auto;font-size:15.5px;line-height:1.65;">Keep scrolling to roll through the building blocks every guide comes with.</p>
       </div>
-      <div class="hscroll-card">
-        <div class="hscroll-icon blue">🧩</div>
-        <h4>Stack breakdown</h4>
-        <p>The exact languages, frameworks, and services — with reasoning on why this stack fits your target role.</p>
+      <div class="hscroll-progress" aria-hidden="true">
+        <div class="hscroll-progress-fill" id="hscroll-progress-fill"></div>
       </div>
-      <div class="hscroll-card">
-        <div class="hscroll-icon mix">🏗️</div>
-        <h4>Architecture map</h4>
-        <p>A bird's-eye view of the components and how they talk to each other — designed for your level, not a senior's.</p>
-      </div>
-      <div class="hscroll-card">
-        <div class="hscroll-icon green">📚</div>
-        <h4>Skills to learn</h4>
-        <p>The 3–6 specific concepts you'll pick up while building — mapped to what interviewers actually ask.</p>
-      </div>
-      <div class="hscroll-card">
-        <div class="hscroll-icon blue">✅</div>
-        <h4>Phased checklist</h4>
-        <p>From "set up the repo" to "deploy and write the README" — broken into phases so you always know the next step.</p>
-      </div>
-      <div class="hscroll-card">
-        <div class="hscroll-icon mix">📈</div>
-        <h4>Resume bullet</h4>
-        <p>A pre-written, metrics-style line for your resume, plus talking points for the interview follow-up.</p>
-      </div>
-      <div class="hscroll-card">
-        <div class="hscroll-icon green">🔁</div>
-        <h4>Progress tracking</h4>
-        <p>Check off phases as you go; pick up exactly where you left off across devices and sessions.</p>
+      <div class="hscroll-progress-label" id="hscroll-progress-label">01 / 07</div>
+      <div class="hscroll-track-wrap">
+        <div class="hscroll-track" id="hscroll-track">
+          <div class="hscroll-card">
+            <div class="hscroll-icon green">🎯</div>
+            <h4>Targeted scope</h4>
+            <p>Each project is sized to a realistic timeframe — weekend, two weeks, or a month — so you never over-commit.</p>
+          </div>
+          <div class="hscroll-card">
+            <div class="hscroll-icon blue">🧩</div>
+            <h4>Stack breakdown</h4>
+            <p>The exact languages, frameworks, and services — with reasoning on why this stack fits your target role.</p>
+          </div>
+          <div class="hscroll-card">
+            <div class="hscroll-icon mix">🏗️</div>
+            <h4>Architecture map</h4>
+            <p>A bird's-eye view of the components and how they talk to each other — designed for your level, not a senior's.</p>
+          </div>
+          <div class="hscroll-card">
+            <div class="hscroll-icon green">📚</div>
+            <h4>Skills to learn</h4>
+            <p>The 3–6 specific concepts you'll pick up while building — mapped to what interviewers actually ask.</p>
+          </div>
+          <div class="hscroll-card">
+            <div class="hscroll-icon blue">✅</div>
+            <h4>Phased checklist</h4>
+            <p>From "set up the repo" to "deploy and write the README" — broken into phases so you always know the next step.</p>
+          </div>
+          <div class="hscroll-card">
+            <div class="hscroll-icon mix">📈</div>
+            <h4>Resume bullet</h4>
+            <p>A pre-written, metrics-style line for your resume, plus talking points for the interview follow-up.</p>
+          </div>
+          <div class="hscroll-card">
+            <div class="hscroll-icon green">🔁</div>
+            <h4>Progress tracking</h4>
+            <p>Check off phases as you go; pick up exactly where you left off across devices and sessions.</p>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -1890,92 +2099,65 @@ document.querySelectorAll('.word-reveal:not(#hero-headline)').forEach(el => word
 })();
 
 /* ===========================================================
-   TIER 1 / #1 — DEEP CARD TILT (Aikawa-style)
-   Mouse position drives CSS variables --mx, --my on the stage
-   (range -1..+1). The card itself uses rotateX/rotateY from
-   those vars. Inner content layers each have their own
-   translate3d offsets so they move at different rates (the
-   "deep" / parallax feel). No dragging. Click / F to flip.
+   TIER 1 / #1 — ROLLING HORIZONTAL CARDS
+   Vertical scroll through the .roll-section maps to horizontal
+   movement of the .roll-track. A sticky inner div keeps the
+   cards in view while the section is being scrolled. A small
+   progress bar + counter in the top of the section updates as
+   you scroll through.
    =========================================================== */
-(function initFlipCard() {
-  const stage = document.getElementById('flipcard-stage');
-  const card = document.getElementById('flipcard');
-  const flipBtn = document.getElementById('flip-btn');
-  if (!stage || !card) return;
+(function initRoll() {
+  const section = document.querySelector('.roll-section');
+  const sticky = section ? section.querySelector('.roll-sticky') : null;
+  const track = document.getElementById('roll-track');
+  const fill = document.getElementById('roll-progress-fill');
+  const label = document.getElementById('roll-progress-label');
+  if (!section || !sticky || !track) return;
 
-  // Maximum rotation angles, in degrees
-  const MAX_TILT_X = 12;   // pitch
-  const MAX_TILT_Y = 18;   // yaw
+  const cards = track.querySelectorAll('.roll-card');
+  const totalCards = cards.length;
 
-  // Animation state (we tween the rotation even though the parallax
-  // layers follow the cursor directly via CSS, so the card has a
-  // nice springy feel instead of feeling locked to the mouse).
-  let curX = 0, curY = 0;          // current displayed rotation (deg)
-  let tgtX = 0, tgtY = 0;          // target rotation driven by mouse
-  let flipped = false;
+  function getProgress() {
+    const rect = sticky.getBoundingClientRect();
+    // The section is 320vh tall, so the sticky inner only "pins" for
+    // the middle 220vh of that. Use rect.height to compute progress.
+    const total = rect.height - window.innerHeight;
+    if (total <= 0) return 0;
+    const scrolled = -rect.top;
+    return Math.max(0, Math.min(1, scrolled / total));
+  }
 
-  function applyTransform() {
-    // Spring the displayed rotation toward the target
-    curX += (tgtX - curX) * 0.18;
-    curY += (tgtY - curY) * 0.18;
-    if (flipped) {
-      card.style.transform = `rotateX(${curX}deg) rotateY(${180 + curY}deg)`;
-    } else {
-      card.style.transform = `rotateX(${curX}deg) rotateY(${curY}deg)`;
+  let ticking = false;
+  function update() {
+    const p = getProgress();
+    // Translate the track: from 0 (start) to -(trackWidth - wrapWidth)
+    const wrap = section.querySelector('.roll-track-wrap');
+    const wrapWidth = wrap ? wrap.clientWidth : window.innerWidth;
+    const trackWidth = track.scrollWidth;
+    const maxOffset = Math.max(0, trackWidth - wrapWidth);
+    track.style.transform = `translateX(${-p * maxOffset}px)`;
+
+    // Progress bar
+    if (fill) fill.style.width = (p * 100).toFixed(1) + '%';
+
+    // Counter (01 / 04, 02 / 04, …)
+    if (label) {
+      const idx = Math.min(totalCards, Math.max(1, Math.ceil(p * totalCards) || 1));
+      const padded = String(idx).padStart(2, '0');
+      const totalPadded = String(totalCards).padStart(2, '0');
+      label.textContent = padded + ' / ' + totalPadded;
     }
-    requestAnimationFrame(applyTransform);
-  }
-  applyTransform();
 
-  function onPointerMove(e) {
-    const rect = stage.getBoundingClientRect();
-    // Normalize mouse position to -1..+1 across the card
-    const mx = ((e.clientX - rect.left) / rect.width)  * 2 - 1;
-    const my = ((e.clientY - rect.top)  / rect.height) * 2 - 1;
-    // Map to rotation targets
-    tgtY = mx * MAX_TILT_Y;   // mouse X → yaw
-    tgtX = -my * MAX_TILT_X;  // mouse Y → pitch (inverted)
-    // Push raw values to CSS vars so the inner layers can parallax
-    stage.style.setProperty('--mx', mx.toFixed(3));
-    stage.style.setProperty('--my', my.toFixed(3));
-    stage.style.setProperty('--rX', curX.toFixed(2) + 'deg');
-    stage.style.setProperty('--rY', curY.toFixed(2) + 'deg');
+    ticking = false;
   }
-  function onPointerLeave() {
-    tgtX = 0; tgtY = 0;
-    stage.style.setProperty('--mx', '0');
-    stage.style.setProperty('--my', '0');
-  }
-
-  stage.addEventListener('pointermove', onPointerMove);
-  stage.addEventListener('pointerleave', onPointerLeave);
-  // Touch: also respond to touch move
-  stage.addEventListener('touchmove', (e) => {
-    if (e.touches[0]) onPointerMove(e.touches[0]);
+  window.addEventListener('scroll', () => {
+    if (!ticking) {
+      requestAnimationFrame(update);
+      ticking = true;
+    }
   }, { passive: true });
-  stage.addEventListener('touchend', onPointerLeave);
-
-  // Flip front/back
-  function toggleFlip() {
-    flipped = !flipped;
-    card.classList.toggle('flipped', flipped);
-  }
-  if (flipBtn) flipBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    toggleFlip();
-  });
-  // Click anywhere on the card flips it (but not on the button)
-  stage.addEventListener('click', (e) => {
-    if (e.target.closest('.flip-btn')) return;
-    toggleFlip();
-  });
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'f' || e.key === 'F') {
-      // Don't flip if user is typing in an input
-      if (document.activeElement && /input|textarea|select/i.test(document.activeElement.tagName)) return;
-      toggleFlip();
-    }
-  });
+  window.addEventListener('resize', update);
+  update();
 })();
 
 /* ===========================================================
@@ -2171,7 +2353,7 @@ if (cursor && follower && !isTouch && !prefersReducedMotion) {
     requestAnimationFrame(animateFollower);
   }
   animateFollower();
-  document.querySelectorAll('a, button, .magnetic, .feature-card, .plan-card, .hscroll-card, .pinned-step, .flipcard-stage, .waypoint').forEach(el => {
+  document.querySelectorAll('a, button, .magnetic, .feature-card, .plan-card, .hscroll-card, .roll-card, .waypoint').forEach(el => {
     el.addEventListener('mouseenter', () => {
       cursor.classList.add('hovering');
       follower.classList.add('hovering');
@@ -2226,10 +2408,6 @@ function updateParallax() {
     const offset = (rect.top) * 0.08;
     wm.style.transform = `translate(-50%, calc(-50% + ${offset}px))`;
   });
-  const canvas = document.getElementById('hero-canvas');
-  if (canvas && scrollY < window.innerHeight) {
-    canvas.style.transform = `translateY(${scrollY * 0.25}px)`;
-  }
   ticking = false;
 }
 window.addEventListener('scroll', () => {
@@ -2271,29 +2449,46 @@ const statsRow = document.getElementById('stats-row');
 if (statsRow) countObserver.observe(statsRow);
 
 /* ===========================================================
-   HORIZONTAL SCROLL TRACK
-   Vertical scroll through this section moves the cards
-   horizontally. We also add a drag-to-pan fallback so users
-   on touch / trackpads can swipe the cards directly.
+   HORIZONTAL SCROLL TRACK (pinned)
+   The section is 260vh tall with a sticky inner. Vertical
+   scroll through the section drives horizontal translateX of
+   the cards. A progress bar + counter update as you scroll.
+   Drag-to-pan fallback is removed (the section now does its
+   job properly with the pinned scroll, so dragging is no
+   longer needed and would conflict with the sticky feel).
    =========================================================== */
 const hscrollTrack = document.getElementById('hscroll-track');
 const hscrollSection = document.getElementById('what-you-get');
-if (hscrollTrack && hscrollSection) {
+const hscrollSticky = hscrollSection ? hscrollSection.querySelector('.hscroll-sticky') : null;
+if (hscrollTrack && hscrollSection && hscrollSticky) {
+  const cards = hscrollTrack.querySelectorAll('.hscroll-card');
+  const totalCards = cards.length;
+  const fill = document.getElementById('hscroll-progress-fill');
+  const label = document.getElementById('hscroll-progress-label');
+
+  function getProgress() {
+    const rect = hscrollSticky.getBoundingClientRect();
+    const total = rect.height - window.innerHeight;
+    if (total <= 0) return 0;
+    const scrolled = -rect.top;
+    return Math.max(0, Math.min(1, scrolled / total));
+  }
+
   let hscrollTicking = false;
   function updateHScroll() {
-    const rect = hscrollSection.getBoundingClientRect();
-    const vh = window.innerHeight;
-    // Use the *full section* as the scroll runway (not "rect.height - vh")
-    // so the user has plenty of vertical distance to traverse all cards.
-    const total = rect.height;
-    const scrolled = -rect.top;
-    let progress = 0;
-    if (total > 0) progress = Math.max(0, Math.min(1, scrolled / total));
+    const p = getProgress();
     const trackWidth = hscrollTrack.scrollWidth;
     const wrapEl = hscrollSection.querySelector('.hscroll-track-wrap');
     const wrapWidth = wrapEl ? wrapEl.clientWidth : window.innerWidth;
     const maxOffset = Math.max(0, trackWidth - wrapWidth);
-    hscrollTrack.style.transform = `translateX(${-progress * maxOffset}px)`;
+    hscrollTrack.style.transform = `translateX(${-p * maxOffset}px)`;
+
+    if (fill) fill.style.width = (p * 100).toFixed(1) + '%';
+    if (label) {
+      const idx = Math.min(totalCards, Math.max(1, Math.ceil(p * totalCards) || 1));
+      label.textContent = String(idx).padStart(2, '0') + ' / ' + String(totalCards).padStart(2, '0');
+    }
+
     hscrollTicking = false;
   }
   window.addEventListener('scroll', () => {
@@ -2304,36 +2499,6 @@ if (hscrollTrack && hscrollSection) {
   }, { passive: true });
   window.addEventListener('resize', updateHScroll);
   updateHScroll();
-
-  // Drag-to-pan fallback: lets users swipe the cards horizontally
-  // (especially useful on trackpads / touch where vertical scroll
-  // might not engage the section's sticky feel).
-  const wrap = hscrollSection.querySelector('.hscroll-track-wrap');
-  if (wrap) {
-    let isDown = false, startX = 0, scrollStart = 0, dragging = false;
-    wrap.style.cursor = 'grab';
-    wrap.addEventListener('pointerdown', (e) => {
-      isDown = true; dragging = false;
-      startX = e.clientX;
-      scrollStart = window.scrollY;
-      wrap.setPointerCapture(e.pointerId);
-    });
-    wrap.addEventListener('pointermove', (e) => {
-      if (!isDown) return;
-      const dx = e.clientX - startX;
-      // Treat a clear horizontal drag as a manual scroll-into-section
-      if (Math.abs(dx) > 6) {
-        dragging = true;
-        // Move the *page* scroll based on horizontal drag distance,
-        // multiplied by 1.5 so a short swipe traverses more cards.
-        const target = scrollStart + dx * 1.5;
-        const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-        window.scrollTo({ top: Math.max(0, Math.min(maxScroll, target)), behavior: 'auto' });
-      }
-    });
-    wrap.addEventListener('pointerup', () => { isDown = false; dragging = false; });
-    wrap.addEventListener('pointercancel', () => { isDown = false; dragging = false; });
-  }
 }
 
 /* ===========================================================
@@ -2359,418 +2524,6 @@ if (quote) {
     });
   }
 }
-
-/* ===========================================================
-   3D HERO
-   =========================================================== */
-function initHero3D() {
-  if (typeof THREE === 'undefined') return;
-
-  const canvas = document.getElementById('hero-canvas');
-  const heroSection = document.querySelector('.hero');
-  const width = heroSection.clientWidth;
-  const height = heroSection.clientHeight;
-
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 100);
-  camera.position.z = 9;
-
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-  renderer.setSize(width, height);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-
-  const shapes = [];
-  // User removed the lower-right torus — keep only the upper-left octahedron.
-  const geometries = [
-    new THREE.OctahedronGeometry(1.2, 0),
-  ];
-  const colors = [0x1D4ED8];
-  const positions = [
-    [-2.4, 0.6, -1.2],
-  ];
-
-  geometries.forEach((geo, i) => {
-    const wireMat = new THREE.MeshBasicMaterial({ color: colors[i], wireframe: true, transparent: true, opacity: 0.4 });
-    const glassMat = new THREE.MeshPhysicalMaterial({ color: colors[i], transparent: true, opacity: 0.1, roughness: 0.2, metalness: 0.1 });
-    const wireMesh = new THREE.Mesh(geo, wireMat);
-    const glassMesh = new THREE.Mesh(geo, glassMat);
-    glassMesh.scale.set(0.99, 0.99, 0.99);
-    const group = new THREE.Group();
-    group.add(wireMesh);
-    group.add(glassMesh);
-    group.position.set(...positions[i]);
-    group.userData.rotSpeed = { x: (Math.random() - 0.5) * 0.005, y: (Math.random() - 0.5) * 0.007 };
-    group.userData.floatOffset = Math.random() * Math.PI * 2;
-    group.userData.basePos = new THREE.Vector3(...positions[i]);
-    scene.add(group);
-    shapes.push(group);
-  });
-
-  const particleCount = 600;
-  const particleGeo = new THREE.BufferGeometry();
-  const positionsArr = new Float32Array(particleCount * 3);
-  const colorsArr = new Float32Array(particleCount * 3);
-  const palette = [
-    new THREE.Color(0x1D4ED8),
-    new THREE.Color(0x1D4ED8),
-    new THREE.Color(0x1D4ED8),
-    new THREE.Color(0xffffff),
-  ];
-  for (let i = 0; i < particleCount; i++) {
-    positionsArr[i * 3]     = (Math.random() - 0.5) * 22;
-    positionsArr[i * 3 + 1] = (Math.random() - 0.5) * 14;
-    positionsArr[i * 3 + 2] = (Math.random() - 0.5) * 14 - 2;
-    const c = palette[Math.floor(Math.random() * palette.length)];
-    colorsArr[i * 3]     = c.r;
-    colorsArr[i * 3 + 1] = c.g;
-    colorsArr[i * 3 + 2] = c.b;
-  }
-  particleGeo.setAttribute('position', new THREE.BufferAttribute(positionsArr, 3));
-  particleGeo.setAttribute('color', new THREE.BufferAttribute(colorsArr, 3));
-  const particleMat = new THREE.PointsMaterial({
-    size: 0.05,
-    vertexColors: true,
-    transparent: true,
-    opacity: 0.7,
-    sizeAttenuation: true,
-  });
-  const particles = new THREE.Points(particleGeo, particleMat);
-  scene.add(particles);
-
-  scene.add(new THREE.DirectionalLight(0xffffff, 0.6).position.set(2, 3, 4));
-  scene.add(new THREE.AmbientLight(0xffffff, 0.5));
-
-  let mouseX = 0, mouseY = 0;
-  window.addEventListener('mousemove', (e) => {
-    mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
-    mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
-  });
-
-  let frame = 0;
-  function animate() {
-    requestAnimationFrame(animate);
-    frame += 1;
-    const scrollY = window.scrollY;
-    shapes.forEach(group => {
-      if (!prefersReducedMotion) {
-        group.rotation.x += group.userData.rotSpeed.x;
-        group.rotation.y += group.userData.rotSpeed.y;
-        const scrollFactor = Math.min(scrollY / window.innerHeight, 1.5);
-        group.position.y = group.userData.basePos.y + Math.sin(frame * 0.01 + group.userData.floatOffset) * 0.0025 - scrollFactor * 1.2;
-        group.position.x = group.userData.basePos.x + mouseX * 0.3;
-      }
-    });
-    particles.rotation.y += 0.0006;
-    particles.rotation.x += 0.0002;
-    particles.position.y = -scrollY * 0.18;
-    camera.position.x += (mouseX * 0.6 - camera.position.x) * 0.02;
-    camera.position.y += (-mouseY * 0.4 - camera.position.y) * 0.02;
-    camera.lookAt(0, 0, 0);
-    renderer.render(scene, camera);
-  }
-  animate();
-  canvas.classList.add('loaded');
-
-  window.addEventListener('resize', () => {
-    const w = heroSection.clientWidth;
-    const h = heroSection.clientHeight;
-    camera.aspect = w / h;
-    camera.updateProjectionMatrix();
-    renderer.setSize(w, h);
-  });
-}
-
-initHero3D();
-
-/* ===========================================================
-   SCROLL-PINNED 3D SECTION
-   =========================================================== */
-function initPinned3D() {
-  if (typeof THREE === 'undefined') return;
-  const section = document.getElementById('capabilities');
-  const canvas = document.getElementById('pinned-canvas');
-  if (!section || !canvas) return;
-
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  renderer.setClearColor(0x000000, 0);
-
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
-  camera.position.set(0, 0, 9);
-
-  // 4 mini project cards (one per step). Each card is a flat
-  // plane whose texture is rendered to a Canvas2D — a tiny project
-  // idea card with a colored top stripe, title, 2–3 stack chips,
-  // and a small "scope" line. Cards start spread out, slowly
-  // spin, and assemble to a tight cluster in the center as the
-  // user scrolls through the pinned section.
-  const cubeGroup = new THREE.Group();
-  const cubeColors = [0x1D4ED8, 0x0EA968, 0x1D4ED8, 0x0EA968];
-  const cubeOffsets = [
-    new THREE.Vector3(-2.6,  1.7, 0),
-    new THREE.Vector3( 2.6,  1.7, 0),
-    new THREE.Vector3(-2.6, -1.7, 0),
-    new THREE.Vector3( 2.6, -1.7, 0),
-  ];
-
-  // Card content (must match the spirit of the other idea cards on
-  // the page). Kept short so it reads as a mini-card.
-  const cardData = [
-    { tag: 'WEB',    title: 'Captioning app',         stack: ['React', 'WebSockets', 'Vite'],   scope: '1 weekend' },
-    { tag: 'ML',     title: 'Food calorie estimator', stack: ['PyTorch', 'ONNX', 'Flutter'],  scope: '3 weekends' },
-    { tag: 'BACKEND',title: 'Distributed rate-limiter',stack: ['Redis', 'Kafka', 'Spring'],    scope: '2 weeks' },
-    { tag: 'DATA',   title: 'Log search engine',      stack: ['Elastic', 'Go', 'gRPC'],        scope: '1 month'  },
-  ];
-
-  // Render a single card to a Canvas2D and use it as a texture.
-  function makeCardTexture(data, accentHex) {
-    const W = 512, H = 360; // 4:3-ish aspect; will be used on a 1.6:1 plane
-    const c = document.createElement('canvas');
-    c.width = W; c.height = H;
-    const ctx = c.getContext('2d');
-    // Background
-    ctx.fillStyle = '#FFFFFF';
-    ctx.fillRect(0, 0, W, H);
-    // Subtle border
-    ctx.strokeStyle = 'rgba(11,15,13,0.10)';
-    ctx.lineWidth = 2;
-    ctx.roundRect(1, 1, W - 2, H - 2, 18);
-    ctx.stroke();
-    // Top accent stripe (left edge)
-    ctx.fillStyle = accentHex;
-    ctx.beginPath();
-    ctx.roundRect(0, 0, 8, H, [4, 0, 0, 4]);
-    ctx.fill();
-    // Soft drop shadow at the top of the stripe
-    ctx.fillStyle = 'rgba(29,78,216,0.10)';
-    ctx.fillRect(8, 0, 30, H);
-    // Tag pill
-    const tagY = 28;
-    ctx.fillStyle = 'rgba(29,78,216,0.10)';
-    ctx.beginPath();
-    const tagW = ctx.measureText(data.tag).width + 22;
-    ctx.roundRect(28, tagY, tagW, 26, 6);
-    ctx.fill();
-    ctx.fillStyle = '#1D4ED8';
-    ctx.font = '600 13px "IBM Plex Mono", monospace';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(data.tag, 39, tagY + 13);
-    // Title
-    ctx.fillStyle = '#0B0F0D';
-    ctx.font = '700 30px "Sora", "Inter", sans-serif';
-    ctx.textBaseline = 'alphabetic';
-    wrapText(ctx, data.title, 28, 110, W - 56, 34);
-    // Divider
-    ctx.strokeStyle = 'rgba(11,15,13,0.08)';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(28, 168);
-    ctx.lineTo(W - 28, 168);
-    ctx.stroke();
-    // Stack label + chips
-    ctx.fillStyle = '#5B6B63';
-    ctx.font = '500 11px "IBM Plex Mono", monospace';
-    ctx.fillText('STACK', 28, 192);
-    let chipX = 28;
-    let chipY = 208;
-    ctx.font = '500 13px "IBM Plex Mono", monospace';
-    for (const tech of data.stack) {
-      const tw = ctx.measureText(tech).width + 22;
-      if (chipX + tw > W - 28) { chipX = 28; chipY += 32; }
-      ctx.fillStyle = '#F7F8FA';
-      ctx.beginPath();
-      ctx.roundRect(chipX, chipY, tw, 26, 6);
-      ctx.fill();
-      ctx.strokeStyle = 'rgba(11,15,13,0.12)';
-      ctx.lineWidth = 1;
-      ctx.stroke();
-      ctx.fillStyle = '#0B0F0D';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(tech, chipX + 11, chipY + 13);
-      chipX += tw + 8;
-    }
-    // Scope line at the bottom
-    ctx.textBaseline = 'alphabetic';
-    ctx.fillStyle = '#5B6B63';
-    ctx.font = '500 12px "IBM Plex Mono", monospace';
-    ctx.fillText('SCOPE', 28, H - 26);
-    ctx.fillStyle = '#0B0F0D';
-    ctx.font = '600 12px "IBM Plex Mono", monospace';
-    ctx.fillText(data.scope, 78, H - 26);
-
-    const tex = new THREE.CanvasTexture(c);
-    tex.colorSpace = THREE.SRGBColorSpace;
-    tex.anisotropy = 4;
-    tex.needsUpdate = true;
-    return tex;
-  }
-
-  // Helper: word-wrap text on a 2D canvas
-  function wrapText(ctx, text, x, y, maxW, lineH) {
-    const words = text.split(' ');
-    let line = '';
-    let yy = y;
-    for (let n = 0; n < words.length; n++) {
-      const test = line + words[n] + ' ';
-      const m = ctx.measureText(test);
-      if (m.width > maxW && n > 0) {
-        ctx.fillText(line, x, yy);
-        line = words[n] + ' ';
-        yy += lineH;
-      } else {
-        line = test;
-      }
-    }
-    ctx.fillText(line, x, yy);
-  }
-
-  // Polyfill roundRect for older browsers (Three.js may run in any env)
-  if (!CanvasRenderingContext2D.prototype.roundRect) {
-    CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
-      if (typeof r === 'number') r = [r, r, r, r];
-      this.beginPath();
-      this.moveTo(x + r[0], y);
-      this.lineTo(x + w - r[1], y);
-      this.quadraticCurveTo(x + w, y, x + w, y + r[1]);
-      this.lineTo(x + w, y + h - r[2]);
-      this.quadraticCurveTo(x + w, y + h, x + w - r[2], y + h);
-      this.lineTo(x + r[3], y + h);
-      this.quadraticCurveTo(x, y + h, x, y + h - r[3]);
-      this.lineTo(x, y + r[0]);
-      this.quadraticCurveTo(x, y, x + r[0], y);
-      this.closePath();
-      return this;
-    };
-  }
-
-  const CARD_W = 1.8;
-  const CARD_H = 1.25;
-  const cubes = [];
-  cardData.forEach((data, i) => {
-    const accent = '#' + cubeColors[i].toString(16).padStart(6, '0');
-    const tex = makeCardTexture(data, accent);
-    const mat = new THREE.MeshBasicMaterial({ map: tex, transparent: false });
-    const geo = new THREE.PlaneGeometry(CARD_W, CARD_H);
-    const mesh = new THREE.Mesh(geo, mat);
-    // Soft drop shadow plane behind the card
-    const shadowGeo = new THREE.PlaneGeometry(CARD_W * 1.06, CARD_H * 1.06);
-    const shadowMat = new THREE.MeshBasicMaterial({
-      color: 0x0B0F0D, transparent: true, opacity: 0.10, depthWrite: false,
-    });
-    const shadow = new THREE.Mesh(shadowGeo, shadowMat);
-    shadow.position.z = -0.01;
-    const group = new THREE.Group();
-    group.add(shadow);
-    group.add(mesh);
-    group.position.copy(cubeOffsets[i]);
-    group.userData.basePos = cubeOffsets[i].clone();
-    group.userData.explodedPos = cubeOffsets[i].clone().multiplyScalar(1.8);
-    group.userData.assembledPos = new THREE.Vector3(0, 0, 0);
-    group.userData.mesh = mesh;
-    group.userData.spinPhase = i * 0.7;
-    cubeGroup.add(group);
-    cubes.push(group);
-  });
-  scene.add(cubeGroup);
-
-  const lineMat = new THREE.LineBasicMaterial({ color: 0x1D4ED8, transparent: true, opacity: 0.22 });
-  const linePairs = [[0,1],[0,2],[1,3],[2,3]];
-  const lines = [];
-  linePairs.forEach(([a,b]) => {
-    const geom = new THREE.BufferGeometry();
-    const positions = new Float32Array(6);
-    geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    const line = new THREE.Line(geom, lineMat);
-    scene.add(line);
-    lines.push({ line, a, b });
-  });
-
-  scene.add(new THREE.AmbientLight(0xffffff, 0.5));
-  // Add a key light + rim light so the transmission/clearcoat
-  // material on the orbs has highlights to bounce. Without these
-  // the spheres look flat and matte.
-  const keyLight = new THREE.DirectionalLight(0xffffff, 1.2);
-  keyLight.position.set(3, 4, 5);
-  scene.add(keyLight);
-  const rimLight = new THREE.DirectionalLight(0x8ab4ff, 0.7);
-  rimLight.position.set(-4, -2, 3);
-  scene.add(rimLight);
-
-  function resize() {
-    const w = section.querySelector('.pinned-sticky').clientWidth;
-    const h = window.innerHeight;
-    renderer.setSize(w, h, false);
-    camera.aspect = w / h;
-    camera.updateProjectionMatrix();
-  }
-  resize();
-  window.addEventListener('resize', resize);
-
-  const steps = section.querySelectorAll('.pinned-step');
-  const dots = section.querySelectorAll('.pinned-progress .dot');
-  let currentStep = 0;
-  function setStep(n) {
-    if (n === currentStep) return;
-    currentStep = n;
-    steps.forEach((s, i) => s.classList.toggle('active', i === n));
-    dots.forEach((d, i) => d.classList.toggle('active', i === n));
-  }
-
-  function getProgress() {
-    const rect = section.getBoundingClientRect();
-    const total = rect.height - window.innerHeight;
-    if (total <= 0) return 0;
-    const scrolled = -rect.top;
-    return Math.max(0, Math.min(1, scrolled / total));
-  }
-
-  let mouseX = 0, mouseY = 0;
-  window.addEventListener('mousemove', (e) => {
-    mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
-    mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
-  });
-
-  function animate() {
-    requestAnimationFrame(animate);
-    const p = getProgress();
-    const stageFromExplodeToAssemble = 1 - p;
-    cubes.forEach((cube, i) => {
-      const exploded = cube.userData.explodedPos;
-      const assembled = cube.userData.assembledPos;
-      const lag = i * 0.04;
-      const t = Math.max(0, Math.min(1, stageFromExplodeToAssemble - lag));
-      const ts = t * t * (3 - 2 * t);
-      cube.position.lerpVectors(exploded, assembled, ts);
-      if (!prefersReducedMotion) {
-        // Cards face the camera (billboard) so they always read
-        // straight-on regardless of the section's perspective
-        cube.lookAt(camera.position);
-        // Tiny tilt for life
-        cube.rotation.z = Math.sin(performance.now() * 0.0008 + cube.userData.spinPhase) * 0.04;
-      } else {
-        cube.lookAt(camera.position);
-      }
-    });
-    lines.forEach(({ line, a, b }) => {
-      const pos = line.geometry.attributes.position.array;
-      pos[0] = cubes[a].position.x; pos[1] = cubes[a].position.y; pos[2] = cubes[a].position.z;
-      pos[3] = cubes[b].position.x; pos[4] = cubes[b].position.y; pos[5] = cubes[b].position.z;
-      line.geometry.attributes.position.needsUpdate = true;
-    });
-    if (!prefersReducedMotion) {
-      camera.position.x += (mouseX * 0.5 - camera.position.x) * 0.04;
-      camera.position.y += (-mouseY * 0.4 - camera.position.y) * 0.04;
-      camera.lookAt(0, 0, 0);
-    }
-    const step = Math.min(3, Math.floor(p * 4));
-    setStep(step);
-    renderer.render(scene, camera);
-  }
-  animate();
-}
-
-initPinned3D();
 </script>
 </body>
 </html>
