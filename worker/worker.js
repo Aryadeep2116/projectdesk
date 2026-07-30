@@ -1215,6 +1215,8 @@ Valid values for a node's "type" field: "client", "server", "database", "externa
         // Newest first
         payments.sort((a, b) => (b.ts || "").localeCompare(a.ts || ""));
         return jsonResp(request, { ok: true, payments });
+      }
+
       // --- DEFAULT: generate project ideas (login + credits required) ---
       if (await isRateLimited(env, ip, "generate", 10, 3600)) {
         return new Response(JSON.stringify({ error: "Too many requests. Please try again in a bit." }), {
@@ -1347,9 +1349,6 @@ Respond ONLY with valid JSON, no markdown fences, no preamble, in this exact str
       return new Response(JSON.stringify(parsed), {
         headers: { ...corsHeaders(request), "Content-Type": "application/json" },
       });
-    }
-
-    }
 
     } catch (err) {
       return new Response(JSON.stringify({ error: "Server error", detail: String(err) }), {
