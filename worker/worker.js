@@ -1,38 +1,18 @@
 // BuildItUp backend — Cloudflare Worker (FREE version using Workers AI)
 // No API key, no billing, no credit card. Uses Cloudflare's free built-in AI models.
 
-const PRODUCTION_ORIGINS = [
+const ALLOWED_ORIGINS = [
   "https://aryadeep2116.github.io",
   "https://builditup.dpdns.org",
 ];
 
-// Origins we always allow in addition to production: localhost / 127.0.0.1
-// on any port, file:// (opening index.html directly), and common LAN ranges
-// for testing on a phone on the same Wi-Fi.
-function isDevOrigin(origin) {
-  if (!origin) return false;
-  if (origin === "null") return true;                       // file:// or sandboxed iframe
-  if (origin === "file://") return true;
-  if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(origin)) return true;
-  if (/^https?:\/\/10\.\d{1,3}\.\d{1,3}\.\d{1,3}(:\d+)?$/.test(origin)) return true;  // 10.x.x.x LAN
-  if (/^https?:\/\/192\.168\.\d{1,3}\.\d{1,3}(:\d+)?$/.test(origin)) return true;      // 192.168.x.x LAN
-  if (/^https?:\/\/172\.(1[6-9]|2\d|3[0-1])\.\d{1,3}\.\d{1,3}(:\d+)?$/.test(origin)) return true; // 172.16-31.x.x LAN
-  return false;
-}
-
 function corsHeaders(request) {
   const origin = request && request.headers.get("Origin");
-  let allowOrigin = PRODUCTION_ORIGINS[0]; // safe default
-  if (origin) {
-    if (PRODUCTION_ORIGINS.includes(origin) || isDevOrigin(origin)) {
-      allowOrigin = origin; // echo the requesting origin so the browser is happy
-    }
-  }
+  const allowOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
   return {
     "Access-Control-Allow-Origin": allowOrigin,
     "Access-Control-Allow-Methods": "POST, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type",
-    "Vary": "Origin",
   };
 }
 
@@ -185,7 +165,82 @@ export default {
     try {
       const body = await request.json();
 
-      // --- WAITLIST: save an email + context to KV ---
+      // --- JSON response helper (DRY) ---
+function jsonResp(request, body, status) {
+  return new Response(JSON.stringify(body), {
+    status: status || 200,
+    headers: { ...corsHeaders(request), "Content-Type": "application/json" },
+  });
+}
+
+// --- EMAIL HELPER (Resend API + console.log fallback) ---
+async function sendEmail(env, to, template, data) {
+  const fromAddr = 'hello@builditup.dpdns.org';
+  const templates = {
+    verify: {
+      subject: 'Verify your BuildItUp email',
+      html: `<div style="font-family:Inter,Arial,sans-serif;max-width:520px;margin:0 auto;padding:24px;">
+        <h2 style="color:#0B0F0D;font-family:Sora,Arial,sans-serif;margin:0 0 16px;">Hi ${data.name},</h2>
+        <p style="color:#5B6B63;line-height:1.6;">Welcome to BuildItUp. Click the button below to verify your email and unlock the full tool.</p>
+        <p style="margin:24px 0;"><a href="${data.link}" style="background:#0EA968;color:#fff;padding:12px 22px;border-radius:8px;text-decoration:none;font-weight:600;display:inline-block;">Verify email</a></p>
+        <p style="color:#5B6B63;font-size:12.5px;">Or paste this link: ${data.link}</p>
+        <p style="color:#5B6B63;font-size:12px;margin-top:24px;">Link expires in 24 hours.</p>
+      </div>`,
+    },
+    magic: {
+      subject: 'Your BuildItUp sign-in link',
+      html: `<div style="font-family:Inter,Arial,sans-serif;max-width:520px;margin:0 auto;padding:24px;">
+        <h2 style="color:#0B0F0D;font-family:Sora,Arial,sans-serif;margin:0 0 16px;">Hi ${data.name},</h2>
+        <p style="color:#5B6B63;line-height:1.6;">Click below to sign in to BuildItUp. No password needed.</p>
+        <p style="margin:24px 0;"><a href="${data.link}" style="background:#0EA968;color:#fff;padding:12px 22px;border-radius:8px;text-decoration:none;font-weight:600;display:inline-block;">Sign in</a></p>
+        <p style="color:#5B6B63;font-size:12px;margin-top:24px;">Link expires in 15 minutes. If you didn't request this, ignore this email.</p>
+      </div>`,
+    },
+    reset: {
+      subject: 'Reset your BuildItUp password',
+      html: `<div style="font-family:Inter,Arial,sans-serif;max-width:520px;margin:0 auto;padding:24px;">
+        <h2 style="color:#0B0F0D;font-family:Sora,Arial,sans-serif;margin:0 0 16px;">Hi ${data.name},</h2>
+        <p style="color:#5B6B63;line-height:1.6;">Click below to set a new password for your BuildItUp account.</p>
+        <p style="margin:24px 0;"><a href="${data.link}" style="background:#0EA968;color:#fff;padding:12px 22px;border-radius:8px;text-decoration:none;font-weight:600;display:inline-block;">Reset password</a></p>
+        <p style="color:#5B6B63;font-size:12px;margin-top:24px;">Link expires in 1 hour. If you didn't request this, you can safely ignore this email.</p>
+      </div>`,
+    },
+  };
+  const tpl = templates[template];
+  if (!tpl) return false;
+  // Try Resend first (free tier: 100/day). Falls back to console.log if not configured.
+  if (env.RESEND_API_KEY && env.RESEND_FROM) {
+    try {
+      const res = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${env.RESEND_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from: env.RESEND_FROM,
+          to: [to],
+          subject: tpl.subject,
+          html: tpl.html,
+        }),
+      });
+      if (res.ok) return true;
+      const detail = await res.text();
+      console.log('Resend send failed:', res.status, detail.slice(0, 200));
+    } catch (e) {
+      console.log('Resend send threw:', e.message);
+    }
+  }
+  // Fallback: log so dev can see the link
+  console.log('--- [EMAIL FALLBACK] ---');
+  console.log('to:', to);
+  console.log('subject:', tpl.subject);
+  console.log('data:', JSON.stringify(data));
+  console.log('--- /EMAIL FALLBACK ---');
+  return false;
+}
+
+// --- WAITLIST: save an email + context to KV ---
       if (body.action === "waitlist") {
         if (await isRateLimited(env, ip, "waitlist", 5, 3600)) {
           return new Response(JSON.stringify({ error: "Too many requests. Try again later." }), {
@@ -296,7 +351,16 @@ export default {
         const token = generateId();
         await env.WAITLIST.put(`session:${token}`, JSON.stringify({ email: userRecord.email, name: userRecord.name }), { expirationTtl: 60 * 60 * 24 * 30 });
 
-        return new Response(JSON.stringify({ ok: true, token, name: userRecord.name, email: userRecord.email }), {
+        // Generate a verification token (single-use, 24h TTL)
+        const verifyToken = generateId();
+        await env.WAITLIST.put(`verify:${verifyToken}`, JSON.stringify({ email: userRecord.email }), { expirationTtl: 60 * 60 * 24 });
+        // Send the verification email (best-effort)
+        await sendEmail(env, userRecord.email, 'verify', {
+          name: userRecord.name,
+          link: `${env.PUBLIC_URL || 'https://builditup.dpdns.org'}/app.html?verify=${verifyToken}`
+        }).catch(() => {});
+
+        return new Response(JSON.stringify({ ok: true, token, name: userRecord.name, email: userRecord.email, emailVerified: false }), {
           headers: { ...corsHeaders(request), "Content-Type": "application/json" },
         });
       }
@@ -338,7 +402,7 @@ export default {
         const token = generateId();
         await env.WAITLIST.put(`session:${token}`, JSON.stringify({ email: userRecord.email, name: userRecord.name }), { expirationTtl: 60 * 60 * 24 * 30 });
 
-        return new Response(JSON.stringify({ ok: true, token, name: userRecord.name, email: userRecord.email }), {
+        return new Response(JSON.stringify({ ok: true, token, name: userRecord.name, email: userRecord.email, emailVerified: userRecord.emailVerified !== false }), {
           headers: { ...corsHeaders(request), "Content-Type": "application/json" },
         });
       }
@@ -453,7 +517,8 @@ export default {
             headers: { ...corsHeaders(request), "Content-Type": "application/json" },
           });
         }
-        return new Response(JSON.stringify({ ok: true, ...session }), {
+        const userRecord = JSON.parse(await env.WAITLIST.get(`user:${session.email}`) || 'null');
+        return new Response(JSON.stringify({ ok: true, ...session, emailVerified: userRecord ? userRecord.emailVerified !== false : true }), {
           headers: { ...corsHeaders(request), "Content-Type": "application/json" },
         });
       }
@@ -507,8 +572,12 @@ export default {
           name: userRecord.name,
           email: userRecord.email,
           plan: userRecord.plan,
+          premiumMode: userRecord.premiumMode || null,
+          premiumUntil: userRecord.premiumUntil || null,
+          cancelled: !!userRecord.cancelledAt,
           credits: userRecord.credits,
           creditsResetAt: userRecord.creditsResetAt,
+          emailVerified: userRecord.emailVerified !== false,
           results: results.filter(Boolean).reverse(),
           latestGuide,
         }), {
@@ -957,6 +1026,195 @@ Valid values for a node's "type" field: "client", "server", "database", "externa
         });
       }
 
+      // --- RESEND VERIFICATION EMAIL ---
+      if (body.action === "resend_verification") {
+        if (await isRateLimited(env, ip, "resend_verification", 5, 3600)) {
+          return jsonResp(request, { error: "Too many requests. Try again later." }, 429);
+        }
+        const sess = await env.WAITLIST.get(`session:${body.token}`);
+        if (!sess) return jsonResp(request, { error: "Session expired. Log in again." }, 401);
+        const { email } = JSON.parse(sess);
+        const userRecord = JSON.parse(await env.WAITLIST.get(`user:${email}`));
+        if (!userRecord) return jsonResp(request, { error: "Account not found." }, 404);
+        if (userRecord.emailVerified !== false) return jsonResp(request, { ok: true, message: "Already verified." });
+        const verifyToken = generateId();
+        await env.WAITLIST.put(`verify:${verifyToken}`, JSON.stringify({ email }), { expirationTtl: 60 * 60 * 24 });
+        await sendEmail(env, email, 'verify', {
+          name: userRecord.name,
+          link: `${env.PUBLIC_URL || 'https://builditup.dpdns.org'}/app.html?verify=${verifyToken}`
+        });
+        return jsonResp(request, { ok: true });
+      }
+  
+      // --- CONFIRM VERIFICATION (via ?verify=TOKEN URL) ---
+      if (body.action === "confirm_verification") {
+        const { token } = body;
+        const stored = await env.WAITLIST.get(`verify:${token}`);
+        if (!stored) return jsonResp(request, { error: "Verification link expired or already used." }, 400);
+        const { email } = JSON.parse(stored);
+        const userRecord = JSON.parse(await env.WAITLIST.get(`user:${email}`));
+        userRecord.emailVerified = true;
+        userRecord.emailVerifiedAt = new Date().toISOString();
+        await env.WAITLIST.put(`user:${email}`, JSON.stringify(userRecord));
+        await env.WAITLIST.delete(`verify:${token}`);
+        return jsonResp(request, { ok: true, email });
+      }
+  
+      // --- REQUEST MAGIC LINK (passwordless login) ---
+      if (body.action === "request_magic_link") {
+        if (await isRateLimited(env, ip, "request_magic_link", 5, 3600)) {
+          return jsonResp(request, { error: "Too many requests. Try again later." }, 429);
+        }
+        const { email } = body;
+        if (!email || !email.includes("@")) return jsonResp(request, { error: "Valid email required" }, 400);
+        const userRecord = await env.WAITLIST.get(`user:${email.toLowerCase()}`);
+        // Always return success to avoid email enumeration
+        if (userRecord) {
+          const u = JSON.parse(userRecord);
+          const magicToken = generateId();
+          await env.WAITLIST.put(`magic:${magicToken}`, JSON.stringify({ email: u.email }), { expirationTtl: 60 * 15 });
+          await sendEmail(env, u.email, 'magic', {
+            name: u.name,
+            link: `${env.PUBLIC_URL || 'https://builditup.dpdns.org'}/app.html?magic=${magicToken}`
+          }).catch(() => {});
+        }
+        return jsonResp(request, { ok: true });
+      }
+  
+      // --- CONFIRM MAGIC LINK ---
+      if (body.action === "confirm_magic_link") {
+        const { token } = body;
+        const stored = await env.WAITLIST.get(`magic:${token}`);
+        if (!stored) return jsonResp(request, { error: "Magic link expired or already used." }, 400);
+        const { email } = JSON.parse(stored);
+        await env.WAITLIST.delete(`magic:${token}`);
+        const userRecord = JSON.parse(await env.WAITLIST.get(`user:${email}`));
+        if (!userRecord) return jsonResp(request, { error: "Account no longer exists." }, 404);
+        const sessionToken = generateId();
+        await env.WAITLIST.put(`session:${sessionToken}`, JSON.stringify({ email: userRecord.email, name: userRecord.name }), { expirationTtl: 60 * 60 * 24 * 30 });
+        return jsonResp(request, { ok: true, token: sessionToken, name: userRecord.name, email: userRecord.email, emailVerified: userRecord.emailVerified !== false });
+      }
+  
+      // --- REQUEST PASSWORD RESET ---
+      if (body.action === "request_password_reset") {
+        if (await isRateLimited(env, ip, "request_password_reset", 5, 3600)) {
+          return jsonResp(request, { error: "Too many requests. Try again later." }, 429);
+        }
+        const { email } = body;
+        if (!email || !email.includes("@")) return jsonResp(request, { error: "Valid email required" }, 400);
+        const userRecord = await env.WAITLIST.get(`user:${email.toLowerCase()}`);
+        // Always return success to avoid email enumeration
+        if (userRecord) {
+          const u = JSON.parse(userRecord);
+          const resetToken = generateId();
+          await env.WAITLIST.put(`reset:${resetToken}`, JSON.stringify({ email: u.email }), { expirationTtl: 60 * 60 });
+          await sendEmail(env, u.email, 'reset', {
+            name: u.name,
+            link: `${env.PUBLIC_URL || 'https://builditup.dpdns.org'}/app.html?reset=${resetToken}`
+          }).catch(() => {});
+        }
+        return jsonResp(request, { ok: true });
+      }
+  
+      // --- CONFIRM PASSWORD RESET ---
+      if (body.action === "confirm_password_reset") {
+        const { token, password } = body;
+        if (!token) return jsonResp(request, { error: "Missing reset token." }, 400);
+        if (!password || password.length < 8) return jsonResp(request, { error: "Password must be at least 8 characters." }, 400);
+        const stored = await env.WAITLIST.get(`reset:${token}`);
+        if (!stored) return jsonResp(request, { error: "Reset link expired or already used." }, 400);
+        const { email } = JSON.parse(stored);
+        const userRecord = JSON.parse(await env.WAITLIST.get(`user:${email}`));
+        if (!userRecord) return jsonResp(request, { error: "Account no longer exists." }, 404);
+        const { hash, salt } = await hashPassword(password);
+        userRecord.hash = hash;
+        userRecord.salt = salt;
+        userRecord.passwordResetAt = new Date().toISOString();
+        await env.WAITLIST.put(`user:${email}`, JSON.stringify(userRecord));
+        await env.WAITLIST.delete(`reset:${token}`);
+        // Auto-login: issue a session
+        const sessionToken = generateId();
+        await env.WAITLIST.put(`session:${sessionToken}`, JSON.stringify({ email: userRecord.email, name: userRecord.name }), { expirationTtl: 60 * 60 * 24 * 30 });
+        return jsonResp(request, { ok: true, token: sessionToken, name: userRecord.name, email: userRecord.email, emailVerified: userRecord.emailVerified !== false });
+      }
+  
+      // --- SUBMIT PAYMENT (user pastes UTR) ---
+      if (body.action === "submit_payment") {
+        if (await isRateLimited(env, ip, "submit_payment", 10, 3600)) {
+          return jsonResp(request, { error: "Too many submissions. Try again later." }, 429);
+        }
+        const sess = await env.WAITLIST.get(`session:${body.token}`);
+        if (!sess) return jsonResp(request, { error: "Log in to submit a payment." }, 401);
+        const { email } = JSON.parse(sess);
+        const { utr, mode } = body;
+        if (!utr || !/^[0-9A-Za-z]{6,32}$/.test(utr)) return jsonResp(request, { error: "Invalid UTR. Must be 6-32 alphanumeric characters." }, 400);
+        const amount = mode === "annual" ? 2499 : 299;
+        const id = generateId();
+        const payment = {
+          id,
+          email,
+          utr: String(utr),
+          mode: mode === "annual" ? "annual" : "monthly",
+          amount,
+          status: "pending",
+          ts: new Date().toISOString(),
+        };
+        // Store the payment under user's key + a global key
+        await env.WAITLIST.put(`payment:${email}:${id}`, JSON.stringify(payment), { expirationTtl: 60 * 60 * 24 * 400 });
+        await env.WAITLIST.put(`payment-lookup:${utr.toLowerCase()}`, JSON.stringify({ id, email }), { expirationTtl: 60 * 60 * 24 * 90 });
+        return jsonResp(request, { ok: true, id, message: "Payment submitted. We'll review and flip your account to Pro shortly." });
+      }
+  
+      // --- CANCEL SUBSCRIPTION ---
+      if (body.action === "cancel_subscription") {
+        const sess = await env.WAITLIST.get(`session:${body.token}`);
+        if (!sess) return jsonResp(request, { error: "Log in to cancel." }, 401);
+        const { email } = JSON.parse(sess);
+        const userRecord = JSON.parse(await env.WAITLIST.get(`user:${email}`));
+        if (!userRecord) return jsonResp(request, { error: "Account not found." }, 404);
+        if (userRecord.plan !== "premium") return jsonResp(request, { error: "Not on a paid plan." }, 400);
+        userRecord.cancelledAt = new Date().toISOString();
+        userRecord.plan = "free";
+        userRecord.credits = FREE_PLAN_CREDITS;
+        userRecord.creditsResetAt = new Date(Date.now() + CREDIT_CYCLE_MS).toISOString();
+        await env.WAITLIST.put(`user:${email}`, JSON.stringify(userRecord));
+        return jsonResp(request, { ok: true });
+      }
+  
+      // --- GET BILLING STATUS ---
+      if (body.action === "get_billing_status") {
+        const sess = await env.WAITLIST.get(`session:${body.token}`);
+        if (!sess) return jsonResp(request, { error: "Log in." }, 401);
+        const { email } = JSON.parse(sess);
+        const userRecord = JSON.parse(await env.WAITLIST.get(`user:${email}`));
+        if (!userRecord) return jsonResp(request, { error: "Account not found." }, 404);
+        return jsonResp(request, {
+          ok: true,
+          plan: userRecord.plan || "free",
+          mode: userRecord.premiumMode || "monthly",
+          credits: userRecord.credits,
+          renewsAt: userRecord.premiumUntil || null,
+          cancelled: !!userRecord.cancelledAt,
+          cancelsAt: userRecord.cancelledAt || null,
+          amount: (userRecord.premiumMode === "annual") ? 2499 : 299,
+        });
+      }
+  
+      // --- GET PAYMENT HISTORY ---
+      if (body.action === "get_payment_history") {
+        const sess = await env.WAITLIST.get(`session:${body.token}`);
+        if (!sess) return jsonResp(request, { error: "Log in." }, 401);
+        const { email } = JSON.parse(sess);
+        // List all payment:<email>:* keys
+        const list = await env.WAITLIST.list({ prefix: `payment:${email}:` });
+        const payments = [];
+        for (const k of list.keys) {
+          const v = await env.WAITLIST.get(k.name);
+          if (v) payments.push(JSON.parse(v));
+        }
+        // Newest first
+        payments.sort((a, b) => (b.ts || "").localeCompare(a.ts || ""));
+        return jsonResp(request, { ok: true, payments });
       // --- DEFAULT: generate project ideas (login + credits required) ---
       if (await isRateLimited(env, ip, "generate", 10, 3600)) {
         return new Response(JSON.stringify({ error: "Too many requests. Please try again in a bit." }), {
@@ -1089,6 +1347,10 @@ Respond ONLY with valid JSON, no markdown fences, no preamble, in this exact str
       return new Response(JSON.stringify(parsed), {
         headers: { ...corsHeaders(request), "Content-Type": "application/json" },
       });
+    }
+
+    }
+
     } catch (err) {
       return new Response(JSON.stringify({ error: "Server error", detail: String(err) }), {
         status: 500,

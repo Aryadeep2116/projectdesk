@@ -1612,6 +1612,407 @@
     .results-head{font-size:23px;}
   }
 
+
+  /* ===========================================================
+     AUTH MODAL — multi-pane: signin / signup / forgot / reset
+     (Polished to match the new design system.)
+     =========================================================== */
+  .auth-tabs{
+    display:flex;
+    gap:4px;
+    margin-bottom:18px;
+    background:var(--paper-2);
+    border:1px solid var(--line);
+    border-radius:999px;
+    padding:4px;
+  }
+  .auth-tab{
+    flex:1;
+    text-align:center;
+    font-family:'Inter',sans-serif;
+    font-size:12.5px;
+    font-weight:600;
+    color:var(--ink-soft);
+    padding:8px 6px;
+    border-radius:999px;
+    cursor:pointer;
+    transition:all .2s ease;
+    white-space:nowrap;
+  }
+  .auth-tab:hover{color:var(--ink);}
+  .auth-tab.active{
+    background:#fff;
+    color:var(--ink);
+    box-shadow:0 1px 3px rgba(15,23,42,0.08), 0 0 0 1px var(--line);
+  }
+  .auth-pane{display:none;}
+  .auth-pane.active{display:block;}
+  .auth-pane h3{
+    font-family:'Sora',sans-serif;
+    font-size:22px;
+    letter-spacing:-.6px;
+    margin:0 0 4px;
+    color:var(--ink);
+  }
+  .auth-pane .auth-sub{
+    color:var(--ink-soft);
+    font-size:13px;
+    line-height:1.55;
+    margin:0 0 18px;
+  }
+  .auth-pane .input-row{
+    position:relative;
+    margin-bottom:11px;
+  }
+  .auth-pane .input-row input{
+    width:100%;
+    padding:13px 14px;
+    padding-right:46px;
+    border-radius:14px;
+    border:1px solid var(--line);
+    background:rgba(248,250,252,0.9);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    font-size:14.5px;
+    outline:none;
+    transition:all .2s ease;
+    box-sizing:border-box;
+  }
+  .auth-pane .input-row input:focus{
+    border-color:rgba(37,99,235,0.72);
+    box-shadow:0 0 0 4px rgba(37,99,235,0.10);
+    background:#fff;
+  }
+  .pw-toggle{
+    position:absolute;
+    right:8px; top:50%;
+    transform:translateY(-50%);
+    background:none;
+    border:1px solid transparent;
+    color:var(--ink-soft);
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px;
+    cursor:pointer;
+    padding:4px 9px;
+    border-radius:8px;
+    margin:0;
+    letter-spacing:0.5px;
+    text-transform:uppercase;
+  }
+  .pw-toggle:hover{color:var(--ink);background:var(--paper-2);border-color:var(--line);}
+  .auth-foot{
+    text-align:center;
+    margin-top:14px;
+    font-size:12.5px;
+    color:var(--ink-soft);
+  }
+  .auth-foot a{
+    color:var(--accent-2);
+    cursor:pointer;
+    text-decoration:none;
+    font-weight:600;
+  }
+  .auth-foot a:hover{text-decoration:underline;}
+  .auth-msg{
+    margin-top:12px;
+    font-size:12.5px;
+    font-family:'IBM Plex Mono',monospace;
+    line-height:1.5;
+    min-height:18px;
+  }
+  .auth-msg.error{color:var(--danger,#DC2626);}
+  .auth-msg.success{color:var(--accent-deep,#059669);}
+  .auth-success-block{
+    text-align:center;
+    padding:14px 0 4px;
+  }
+  .auth-success-block .icon{
+    width:54px;height:54px;
+    border-radius:50%;
+    background:#ECFDF5;
+    color:var(--accent-deep,#059669);
+    display:inline-flex;align-items:center;justify-content:center;
+    font-size:26px;margin-bottom:14px;
+    border:1px solid rgba(16,185,129,0.22);
+  }
+  .auth-success-block h3{
+    font-family:'Sora',sans-serif;
+    font-size:22px;
+    letter-spacing:-.5px;
+    color:var(--ink);
+    margin:0 0 6px;
+  }
+  .auth-back{
+    display:inline-flex;align-items:center;gap:5px;
+    font-size:12px;color:var(--ink-soft);cursor:pointer;
+    margin-bottom:14px;font-weight:600;
+  }
+  .auth-back:hover{color:var(--ink);}
+  .auth-back::before{content:'←';font-weight:700;}
+
+  /* ===========================================================
+     VERIFY-EMAIL BANNER (top of page, when user hasn't verified)
+     =========================================================== */
+  .verify-banner{
+    display:none;
+    background:linear-gradient(135deg, rgba(254,243,199,0.6), rgba(253,230,138,0.4));
+    border:1px solid rgba(245,158,11,0.35);
+    border-radius:18px;
+    padding:13px 18px;
+    margin-bottom:18px;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:10px;
+    font-size:13px;
+    color:#78350F;
+    box-shadow:0 8px 22px -16px rgba(245,158,11,0.45);
+  }
+  .verify-banner b{color:#92400E;}
+  .verify-banner a{color:#92400E;cursor:pointer;text-decoration:underline;font-weight:600;}
+  .verify-banner a:hover{color:#78350F;}
+  .verify-banner .vbtn{
+    background:#92400E;color:#fff;border:none;border-radius:999px;
+    padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;
+    font-family:'Inter',sans-serif;
+  }
+  .verify-banner .vbtn:hover{background:#78350F;}
+  .verify-banner .vbtn:disabled{opacity:0.6;cursor:default;}
+
+  /* ===========================================================
+     PREMIUM — proper pricing cards (replaces the blurred "coming soon")
+     =========================================================== */
+  .premium-wrap{
+    display:grid;
+    grid-template-columns:1fr 1.1fr;
+    gap:18px;
+    margin-bottom:18px;
+  }
+  @media (max-width:760px){
+    .premium-wrap{grid-template-columns:1fr;}
+  }
+  .plan-card{
+    position:relative;
+    background:rgba(255,255,255,0.86);
+    border:1.5px solid var(--line);
+    border-radius:24px;
+    padding:24px 22px 22px;
+    display:flex;
+    flex-direction:column;
+    box-shadow:0 18px 42px -30px rgba(15,23,42,.34);
+    transition:transform .25s ease, box-shadow .25s ease;
+  }
+  .plan-card:hover{transform:translateY(-3px);box-shadow:0 26px 56px -30px rgba(15,23,42,.42);}
+  .plan-card.featured{
+    border-color:rgba(16,185,129,0.5);
+    background:linear-gradient(180deg, rgba(240,253,244,0.95), rgba(255,255,255,0.92));
+  }
+  .plan-card .plan-badge{
+    display:inline-flex;align-items:center;gap:6px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px;letter-spacing:1px;text-transform:uppercase;
+    padding:5px 9px;border-radius:999px;align-self:flex-start;
+    margin-bottom:14px;
+  }
+  .plan-card .plan-badge.current{background:var(--paper-2);color:var(--ink-soft);}
+  .plan-card .plan-badge.pro{background:linear-gradient(135deg,var(--accent-deep,#059669),var(--accent,#10B981));color:#fff;}
+  .plan-card .plan-ribbon{
+    position:absolute;top:-10px;right:18px;
+    background:linear-gradient(135deg,var(--accent-deep,#059669),var(--accent,#10B981));
+    color:#fff;font-family:'IBM Plex Mono',monospace;
+    font-size:9.5px;letter-spacing:1.2px;text-transform:uppercase;
+    padding:5px 11px;border-radius:999px;font-weight:700;
+    box-shadow:0 8px 18px -8px rgba(16,185,129,0.6);
+  }
+  .plan-card .plan-name{font-family:'Sora',sans-serif;font-weight:800;font-size:24px;margin:0 0 4px;letter-spacing:-.6px;color:var(--ink);}
+  .plan-card .plan-price{
+    font-family:'Sora',sans-serif;font-weight:800;font-size:34px;
+    line-height:1;margin:6px 0 2px;letter-spacing:-1.2px;color:var(--ink);
+    display:flex;align-items:baseline;gap:6px;
+  }
+  .plan-card .plan-price small{font-size:14px;font-weight:500;color:var(--ink-soft);letter-spacing:0;}
+  .plan-card .plan-period{font-size:12.5px;color:var(--ink-soft);margin-bottom:18px;font-family:'IBM Plex Mono',monospace;letter-spacing:0.2px;}
+  .plan-card .plan-feats{list-style:none;padding:0;margin:0 0 18px;display:flex;flex-direction:column;gap:8px;flex:1;}
+  .plan-card .plan-feats li{font-size:13.5px;color:#334155;display:flex;align-items:flex-start;gap:9px;line-height:1.45;}
+  .plan-card .plan-feats li::before{
+    content:'✓';color:var(--accent-deep,#059669);font-weight:800;flex-shrink:0;
+    width:18px;height:18px;border-radius:50%;background:#ECFDF5;
+    display:inline-flex;align-items:center;justify-content:center;font-size:11px;
+  }
+  .plan-card .plan-feats li.muted{color:#94A3B8;}
+  .plan-card .plan-feats li.muted::before{content:'–';color:#CBD5E1;background:#F1F5F9;}
+  .plan-card .plan-cta{
+    width:100%;margin-top:auto;padding:12px 14px;
+    border-radius:14px;font-family:'Inter',sans-serif;
+    font-size:13.5px;font-weight:700;letter-spacing:0;
+    text-transform:none;cursor:pointer;
+    transition:transform .18s ease, box-shadow .18s ease, background .18s ease;
+  }
+  .plan-card .plan-cta.ghost{background:#fff;border:1.5px solid var(--line);color:var(--ink-soft);}
+  .plan-card .plan-cta.ghost:hover:not(:disabled){border-color:var(--accent);color:var(--accent-deep);}
+  .plan-card .plan-cta.solid{
+    background:linear-gradient(135deg,var(--accent-deep,#059669),var(--accent,#10B981));
+    color:#fff;border:none;box-shadow:0 14px 28px -18px rgba(16,185,129,0.55);
+  }
+  .plan-card .plan-cta.solid:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 22px 36px -20px rgba(16,185,129,0.7);}
+  .plan-card .plan-cta:disabled{opacity:0.55;cursor:default;}
+
+  /* Plan status (when user is on premium) */
+  .plan-status{
+    display:none;
+    background:linear-gradient(135deg, rgba(240,253,244,0.95), rgba(255,255,255,0.92));
+    border:1px solid rgba(16,185,129,0.32);
+    border-radius:22px;
+    padding:18px 22px;
+    margin-bottom:18px;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:14px;
+  }
+  .plan-status .ps-left{display:flex;align-items:center;gap:14px;}
+  .plan-status .ps-icon{
+    width:46px;height:46px;border-radius:50%;
+    background:linear-gradient(135deg,var(--accent-deep,#059669),var(--accent,#10B981));
+    color:#fff;display:flex;align-items:center;justify-content:center;
+    font-size:22px;font-weight:700;
+    box-shadow:0 10px 22px -10px rgba(16,185,129,0.55);
+  }
+  .plan-status .ps-label{font-size:10.5px;color:var(--ink-soft);font-family:'IBM Plex Mono',monospace;letter-spacing:1px;text-transform:uppercase;margin-bottom:2px;}
+  .plan-status .ps-name{font-family:'Sora',sans-serif;font-weight:800;font-size:18px;color:var(--ink);letter-spacing:-.3px;}
+  .plan-status .ps-renew{font-size:12.5px;color:var(--ink-soft);margin-top:2px;}
+  .plan-status .ps-credits{
+    font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--accent-deep);
+    background:#fff;padding:7px 12px;border-radius:999px;
+    border:1px solid rgba(16,185,129,0.22);font-weight:600;
+  }
+  .plan-status .ps-btn{
+    background:#fff;border:1.5px solid var(--line);color:var(--ink-soft);
+    font-family:'Inter',sans-serif;font-size:12.5px;font-weight:600;
+    padding:9px 14px;border-radius:999px;cursor:pointer;
+    text-transform:none;letter-spacing:0;
+  }
+  .plan-status .ps-btn:hover{border-color:#DC2626;color:#DC2626;}
+
+  /* Pay block (QR + UTR) */
+  .pay-block{
+    background:rgba(255,255,255,0.86);
+    border:1px solid var(--line);
+    border-radius:24px;
+    padding:24px;
+    margin-bottom:18px;
+    box-shadow:0 18px 42px -30px rgba(15,23,42,.34);
+  }
+  .pay-head{
+    display:flex;justify-content:space-between;align-items:flex-end;
+    margin-bottom:18px;flex-wrap:wrap;gap:10px;
+  }
+  .pay-head h3{font-family:'Sora',sans-serif;font-weight:800;font-size:20px;letter-spacing:-.5px;margin:0 0 4px;color:var(--ink);}
+  .pay-head p{font-size:12.5px;color:var(--ink-soft);margin:0;line-height:1.5;}
+  .pay-head .pay-pill{
+    display:inline-flex;align-items:center;gap:6px;
+    font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.6px;
+    color:var(--accent-deep);background:#ECFDF5;
+    padding:5px 11px;border-radius:999px;
+    border:1px solid rgba(16,185,129,0.22);
+  }
+  .pay-head .pay-pill .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 6px var(--accent);}
+  .pay-grid{display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:start;}
+  @media (max-width:640px){.pay-grid{grid-template-columns:1fr;}}
+  .pay-qr{
+    width:200px;height:200px;background:#fff;
+    border:1px solid var(--line);border-radius:18px;
+    padding:14px;display:flex;align-items:center;justify-content:center;
+  }
+  .pay-qr svg, .pay-qr img{width:100%;height:100%;display:block;}
+  .pay-info .pay-line{
+    display:flex;justify-content:space-between;align-items:baseline;
+    padding:9px 0;border-bottom:1px solid var(--line);
+    font-size:13.5px;
+  }
+  .pay-info .pay-line:last-of-type{border-bottom:none;}
+  .pay-info .pay-line .lbl{color:var(--ink-soft);font-family:'IBM Plex Mono',monospace;font-size:11px;}
+  .pay-info .pay-line .val{color:var(--ink);font-weight:600;}
+  .pay-info .pay-amount{
+    font-family:'Sora',sans-serif;font-weight:800;font-size:32px;
+    line-height:1;color:var(--ink);margin:6px 0 0;letter-spacing:-1px;
+  }
+  .pay-info .pay-amount small{font-size:14px;font-weight:500;color:var(--ink-soft);margin-left:6px;letter-spacing:0;}
+  .pay-info .pay-upi-id{
+    font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--ink-soft);
+    background:var(--paper-2);border:1px solid var(--line);
+    border-radius:8px;padding:5px 10px;display:inline-block;margin-top:6px;
+  }
+  .pay-info .pay-amount-row{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-top:2px;}
+  .pay-verify{margin-top:18px;border-top:1px dashed var(--line);padding-top:16px;}
+  .pay-verify h4{font-family:'Sora',sans-serif;font-size:14.5px;margin:0 0 5px;color:var(--ink);}
+  .pay-verify p{font-size:12.5px;color:var(--ink-soft);margin:0 0 10px;line-height:1.5;}
+  .pay-verify-row{display:flex;gap:8px;}
+  .pay-verify input{
+    flex:1;padding:11px 13px;border:1px solid var(--line);
+    border-radius:12px;background:var(--paper-2);color:var(--ink);
+    font-family:'IBM Plex Mono',monospace;font-size:13px;outline:none;
+  }
+  .pay-verify input:focus{border-color:var(--accent-2);box-shadow:0 0 0 3px rgba(37,99,235,0.10);background:#fff;}
+  .pay-verify button{
+    background:linear-gradient(135deg,var(--accent-deep),var(--accent));
+    color:#fff;border:none;border-radius:12px;padding:11px 18px;
+    font-family:'Inter',sans-serif;font-size:12.5px;font-weight:700;
+    cursor:pointer;text-transform:none;letter-spacing:0;
+  }
+  .pay-verify button:hover:not(:disabled){transform:translateY(-1px);}
+  .pay-verify .pay-msg{font-size:12px;font-family:'IBM Plex Mono',monospace;margin-top:10px;min-height:18px;}
+  .pay-verify .pay-msg.success{color:var(--accent-deep);}
+  .pay-verify .pay-msg.error{color:var(--danger,#DC2626);}
+
+  /* History block */
+  .history-block{
+    background:rgba(255,255,255,0.86);
+    border:1px solid var(--line);
+    border-radius:24px;padding:22px 24px;
+    margin-bottom:18px;
+    box-shadow:0 18px 42px -30px rgba(15,23,42,.34);
+  }
+  .history-block h3{font-family:'Sora',sans-serif;font-weight:800;font-size:17px;margin:0 0 14px;letter-spacing:-.4px;color:var(--ink);}
+  .history-list{display:flex;flex-direction:column;gap:9px;}
+  .history-row{
+    display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:14px;
+    padding:12px 14px;background:var(--paper-2);
+    border:1px solid var(--line);border-radius:14px;font-size:13.5px;
+  }
+  .history-row .h-left{display:flex;flex-direction:column;gap:2px;min-width:0;}
+  .history-row .h-amt{font-family:'Sora',sans-serif;font-weight:700;color:var(--ink);}
+  .history-row .h-utr{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-soft);}
+  .history-row .h-date{font-size:11.5px;color:var(--ink-soft);font-family:'IBM Plex Mono',monospace;}
+  .history-row .h-status{
+    font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.8px;
+    text-transform:uppercase;padding:4px 9px;border-radius:6px;font-weight:700;
+  }
+  .h-status.approved{background:rgba(16,185,129,0.14);color:#047857;}
+  .h-status.pending{background:rgba(245,158,11,0.14);color:#92400E;}
+  .h-status.rejected{background:rgba(220,38,38,0.10);color:#991B1B;}
+
+  /* Monthly/Annual mode toggle */
+  .pay-mode{
+    display:inline-flex;background:var(--paper-2);
+    border:1px solid var(--line);border-radius:999px;
+    padding:4px;margin-bottom:16px;
+  }
+  .pay-mode button{
+    background:transparent;border:none;padding:8px 16px;
+    border-radius:999px;font-family:'Inter',sans-serif;
+    font-size:12.5px;font-weight:600;
+    color:var(--ink-soft);cursor:pointer;
+    margin:0;text-transform:none;letter-spacing:0;
+  }
+  .pay-mode button.active{
+    background:#fff;color:var(--ink);
+    box-shadow:0 1px 3px rgba(15,23,42,0.08), 0 0 0 1px var(--line);
+  }
+  .pay-mode button .save{
+    font-size:9.5px;color:var(--accent-deep);
+    margin-left:4px;font-weight:700;letter-spacing:0.5px;
+  }
+
 </style>
 </head>
 <body>
@@ -1649,29 +2050,97 @@
     <div class="app-tab" data-tab="premium">Premium</div>
   </div>
 
-  <div id="login-modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:100;align-items:center;justify-content:center;">
-    <div id="login-modal" style="background:var(--card);border:1px solid var(--line);border-radius:14px;padding:30px;max-width:380px;width:90%;position:relative;">
-      <button id="login-close-btn" style="position:absolute;top:14px;right:16px;background:none;border:none;color:var(--ink-soft);font-size:18px;cursor:pointer;">×</button>
-      <h3 id="auth-heading" style="font-family:'Sora',sans-serif;font-size:18px;margin:0 0 6px;">Create a free account</h3>
-      <p style="color:var(--ink-soft);font-size:12.5px;margin:0 0 20px;line-height:1.5;">360 free credits every 30 days — generating ideas and detailed guides both draw from the same pool.</p>
+  <div id="verify-banner" class="verify-banner" style="display:none;">
+    <div><b>Verify your email</b> to unlock the full tool. Check your inbox — or
+      <a id="resend-verify">resend the link</a>.</div>
+    <button class="vbtn" id="resend-verify-btn">Resend email</button>
+  </div>
 
-      <div id="auth-signup">
-        <input id="signup-name" type="text" placeholder="Your name" style="width:100%;padding:11px 13px;margin-bottom:10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-2);color:var(--ink);font-family:'Inter',sans-serif;font-size:14px;outline:none;">
-        <input id="signup-email" type="email" placeholder="Your email" style="width:100%;padding:11px 13px;margin-bottom:10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-2);color:var(--ink);font-family:'Inter',sans-serif;font-size:14px;outline:none;">
-        <input id="signup-password" type="password" placeholder="Password (min 8 characters)" style="width:100%;padding:11px 13px;margin-bottom:14px;border-radius:8px;border:1px solid var(--line);background:var(--paper-2);color:var(--ink);font-family:'Inter',sans-serif;font-size:14px;outline:none;">
-        <button id="signup-btn" style="width:100%;padding:12px;border-radius:8px;border:none;background:var(--accent);color:#FFFFFF;font-weight:600;font-size:14px;cursor:pointer;">Sign up</button>
-        <div style="text-align:center;margin-top:14px;font-size:12px;color:var(--ink-soft);">Already have an account? <a href="#" id="show-login-link" style="color:var(--accent-2);">Log in</a></div>
+  <div id="login-modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.45);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);">
+    <div id="login-modal" style="background:rgba(255,255,255,0.98);border:1px solid var(--line);border-radius:24px;padding:26px 24px 22px;max-width:420px;width:92%;position:relative;max-height:92vh;overflow-y:auto;box-shadow:0 34px 90px -30px rgba(15,23,42,0.45);">
+      <button id="login-close-btn" style="position:absolute;top:12px;right:14px;background:none;border:none;color:var(--ink-soft);font-size:20px;cursor:pointer;line-height:1;padding:4px 8px;border-radius:8px;">×</button>
+
+      <div class="auth-tabs" id="auth-tabs">
+        <div class="auth-tab active" data-pane="signin">Sign in</div>
+        <div class="auth-tab" data-pane="signup">Sign up</div>
       </div>
 
-      <div id="auth-login" style="display:none;">
-        <input id="login-email" type="email" placeholder="Your email" style="width:100%;padding:11px 13px;margin-bottom:10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-2);color:var(--ink);font-family:'Inter',sans-serif;font-size:14px;outline:none;">
-        <input id="login-password" type="password" placeholder="Password" style="width:100%;padding:11px 13px;margin-bottom:14px;border-radius:8px;border:1px solid var(--line);background:var(--paper-2);color:var(--ink);font-family:'Inter',sans-serif;font-size:14px;outline:none;">
-        <button id="login-btn" style="width:100%;padding:12px;border-radius:8px;border:none;background:var(--accent);color:#FFFFFF;font-weight:600;font-size:14px;cursor:pointer;">Log in</button>
-        <div style="text-align:center;margin-top:14px;font-size:12px;color:var(--ink-soft);">New here? <a href="#" id="show-signup-link" style="color:var(--accent-2);">Create an account</a></div>
+      <!-- SIGN IN -->
+      <div class="auth-pane active" data-pane="signin">
+        <h3>Welcome back</h3>
+        <p class="auth-sub">Log in to keep generating project ideas and resume your build guides.</p>
+        <div class="input-row">
+          <input id="login-email" type="email" placeholder="Your email" autocomplete="email">
+        </div>
+        <div class="input-row">
+          <input id="login-password" type="password" placeholder="Your password" autocomplete="current-password">
+          <button type="button" class="pw-toggle" data-target="login-password">show</button>
+        </div>
+        <button id="login-btn" style="width:100%;padding:13px;border-radius:14px;border:none;background:linear-gradient(135deg,var(--accent-deep),var(--accent));color:#FFFFFF;font-weight:700;font-size:14px;cursor:pointer;font-family:'Inter',sans-serif;margin:4px 0 0;box-shadow:0 14px 26px -16px rgba(16,185,129,0.55);">Log in</button>
+        <div class="auth-foot">
+          <a data-pane-go="forgot">Forgot password?</a>
+        </div>
+        <div class="auth-msg" id="auth-msg-signin"></div>
       </div>
 
-      <div id="login-msg" style="margin-top:14px;font-size:12.5px;font-family:'IBM Plex Mono',monospace;color:var(--error, #DC2626);"></div>
+      <!-- SIGN UP -->
+      <div class="auth-pane" data-pane="signup">
+        <h3>Create your free account</h3>
+        <p class="auth-sub">360 free credits every 30 days. Email verification required to access the full tool.</p>
+        <div class="input-row">
+          <input id="signup-name" type="text" placeholder="Your name" autocomplete="name">
+        </div>
+        <div class="input-row">
+          <input id="signup-email" type="email" placeholder="Your email" autocomplete="email">
+        </div>
+        <div class="input-row">
+          <input id="signup-password" type="password" placeholder="Password (min 8 characters)" autocomplete="new-password">
+          <button type="button" class="pw-toggle" data-target="signup-password">show</button>
+        </div>
+        <button id="signup-btn" style="width:100%;padding:13px;border-radius:14px;border:none;background:linear-gradient(135deg,var(--accent-deep),var(--accent));color:#FFFFFF;font-weight:700;font-size:14px;cursor:pointer;font-family:'Inter',sans-serif;margin:4px 0 0;box-shadow:0 14px 26px -16px rgba(16,185,129,0.55);">Create account</button>
+        <div class="auth-foot">By signing up you agree to our <a href="#" onclick="return false;">Terms</a> &amp; <a href="#" onclick="return false;">Privacy</a>.</div>
+        <div class="auth-msg" id="auth-msg-signup"></div>
+      </div>
+
+      <!-- FORGOT PASSWORD -->
+      <div class="auth-pane" data-pane="forgot">
+        <a class="auth-back" data-pane-go="signin">Back to sign in</a>
+        <h3>Reset your password</h3>
+        <p class="auth-sub">Enter your email and we'll send a one-time reset link valid for 1 hour.</p>
+        <div class="input-row">
+          <input id="forgot-email" type="email" placeholder="Your email" autocomplete="email">
+        </div>
+        <button id="forgot-btn" style="width:100%;padding:13px;border-radius:14px;border:none;background:linear-gradient(135deg,var(--accent-deep),var(--accent));color:#FFFFFF;font-weight:700;font-size:14px;cursor:pointer;font-family:'Inter',sans-serif;margin:4px 0 0;box-shadow:0 14px 26px -16px rgba(16,185,129,0.55);">Send reset link</button>
+        <div class="auth-msg" id="auth-msg-forgot"></div>
+      </div>
+
+      <!-- RESET PASSWORD (reached via ?reset=TOKEN in URL) -->
+      <div class="auth-pane" data-pane="reset">
+        <h3>Set a new password</h3>
+        <p class="auth-sub">Choose a new password for your account. Min 8 characters.</p>
+        <div class="input-row">
+          <input id="reset-password" type="password" placeholder="New password (min 8 characters)" autocomplete="new-password">
+          <button type="button" class="pw-toggle" data-target="reset-password">show</button>
+        </div>
+        <div class="input-row">
+          <input id="reset-password-confirm" type="password" placeholder="Confirm new password" autocomplete="new-password">
+          <button type="button" class="pw-toggle" data-target="reset-password-confirm">show</button>
+        </div>
+        <button id="reset-btn" style="width:100%;padding:13px;border-radius:14px;border:none;background:linear-gradient(135deg,var(--accent-deep),var(--accent));color:#FFFFFF;font-weight:700;font-size:14px;cursor:pointer;font-family:'Inter',sans-serif;margin:4px 0 0;box-shadow:0 14px 26px -16px rgba(16,185,129,0.55);">Set new password</button>
+        <div class="auth-msg" id="auth-msg-reset"></div>
+      </div>
+
+      <!-- SUCCESS -->
+      <div class="auth-pane" data-pane="success">
+        <div class="auth-success-block">
+          <div class="icon">✓</div>
+          <h3>You're in</h3>
+          <p class="auth-sub" id="auth-success-msg">Logged in. Reloading…</p>
+        </div>
+      </div>
     </div>
+  </div>
+
   </div>
 
   <div id="tool-section" style="display:block;">
@@ -1801,23 +2270,106 @@
   </div>
 
   <div id="tab-panel-premium" class="app-tab-panel" style="display:none;">
-    <div style="margin-bottom:24px;">
-      <h2 style="font-family:'Sora',sans-serif;font-size:22px;margin:0 0 6px;">Premium</h2>
-      <p style="color:var(--ink-soft);font-size:13.5px;margin:0;line-height:1.6;">A preview of your flagship project — the one that would really set you apart. Full access launches soon.</p>
+    <div style="margin-bottom:18px;">
+      <h2 style="font-family:'Sora',sans-serif;font-size:28px;letter-spacing:-.7px;margin:0 0 6px;color:var(--ink);">Premium</h2>
+      <p style="color:var(--ink-soft);font-size:14.5px;margin:0;line-height:1.6;">Unlock 1,000 credits / month, priority generation, and the full flagship roadmap tracker.</p>
     </div>
-    <div style="position:relative;background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;min-height:320px;">
-      <div id="premium" class="premium" style="filter:blur(5px);pointer-events:none;user-select:none;opacity:0.7;padding:24px;"></div>
-      <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;background:rgba(255,255,255,0.55);">
-        <div style="font-size:26px;margin-bottom:12px;">🔒</div>
-        <div style="font-family:'Sora',sans-serif;font-size:19px;margin-bottom:8px;">Premium — coming soon</div>
-        <p style="color:var(--ink-soft);font-size:13px;max-width:380px;margin:0 0 20px;">More credits, more guides per month, and features we're still deciding on.</p>
-        <div class="waitlist-row" style="max-width:380px;">
-          <input id="premium-waitlist-email" type="email" placeholder="your email — get early access + launch discount">
-          <button id="premium-waitlist-btn">Join waitlist</button>
+
+    <!-- Plan status banner (when user is on premium) -->
+    <div id="plan-status-block" class="plan-status">
+      <div class="ps-left">
+        <div class="ps-icon">★</div>
+        <div>
+          <div class="ps-label">You're on</div>
+          <div class="ps-name" id="ps-name">Premium</div>
+          <div class="ps-renew" id="ps-renew">Renews on —</div>
         </div>
-        <div id="premium-waitlist-status" class="waitlist-status"></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <div class="ps-credits"><span id="ps-credits">—</span> credits left</div>
+        <button class="ps-btn" id="ps-cancel-btn">Cancel plan</button>
       </div>
     </div>
+
+    <!-- Pricing cards -->
+    <div class="pay-mode" role="tablist" aria-label="Billing cycle">
+      <button class="active" data-mode="monthly">Monthly</button>
+      <button data-mode="annual">Annual <span class="save">SAVE 30%</span></button>
+    </div>
+    <div class="premium-wrap">
+      <div class="plan-card" data-plan="free">
+        <span class="plan-badge current">Current</span>
+        <h3 class="plan-name">Free</h3>
+        <div class="plan-price">₹0<small>/mo</small></div>
+        <div class="plan-period">360 credits every 30 days</div>
+        <ul class="plan-feats">
+          <li>4 tailored project ideas / run</li>
+          <li>1 full build guide / month</li>
+          <li>Architecture diagrams &amp; skills</li>
+          <li>Save ideas to your account</li>
+          <li class="muted">Roadmap progress tracker</li>
+          <li class="muted">Priority generation queue</li>
+        </ul>
+        <button class="plan-cta ghost" id="free-cta" disabled>You're on Free</button>
+      </div>
+      <div class="plan-card featured" data-plan="premium">
+        <span class="plan-ribbon">Most popular</span>
+        <span class="plan-badge pro">Pro</span>
+        <h3 class="plan-name">Pro</h3>
+        <div class="plan-price" id="premium-price-display">₹299<small>/mo</small></div>
+        <div class="plan-period" id="premium-period-display">1,000 credits every 30 days</div>
+        <ul class="plan-feats">
+          <li><b>1,000 credits</b> every 30 days (3× Free)</li>
+          <li>Unlimited build guides</li>
+          <li>Full flagship roadmap tracker</li>
+          <li>Priority generation queue</li>
+          <li>Save unlimited ideas &amp; guides</li>
+          <li>Early access to new features</li>
+        </ul>
+        <button class="plan-cta solid" id="premium-cta">Upgrade to Pro</button>
+      </div>
+    </div>
+
+    <!-- Pay block (QR + UTR) — shown after clicking Upgrade -->
+    <div id="pay-block" class="pay-block" style="display:none;">
+      <div class="pay-head">
+        <div>
+          <h3>Pay via UPI</h3>
+          <p>Scan the QR or copy the UPI ID. Then paste your UTR below to verify.</p>
+        </div>
+        <span class="pay-pill"><span class="dot"></span>Manual verification</span>
+      </div>
+      <div class="pay-grid">
+        <div class="pay-qr" id="pay-qr" aria-label="UPI QR code"></div>
+        <div class="pay-info">
+          <div class="pay-amount-row">
+            <div class="pay-amount" id="pay-amount">₹299</div>
+            <div class="pay-line" style="border:none;padding:0;"><span class="lbl" id="pay-period-label">/month</span></div>
+          </div>
+          <div class="pay-line"><span class="lbl">UPI ID</span><span class="val pay-upi-id" id="pay-upi-id">builditup@oksbi</span></div>
+          <div class="pay-line"><span class="lbl">Name on account</span><span class="val">BuildItUp</span></div>
+          <div class="pay-verify">
+            <h4>Paid? Paste your UTR to verify</h4>
+            <p>UTR is the 12-digit reference number from your UPI app. Verification usually takes &lt;30 mins during business hours.</p>
+            <div class="pay-verify-row">
+              <input id="pay-utr" type="text" placeholder="e.g. 407123456789" maxlength="32" autocomplete="off">
+              <button id="pay-submit-btn">Submit</button>
+            </div>
+            <div class="pay-msg" id="pay-msg"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Payment history -->
+    <div class="history-block" id="history-block" style="display:none;">
+      <h3>Payment history</h3>
+      <div class="history-list" id="history-list">
+        <div style="font-size:12.5px;color:var(--ink-soft);font-family:'IBM Plex Mono',monospace;">No payments yet.</div>
+      </div>
+    </div>
+
+    <p style="text-align:center;font-size:11.5px;color:var(--ink-soft);margin:24px 0 0;font-family:'IBM Plex Mono',monospace;letter-spacing:0.4px;">Payments verified manually · Razorpay integration coming soon</p>
   </div>
 </div>
 
@@ -1826,6 +2378,7 @@
 // "https://projectdesk-api.YOUR_SUBDOMAIN.workers.dev"
 const WORKER_URL = "https://projectdesk-api.aryadeepbiswas014.workers.dev";
 let currentResultId = null; // set once a result is saved/loaded, used by "Get full guide" buttons
+let latestDashboardData = null;
 
 function emptyStateCard(icon, title, msg) {
   return `<div style="text-align:center;padding:56px 24px;background:var(--card);border:1px solid var(--line);border-radius:14px;">
@@ -1857,280 +2410,287 @@ document.querySelectorAll('#time-group .pill').forEach(pill => {
 const loginCloseBtn = document.getElementById('login-close-btn');
 const loginOverlay = document.getElementById('login-modal-overlay');
 const authSignup = document.getElementById('auth-signup');
-const authLogin = document.getElementById('auth-login');
-const authHeading = document.getElementById('auth-heading');
-const loginMsg = document.getElementById('login-msg');
-const authArea = document.getElementById('auth-area');
-const creditBox = document.getElementById('credit-box');
-const creditNum = document.getElementById('credit-num');
+// (const authArea, creditBox, creditNum are now declared in the new AUTH block below)
 
 // If generating ideas or requesting a guide triggered the login prompt, we
 // resume that action automatically once auth succeeds.
 let pendingAction = null; // { type: 'generate' } or { type: 'guide', resultId, ideaKey, btn }
+let currentUserPlan = 'free'; // 'free' | 'premium' — set after login/dashboard load
 
-function openLoginModal() { loginOverlay.style.display = 'flex'; loginMsg.textContent = ''; }
-function closeLoginModal() { loginOverlay.style.display = 'none'; pendingAction = null; }
-document.getElementById('header-login-btn').addEventListener('click', () => {
-  authLogin.style.display = 'block'; authSignup.style.display = 'none'; authHeading.textContent = 'Log in';
-  openLoginModal();
-});
-document.getElementById('header-signup-btn').addEventListener('click', () => {
-  authSignup.style.display = 'block'; authLogin.style.display = 'none'; authHeading.textContent = 'Create a free account';
-  openLoginModal();
-});
-loginCloseBtn.addEventListener('click', closeLoginModal);
-loginOverlay.addEventListener('click', (e) => { if (e.target === loginOverlay) closeLoginModal(); });
+// =============================================================
+// AUTH MODAL — multi-pane: signin / signup / forgot / reset
+// =============================================================
+const authOverlay = document.getElementById('login-modal-overlay');
+const authArea = document.getElementById('auth-area');
+const creditBox = document.getElementById('credit-box');
+const creditNum = document.getElementById('credit-num');
+const verifyBanner = document.getElementById('verify-banner');
 
-document.getElementById('show-login-link').addEventListener('click', (e) => {
-  e.preventDefault();
-  authSignup.style.display = 'none';
-  authLogin.style.display = 'block';
-  authHeading.textContent = 'Log in';
-  loginMsg.textContent = '';
+function setAuthPane(paneName) {
+  document.querySelectorAll('.auth-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+  const pane = document.querySelector(`.auth-pane[data-pane="${paneName}"]`);
+  const tab = document.querySelector(`.auth-tab[data-pane="${paneName}"]`);
+  if (pane) pane.classList.add('active');
+  if (tab) tab.classList.add('active');
+}
+function openAuth(pane, opts) {
+  setAuthPane(pane || 'signin');
+  if (opts && opts.resetToken) {
+    const resetBtn = document.getElementById('reset-btn');
+    if (resetBtn) resetBtn.dataset.token = opts.resetToken;
+  }
+  authOverlay.style.display = 'flex';
+}
+function closeAuth() {
+  authOverlay.style.display = 'none';
+  pendingAction = null;
+}
+document.getElementById('login-close-btn').addEventListener('click', closeAuth);
+authOverlay.addEventListener('click', (e) => { if (e.target === authOverlay) closeAuth(); });
+
+document.querySelectorAll('.auth-tab').forEach(t => {
+  t.addEventListener('click', () => setAuthPane(t.dataset.pane));
 });
-document.getElementById('show-signup-link').addEventListener('click', (e) => {
-  e.preventDefault();
-  authLogin.style.display = 'none';
-  authSignup.style.display = 'block';
-  authHeading.textContent = 'Create a free account';
-  loginMsg.textContent = '';
+document.querySelectorAll('[data-pane-go]').forEach(a => {
+  a.addEventListener('click', (e) => { e.preventDefault(); setAuthPane(a.dataset.paneGo); });
 });
+document.querySelectorAll('.pw-toggle').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const target = document.getElementById(btn.dataset.target);
+    if (!target) return;
+    if (target.type === 'password') { target.type = 'text'; btn.textContent = 'hide'; }
+    else { target.type = 'password'; btn.textContent = 'show'; }
+  });
+});
+
+function setMsg(pane, text, kind) {
+  const el = document.getElementById('auth-msg-' + pane);
+  if (!el) return;
+  el.textContent = text;
+  el.className = 'auth-msg' + (kind ? ' ' + kind : '');
+}
 
 function onAuthSuccess(data) {
   localStorage.setItem('pd_session_token', data.token);
   localStorage.setItem('pd_user_name', data.name);
   localStorage.setItem('pd_user_email', data.email);
-  closeLoginModal();
-  showLoggedInHeader(data.name);
+  if (data.emailVerified === false) verifyBanner.style.display = 'flex';
+  else verifyBanner.style.display = 'none';
+  closeAuth();
+  showLoggedInHeader(data.name, data);
   refreshCreditsDisplay();
   loadOverview();
+  if (typeof onPremiumTabOpen === 'function') onPremiumTabOpen();
   if (pendingAction) {
     const action = pendingAction;
     pendingAction = null;
-    if (action.type === 'generate') {
-      triggerGenerate();
-    } else if (action.type === 'guide') {
-      requestGuide(action.resultId, action.ideaKey, action.btn);
-    }
+    if (action.type === 'generate') triggerGenerate();
+    else if (action.type === 'guide') requestGuide(action.resultId, action.ideaKey, action.btn);
   }
 }
 
+// SIGN UP
 document.getElementById('signup-btn').addEventListener('click', async () => {
   const name = document.getElementById('signup-name').value.trim();
   const email = document.getElementById('signup-email').value.trim();
   const password = document.getElementById('signup-password').value;
-  loginMsg.textContent = '';
-  if (!name) { loginMsg.textContent = 'Enter your name.'; return; }
-  if (!email || !email.includes('@')) { loginMsg.textContent = 'Enter a valid email.'; return; }
-  if (!password || password.length < 8) { loginMsg.textContent = 'Password must be at least 8 characters.'; return; }
-
+  setMsg('signup', '');
+  if (!name) { setMsg('signup', 'Enter your name.', 'error'); return; }
+  if (!email || !email.includes('@')) { setMsg('signup', 'Enter a valid email.', 'error'); return; }
+  if (!password || password.length < 8) { setMsg('signup', 'Password must be at least 8 characters.', 'error'); return; }
   const btn = document.getElementById('signup-btn');
-  btn.disabled = true;
-  btn.textContent = 'Creating account...';
+  btn.disabled = true; btn.textContent = 'Creating account...';
   try {
     const res = await fetch(WORKER_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'signup', name, email, password })
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok || data.error) throw new Error(data.error || ('Sign-up failed (HTTP ' + res.status + ')'));
-    onAuthSuccess(data);
+    setAuthPane('success');
+    document.getElementById('auth-success-msg').textContent =
+      'Account created. We sent a verification link to ' + email + '. You can keep using the tool while you verify.';
+    setTimeout(() => {
+      closeAuth();
+      showLoggedInHeader(data.name, data);
+      verifyBanner.style.display = data.emailVerified === false ? 'flex' : 'none';
+      refreshCreditsDisplay();
+      loadOverview();
+    }, 2400);
   } catch (err) {
-    loginMsg.textContent = friendlyFetchError(err, 'Could not create account');
+    setMsg('signup', friendlyFetchError(err, 'Could not create account'), 'error');
   } finally {
-    btn.disabled = false;
-    btn.textContent = 'Sign up';
+    btn.disabled = false; btn.textContent = 'Create account';
   }
 });
 
+// SIGN IN
 document.getElementById('login-btn').addEventListener('click', async () => {
   const email = document.getElementById('login-email').value.trim();
   const password = document.getElementById('login-password').value;
-  loginMsg.textContent = '';
-  if (!email || !password) { loginMsg.textContent = 'Enter email and password.'; return; }
-
+  setMsg('signin', '');
+  if (!email || !password) { setMsg('signin', 'Enter email and password.', 'error'); return; }
   const btn = document.getElementById('login-btn');
-  btn.disabled = true;
-  btn.textContent = 'Logging in...';
+  btn.disabled = true; btn.textContent = 'Logging in...';
   try {
     const res = await fetch(WORKER_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'login', email, password })
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok || data.error) throw new Error(data.error || ('Log-in failed (HTTP ' + res.status + ')'));
     onAuthSuccess(data);
   } catch (err) {
-    loginMsg.textContent = friendlyFetchError(err, 'Invalid email or password');
+    setMsg('signin', friendlyFetchError(err, 'Invalid email or password'), 'error');
   } finally {
-    btn.disabled = false;
-    btn.textContent = 'Log in';
+    btn.disabled = false; btn.textContent = 'Log in';
   }
 });
 
-// Translates the many ways a fetch can fail (CORS, offline, server down,
-// HTTP 5xx) into something the user can actually act on.
-function friendlyFetchError(err, fallback) {
-  const msg = (err && err.message) ? String(err.message) : '';
-  if (/Failed to fetch|NetworkError|network/i.test(msg)) {
-    if (!navigator.onLine) {
-      return 'You appear to be offline. Check your connection and try again.';
-    }
-    return 'Could not reach the server (network or CORS issue). If you\'re previewing locally, the worker needs to allow this origin — try the deployed site at https://aryadeep2116.github.io/builditup/.';
+// FORGOT PASSWORD
+document.getElementById('forgot-btn').addEventListener('click', async () => {
+  const email = document.getElementById('forgot-email').value.trim();
+  setMsg('forgot', '');
+  if (!email || !email.includes('@')) { setMsg('forgot', 'Enter a valid email.', 'error'); return; }
+  const btn = document.getElementById('forgot-btn');
+  btn.disabled = true; btn.textContent = 'Sending...';
+  try {
+    const res = await fetch(WORKER_URL, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'request_password_reset', email })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || data.error) throw new Error(data.error || ('Could not send reset link (HTTP ' + res.status + ')'));
+    setMsg('forgot', 'If that email is on file, we sent a reset link valid for 1 hour. Check your inbox.', 'success');
+  } catch (err) {
+    setMsg('forgot', friendlyFetchError(err, 'Could not send the reset link'), 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Send reset link';
   }
-  if (/401|403/.test(msg)) return 'Your session has expired. Please log in again.';
-  if (/429/.test(msg)) return 'Too many attempts. Wait a minute and try again.';
-  if (/500|502|503|504/.test(msg)) return 'The server hit an error. Please try again in a moment.';
-  return msg || fallback;
-}
+});
 
-function showLoggedInHeader(name) {
-  authArea.innerHTML = `
-    <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-soft);margin-right:4px;">Hi, ${name}</span>
-    <button id="logout-btn" class="hdr-btn hdr-btn-ghost" style="background:transparent;border:1px solid var(--line);color:var(--ink-soft);font-family:'IBM Plex Mono',monospace;font-size:12px;padding:9px 14px;border-radius:8px;cursor:pointer;">Log out</button>
-  `;
-  document.getElementById('logout-btn').addEventListener('click', () => {
-    localStorage.removeItem('pd_session_token');
-    localStorage.removeItem('pd_user_name');
-    localStorage.removeItem('pd_user_email');
-    localStorage.removeItem('pd_last_result_id');
-    window.location.href = 'app.html'; // clean URL, no lingering ?r= from before logout
-  });
-}
-
-async function refreshCreditsDisplay() {
-  const token = localStorage.getItem('pd_session_token');
-  if (!token) { creditBox.style.display = 'none'; return; }
+// RESET PASSWORD (reached via ?reset=TOKEN URL)
+document.getElementById('reset-btn').addEventListener('click', async () => {
+  const pw = document.getElementById('reset-password').value;
+  const pw2 = document.getElementById('reset-password-confirm').value;
+  setMsg('reset', '');
+  if (!pw || pw.length < 8) { setMsg('reset', 'Password must be at least 8 characters.', 'error'); return; }
+  if (pw !== pw2) { setMsg('reset', 'Passwords do not match.', 'error'); return; }
+  const token = document.getElementById('reset-btn').dataset.token;
+  if (!token) { setMsg('reset', 'Missing reset token. Open the link from your email again.', 'error'); return; }
+  const btn = document.getElementById('reset-btn');
+  btn.disabled = true; btn.textContent = 'Saving...';
   try {
     const res = await fetch(WORKER_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'get_dashboard', token })
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'confirm_password_reset', token, password: pw })
     });
-    const data = await res.json();
-    if (data.error) return;
-    creditBox.style.display = 'block';
-    creditNum.textContent = data.credits;
-    document.getElementById('credit-total').textContent = data.plan === 'premium' ? '1000' : '360';
-    latestDashboardData = data;
-    populateWorkflowFromDashboard(data);
-  } catch (e) { /* best-effort */ }
-}
-
-let latestDashboardData = null;
-
-async function loadOverview() {
-  const token = localStorage.getItem('pd_session_token');
-  const list = document.getElementById('overview-list');
-  if (!token) { list.innerHTML = emptyStateCard('👋', 'Log in to see your ideas here', 'Every set of project ideas you generate gets saved to your account automatically.'); return; }
-  try {
-    const res = await fetch(WORKER_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'get_user_results', token })
-    });
-    const data = await res.json();
-    if (data.error || !data.results.length) {
-      list.innerHTML = emptyStateCard('💡', 'Nothing here yet', 'Head to the Generate tab and get your first set of project ideas — they will show up here right after.');
-      return;
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || data.error) throw new Error(data.error || ('Could not reset password (HTTP ' + res.status + ')'));
+    setMsg('reset', 'Password updated. Logging you in...', 'success');
+    if (data.token) {
+      localStorage.setItem('pd_session_token', data.token);
+      localStorage.setItem('pd_user_name', data.name);
+      localStorage.setItem('pd_user_email', data.email);
+      setTimeout(() => {
+        closeAuth();
+        showLoggedInHeader(data.name, data);
+        refreshCreditsDisplay();
+        loadOverview();
+      }, 1200);
     }
-    list.innerHTML = data.results.map(r => `
-      <div class="overview-item" data-id="${r.id}" style="background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin-bottom:10px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;">
-        <span style="color:var(--accent);font-weight:600;font-size:13.5px;">${r.roleTitle || 'Untitled'}</span>
-        <span style="color:var(--ink-soft);font-family:'IBM Plex Mono',monospace;font-size:11px;">${new Date(r.ts).toLocaleDateString()}</span>
-      </div>
-    `).join('') + `<div id="overview-detail" style="margin-top:20px;"></div>`;
-
-    list.querySelectorAll('.overview-item').forEach(item => {
-      item.addEventListener('click', () => loadOverviewDetail(item.dataset.id));
-    });
-  } catch (e) { /* best-effort */ }
-}
-
-async function loadOverviewDetail(id) {
-  const detail = document.getElementById('overview-detail');
-  detail.innerHTML = `<div style="padding:20px 0;color:var(--ink-soft);font-family:'IBM Plex Mono',monospace;font-size:12px;">Loading...</div>`;
-  try {
-    const res = await fetch(WORKER_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'get_result', id })
-    });
-    const data = await res.json();
-    if (data.error) { detail.innerHTML = `<div style="color:#DC2626;font-size:12.5px;">${data.error}</div>`; return; }
-    currentResultId = id;
-    detail.innerHTML = '';
-    renderIdeas(data.ideas, detail);
-  } catch (e) { detail.innerHTML = `<div style="color:#DC2626;font-size:12.5px;">Could not load this project set.</div>`; }
-}
-
-function populateWorkflowFromDashboard(data) {
-  const mount = document.getElementById('workflow-mount');
-  if (!data.latestGuide) {
-    mount.innerHTML = emptyStateCard('🗺️', "You haven't unlocked a guide this cycle", 'Go to a project idea in the Generate or Overview tab and click "Get the full step-by-step guide" — it costs 200 credits.');
-    return;
+  } catch (err) {
+    setMsg('reset', friendlyFetchError(err, 'Could not reset password'), 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Set new password';
   }
-  mount.innerHTML = `<div style="font-family:'Sora',sans-serif;font-size:17px;margin-bottom:16px;">${data.latestGuide.projectTitle}</div>`;
-  renderGuide(mount, data.latestGuide);
-}
+});
 
-// Auto-restore login state on page load
-(async () => {
-  const token = localStorage.getItem('pd_session_token');
-  if (!token) { loadOverview(); return; }
-  try {
-    const res = await fetch(WORKER_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'validate_session', token })
-    });
-    const data = await res.json();
-    if (data.ok) {
-      showLoggedInHeader(data.name);
-      refreshCreditsDisplay();
-      loadOverview();
-    } else {
-      localStorage.removeItem('pd_session_token');
-      loadOverview();
-    }
-  } catch (e) { loadOverview(); }
+// URL params — handle ?reset=, ?magic=, ?verify=
+(function handleAuthUrlParams() {
+  const params = new URLSearchParams(location.search);
+  const resetToken = params.get('reset');
+  const magicToken = params.get('magic');
+  const verifyToken = params.get('verify');
+  if (verifyToken) {
+    (async () => {
+      try {
+        const res = await fetch(WORKER_URL, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'confirm_verification', token: verifyToken })
+        });
+        const data = await res.json();
+        history.replaceState(null, '', location.pathname);
+        if (data.error) {
+          alert('That verification link has expired or already been used.');
+        } else {
+          verifyBanner.style.display = 'none';
+          if (localStorage.getItem('pd_session_token')) refreshCreditsDisplay();
+          alert('Email verified! You can now use the full tool.');
+        }
+      } catch (e) { /* best-effort */ }
+    })();
+  }
+  if (resetToken) {
+    openAuth('reset', { resetToken });
+    history.replaceState(null, '', location.pathname);
+  } else if (magicToken) {
+    (async () => {
+      try {
+        const res = await fetch(WORKER_URL, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'confirm_magic_link', token: magicToken })
+        });
+        const data = await res.json();
+        history.replaceState(null, '', location.pathname);
+        if (data.error) {
+          openAuth('signin');
+          setMsg('signin', 'That magic link has expired or already been used. Request a new one.', 'error');
+          return;
+        }
+        onAuthSuccess(data);
+      } catch (e) {
+        openAuth('signin');
+        setMsg('signin', 'Could not verify the magic link. Try signing in with a password.', 'error');
+      }
+    })();
+  }
 })();
 
-// --- TAB SWITCHING ---
-document.querySelectorAll('.app-tab').forEach(tab => {
-  tab.addEventListener('click', () => {
-    document.querySelectorAll('.app-tab').forEach(t => t.classList.remove('active'));
-    tab.classList.add('active');
-    document.querySelectorAll('.app-tab-panel').forEach(p => p.style.display = 'none');
-    document.getElementById(`tab-panel-${tab.dataset.tab}`).style.display = 'block';
-  });
-});
+// Header buttons
+document.getElementById('header-login-btn').addEventListener('click', () => openAuth('signin'));
+document.getElementById('header-signup-btn').addEventListener('click', () => openAuth('signup'));
 
-document.getElementById('premium-waitlist-btn').addEventListener('click', async () => {
-  const emailInput = document.getElementById('premium-waitlist-email');
-  const wStatus = document.getElementById('premium-waitlist-status');
-  const wBtn = document.getElementById('premium-waitlist-btn');
-  const email = emailInput.value.trim();
-  if (!email || !email.includes('@')) { wStatus.textContent = 'Enter a valid email.'; wStatus.className = 'waitlist-status'; return; }
-  wBtn.disabled = true; wBtn.textContent = 'Saving...';
-  try {
-    const res = await fetch(WORKER_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'waitlist', email, role: 'premium-interest' })
-    });
-    const out = await res.json();
-    if (out.error) throw new Error(out.error);
-    wStatus.textContent = "You're on the list — we'll email you when Premium launches.";
-    wStatus.className = 'waitlist-status success';
-    emailInput.disabled = true; wBtn.textContent = 'Joined';
-  } catch (err) {
-    wStatus.textContent = 'Something went wrong — try again.';
-    wBtn.disabled = false; wBtn.textContent = 'Join waitlist';
-  }
-});
+// Resend verification email
+function doResendVerify() {
+  const token = localStorage.getItem('pd_session_token');
+  if (!token) return;
+  const link = document.getElementById('resend-verify');
+  const btn = document.getElementById('resend-verify-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Sending...'; }
+  (async () => {
+    try {
+      const res = await fetch(WORKER_URL, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'resend_verification', token })
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      if (link) { link.textContent = 'Sent! Check your inbox.'; link.style.pointerEvents = 'none'; }
+      if (btn) { btn.textContent = 'Sent ✓'; }
+    } catch (e) {
+      if (link) link.textContent = 'Try again later.';
+      if (btn) { btn.disabled = false; btn.textContent = 'Resend email'; }
+    }
+  })();
+}
+const resendLink = document.getElementById('resend-verify');
+if (resendLink) resendLink.addEventListener('click', (e) => { e.preventDefault(); doResendVerify(); });
+const resendBtn = document.getElementById('resend-verify-btn');
+if (resendBtn) resendBtn.addEventListener('click', doResendVerify);
+
+
 
 const goLabel = document.getElementById('go-label');
 const statusEl = document.getElementById('status');
@@ -2217,6 +2777,289 @@ function showShareBox(id) {
     }
   }
 })();
+
+// =============================================================
+// showLoggedInHeader + refreshCreditsDisplay
+// (Pulled out of the old auth block; now takes user data for
+// email-verified status.)
+// =============================================================
+// Auto-restore login state on page load
+(async () => {
+  const token = localStorage.getItem('pd_session_token');
+  if (!token) { loadOverview(); return; }
+  try {
+    const res = await fetch(WORKER_URL, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'validate_session', token })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      showLoggedInHeader(data.name, { emailVerified: true });
+      refreshCreditsDisplay();
+      loadOverview();
+    } else {
+      localStorage.removeItem('pd_session_token');
+      loadOverview();
+    }
+  } catch (e) { loadOverview(); }
+})();
+
+
+function showLoggedInHeader(name, data) {
+  data = data || {};
+  const isVerified = data.emailVerified !== false;
+  authArea.innerHTML = `
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-soft);margin-right:4px;display:inline-flex;align-items:center;gap:6px;">
+      Hi, ${escapeHtml(name)}${isVerified ? '' : ' <span style="color:#B45309;font-weight:600;">· verify email</span>'}
+    </span>
+    <button id="logout-btn" class="hdr-btn hdr-btn-ghost" style="background:transparent;border:1px solid var(--line);color:var(--ink-soft);font-family:'Inter',sans-serif;font-size:12px;padding:9px 14px;border-radius:999px;cursor:pointer;">Log out</button>
+  `;
+  if (!isVerified) verifyBanner.style.display = 'flex';
+  const logoutBtn = document.getElementById('logout-btn');
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', () => {
+      localStorage.removeItem('pd_session_token');
+      localStorage.removeItem('pd_user_name');
+      localStorage.removeItem('pd_user_email');
+      localStorage.removeItem('pd_last_result_id');
+      window.location.href = 'app.html';
+    });
+  }
+}
+
+function escapeHtml(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+async function refreshCreditsDisplay() {
+  const token = localStorage.getItem('pd_session_token');
+  if (!token) { creditBox.style.display = 'none'; return; }
+  try {
+    const res = await fetch(WORKER_URL, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'get_dashboard', token })
+    });
+    const data = await res.json();
+    if (data.error) return;
+    creditBox.style.display = 'block';
+    creditNum.textContent = data.credits;
+    document.getElementById('credit-total').textContent = data.plan === 'premium' ? '1000' : '360';
+    latestDashboardData = data;
+    currentUserPlan = data.plan || 'free';
+    populateWorkflowFromDashboard(data);
+    if (typeof refreshPlanStatus === 'function') refreshPlanStatus();
+    if (typeof loadPaymentHistory === 'function') loadPaymentHistory();
+  } catch (e) { /* best-effort */ }
+}
+
+// =============================================================
+// PREMIUM — pricing cards, pay via UPI, plan status, payment history
+// =============================================================
+const PRICING = {
+  monthly: { amount: 299,  cycle: 'month',   credits: 1000, label: '₹299' },
+  annual:  { amount: 2499, cycle: 'year',    credits: 12000, label: '₹2,499' }
+};
+let currentPayMode = 'monthly';
+
+function placeholderQR(upiId, amount) {
+  const url = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent('BuildItUp')}&am=${amount}&cu=INR&tn=${encodeURIComponent('BuildItUp-Pro')}`;
+  return `
+    <a href="${url}" style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-decoration:none;color:inherit;cursor:pointer;">
+      <svg viewBox="0 0 80 80" width="120" height="120" style="background:#fff;">
+        <rect x="0" y="0" width="80" height="80" fill="#fff"/>
+        <g fill="#0F172A">
+          <rect x="6" y="6" width="20" height="20" rx="2"/><rect x="10" y="10" width="12" height="12" fill="#fff"/><rect x="14" y="14" width="4" height="4"/>
+          <rect x="54" y="6" width="20" height="20" rx="2"/><rect x="58" y="10" width="12" height="12" fill="#fff"/><rect x="62" y="14" width="4" height="4"/>
+          <rect x="6" y="54" width="20" height="20" rx="2"/><rect x="10" y="58" width="12" height="12" fill="#fff"/><rect x="14" y="62" width="4" height="4"/>
+          <rect x="30" y="6" width="4" height="4"/><rect x="38" y="10" width="4" height="4"/><rect x="34" y="14" width="4" height="4"/><rect x="42" y="14" width="4" height="4"/>
+          <rect x="30" y="22" width="4" height="4"/><rect x="38" y="22" width="4" height="4"/><rect x="46" y="22" width="4" height="4"/>
+          <rect x="30" y="30" width="4" height="4"/><rect x="34" y="34" width="4" height="4"/><rect x="42" y="34" width="4" height="4"/><rect x="50" y="34" width="4" height="4"/>
+          <rect x="6" y="30" width="4" height="4"/><rect x="14" y="34" width="4" height="4"/><rect x="18" y="38" width="4" height="4"/><rect x="22" y="42" width="4" height="4"/>
+          <rect x="6" y="42" width="4" height="4"/><rect x="30" y="42" width="4" height="4"/><rect x="34" y="46" width="4" height="4"/><rect x="42" y="46" width="4" height="4"/>
+          <rect x="54" y="30" width="4" height="4"/><rect x="62" y="34" width="4" height="4"/><rect x="66" y="38" width="4" height="4"/>
+          <rect x="54" y="42" width="4" height="4"/><rect x="58" y="46" width="4" height="4"/><rect x="66" y="50" width="4" height="4"/>
+          <rect x="30" y="54" width="4" height="4"/><rect x="38" y="58" width="4" height="4"/><rect x="46" y="58" width="4" height="4"/>
+          <rect x="34" y="62" width="4" height="4"/><rect x="42" y="66" width="4" height="4"/><rect x="50" y="66" width="4" height="4"/>
+          <rect x="58" y="62" width="4" height="4"/><rect x="66" y="66" width="4" height="4"/>
+          <rect x="34" y="70" width="4" height="4"/><rect x="42" y="70" width="4" height="4"/>
+        </g>
+      </svg>
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--ink-soft);text-align:center;line-height:1.4;">Tap to open UPI app<br>or scan with any QR scanner</span>
+    </a>
+  `;
+}
+
+function setPayMode(mode) {
+  currentPayMode = mode;
+  document.querySelectorAll('.pay-mode button').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+  const p = PRICING[mode];
+  const priceEl = document.getElementById('premium-price-display');
+  if (priceEl) priceEl.innerHTML = p.label + '<small>/' + (mode === 'monthly' ? 'mo' : 'yr') + '</small>';
+  const periodEl = document.getElementById('premium-period-display');
+  if (periodEl) periodEl.textContent = p.credits.toLocaleString() + ' credits every 30 days';
+  updatePayBlock();
+}
+document.querySelectorAll('.pay-mode button').forEach(b => {
+  b.addEventListener('click', () => setPayMode(b.dataset.mode));
+});
+
+function updatePayBlock() {
+  const p = PRICING[currentPayMode];
+  const block = document.getElementById('pay-block');
+  if (!block || block.style.display === 'none') return;
+  const amt = document.getElementById('pay-amount');
+  if (amt) amt.textContent = p.label;
+  const lbl = document.getElementById('pay-period-label');
+  if (lbl) lbl.textContent = '/' + (currentPayMode === 'monthly' ? 'month' : 'year');
+  const qr = document.getElementById('pay-qr');
+  if (qr) qr.innerHTML = placeholderQR('builditup@oksbi', p.amount);
+}
+
+const premiumCta = document.getElementById('premium-cta');
+if (premiumCta) {
+  premiumCta.addEventListener('click', async () => {
+    const token = localStorage.getItem('pd_session_token');
+    if (!token) { pendingAction = null; openAuth('signin'); return; }
+    const block = document.getElementById('pay-block');
+    if (!block) return;
+    if (block.style.display === 'block') {
+      block.style.display = 'none';
+    } else {
+      block.style.display = 'block';
+      updatePayBlock();
+      block.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  });
+}
+
+const paySubmit = document.getElementById('pay-submit-btn');
+if (paySubmit) {
+  paySubmit.addEventListener('click', async () => {
+    const utr = document.getElementById('pay-utr').value.trim();
+    const msg = document.getElementById('pay-msg');
+    if (msg) { msg.className = 'pay-msg'; msg.textContent = ''; }
+    if (!/^[0-9A-Za-z]{6,32}$/.test(utr)) {
+      if (msg) { msg.className = 'pay-msg error'; msg.textContent = 'Enter a valid UTR (6-32 alphanumeric characters).'; }
+      return;
+    }
+    const token = localStorage.getItem('pd_session_token');
+    if (!token) { openAuth('signin'); return; }
+    const btn = document.getElementById('pay-submit-btn');
+    btn.disabled = true; btn.textContent = 'Submitting...';
+    try {
+      const res = await fetch(WORKER_URL, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'submit_payment', token, utr, mode: currentPayMode })
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      if (msg) { msg.className = 'pay-msg success'; msg.textContent = "Submitted. We'll review and flip your account to Pro shortly. Reference: " + data.id; }
+      document.getElementById('pay-utr').value = '';
+      loadPaymentHistory();
+    } catch (err) {
+      if (msg) { msg.className = 'pay-msg error'; msg.textContent = err.message || 'Could not submit. Try again.'; }
+    } finally {
+      btn.disabled = false; btn.textContent = 'Submit';
+    }
+  });
+}
+
+const psCancel = document.getElementById('ps-cancel-btn');
+if (psCancel) {
+  psCancel.addEventListener('click', async () => {
+    if (!confirm('Cancel your Pro plan? Your current cycle stays active until the end of the period.')) return;
+    const token = localStorage.getItem('pd_session_token');
+    if (!token) return;
+    try {
+      const res = await fetch(WORKER_URL, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'cancel_subscription', token })
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      refreshPlanStatus();
+    } catch (err) {
+      alert(err.message || 'Could not cancel.');
+    }
+  });
+}
+
+async function refreshPlanStatus() {
+  const token = localStorage.getItem('pd_session_token');
+  if (!token) {
+    const block = document.getElementById('plan-status-block');
+    if (block) block.style.display = 'none';
+    const hist = document.getElementById('history-block');
+    if (hist) hist.style.display = 'none';
+    return;
+  }
+  try {
+    const res = await fetch(WORKER_URL, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'get_billing_status', token })
+    });
+    const data = await res.json();
+    if (data.error) return;
+    const block = document.getElementById('plan-status-block');
+    if (data.plan === 'premium') {
+      if (block) block.style.display = 'flex';
+      const n = document.getElementById('ps-name');
+      if (n) n.textContent = data.mode === 'annual' ? 'Pro · Annual' : 'Pro · Monthly';
+      const r = document.getElementById('ps-renew');
+      if (r) r.textContent = data.renewsAt
+        ? 'Renews on ' + new Date(data.renewsAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+        : (data.cancelled ? 'Cancels on ' + new Date(data.cancelsAt).toLocaleDateString() : '');
+      const c = document.getElementById('ps-credits');
+      if (c) c.textContent = data.credits;
+    } else {
+      if (block) block.style.display = 'none';
+    }
+  } catch (e) { /* best-effort */ }
+}
+
+async function loadPaymentHistory() {
+  const token = localStorage.getItem('pd_session_token');
+  if (!token) {
+    const hist = document.getElementById('history-block');
+    if (hist) hist.style.display = 'none';
+    return;
+  }
+  try {
+    const res = await fetch(WORKER_URL, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'get_payment_history', token })
+    });
+    const data = await res.json();
+    const block = document.getElementById('history-block');
+    const list = document.getElementById('history-list');
+    if (!block || !list) return;
+    if (data.error || !data.payments || !data.payments.length) {
+      block.style.display = 'block';
+      list.innerHTML = '<div style="font-size:12.5px;color:var(--ink-soft);font-family:IBM Plex Mono,monospace;">No payments yet.</div>';
+      return;
+    }
+    block.style.display = 'block';
+    list.innerHTML = data.payments.map(p => {
+      const dateStr = new Date(p.ts).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
+      const label = p.mode === 'annual' ? '₹2,499 / year' : '₹299 / month';
+      const status = p.status || 'pending';
+      return `
+        <div class="history-row">
+          <div class="h-left">
+            <div class="h-amt">${label}</div>
+            <div class="h-utr">UTR · ${escapeHtml(p.utr)}</div>
+          </div>
+          <div class="h-date">${dateStr}</div>
+          <div class="h-status ${status}">${status}</div>
+        </div>
+      `;
+    }).join('');
+  } catch (e) { /* best-effort */ }
+}
+
+function onPremiumTabOpen() {
+  refreshPlanStatus();
+  loadPaymentHistory();
+}
+
 
 function renderIdeas(ideas, mountEl) {
   const target = mountEl || resultsEl;
@@ -2744,7 +3587,25 @@ async function triggerGenerate() {
   setTimeout(autoTag, 400);
   // Also re-run when tabs change
   document.querySelectorAll('.app-tab').forEach(tab => {
-    tab.addEventListener('click', () => setTimeout(autoTag, 100));
+    tab.addEventListener('click', () => {
+      setTimeout(autoTag, 100);
+      // Refresh premium tab if it's the one being opened
+      if (tab.dataset.tab === 'premium' && typeof onPremiumTabOpen === 'function') onPremiumTabOpen();
+    });
+  });
+
+  // MAIN TAB SWITCHER — make clicking a tab actually switch panels
+  document.querySelectorAll('.app-tab').forEach(tab => {
+    if (tab.dataset.tabSwitchReady === '1') return;
+    tab.dataset.tabSwitchReady = '1';
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.app-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      document.querySelectorAll('.app-tab-panel').forEach(p => p.style.display = 'none');
+      const target = document.getElementById('tab-panel-' + tab.dataset.tab);
+      if (target) target.style.display = 'block';
+      if (tab.dataset.tab === 'premium' && typeof onPremiumTabOpen === 'function') onPremiumTabOpen();
+    });
   });
 
   const revealObserver = new IntersectionObserver((entries) => {
