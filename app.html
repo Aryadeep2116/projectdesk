@@ -1113,6 +1113,32 @@
     box-shadow:0 12px 24px -18px rgba(15,23,42,.9);
   }
 
+  /* Two-row header: row 1 = brand + tabs, row 2 = auth (on mobile it stacks) */
+  #app-header .hdr-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:14px;
+    flex-wrap:wrap;
+  }
+  #app-header .hdr-left{
+    display:flex;
+    align-items:center;
+    gap:18px;
+    flex-wrap:wrap;
+    min-width:0;
+  }
+  #app-header .hdr-right{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-shrink:0;
+  }
+  #app-header .brand-mark{flex-shrink:0;}
+  #app-header .tabs-nav{flex-shrink:1;min-width:0;}
+  #app-header #auth-area{display:flex;align-items:center;gap:8px;}
+  #app-header #credit-box{white-space:nowrap;}
+
   .app-hero{
     display:grid;
     grid-template-columns:minmax(0, 1fr) minmax(310px, 430px);
@@ -2022,32 +2048,35 @@
 <div class="bg-orb two"></div>
 
 <div class="wrap">
-  <div id="app-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;padding:18px 0;border-bottom:1px solid var(--line);margin-bottom:24px;">
-    <div style="display:flex;align-items:center;gap:14px;">
-      <a href="index.html" class="brand-mark">
-        <span class="brand-badge">
-          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M4 15.5L9.5 10L13 13L20 5.5" stroke="white" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M14.5 5H20V10.5" stroke="white" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </span>
-        <span class="brand-text">Build<span class="accent">ItUp</span></span>
-      </a>
-      <div id="credit-box" style="display:none;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:6px 14px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-soft);">
-        <span id="credit-num" style="color:var(--accent);font-weight:600;">–</span> / <span id="credit-total">360</span> credits
+  <div id="app-header">
+    <div class="hdr-row">
+      <div class="hdr-left">
+        <a href="index.html" class="brand-mark">
+          <span class="brand-badge">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M4 15.5L9.5 10L13 13L20 5.5" stroke="white" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M14.5 5H20V10.5" stroke="white" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+          <span class="brand-text">Build<span class="accent">ItUp</span></span>
+        </a>
+        <div class="tabs-nav">
+          <div class="app-tab active" data-tab="generate">Generate</div>
+          <div class="app-tab" data-tab="overview">Overview</div>
+          <div class="app-tab" data-tab="workflow">Workflow</div>
+          <div class="app-tab" data-tab="premium">Premium</div>
+        </div>
+      </div>
+      <div class="hdr-right">
+        <div id="credit-box" style="display:none;background:rgba(255,255,255,0.6);border:1px solid var(--line);border-radius:8px;padding:6px 14px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-soft);">
+          <span id="credit-num" style="color:var(--accent);font-weight:600;">–</span> / <span id="credit-total">360</span> credits
+        </div>
+        <div id="auth-area">
+          <button id="header-login-btn" class="hdr-btn hdr-btn-ghost">Log in</button>
+          <button id="header-signup-btn" class="hdr-btn hdr-btn-solid">Sign up</button>
+        </div>
       </div>
     </div>
-    <div id="auth-area" style="display:flex;align-items:center;gap:8px;">
-      <button id="header-login-btn" class="hdr-btn hdr-btn-ghost" style="background:transparent;border:1px solid var(--line);color:var(--ink-soft);font-family:'IBM Plex Mono',monospace;font-size:12px;padding:9px 16px;border-radius:8px;cursor:pointer;">Log in</button>
-      <button id="header-signup-btn" class="hdr-btn hdr-btn-solid" style="background:var(--accent);border:none;color:#FFFFFF;font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;padding:9px 16px;border-radius:8px;cursor:pointer;">Sign up</button>
-    </div>
-  </div>
-
-  <div class="tabs-nav" style="display:flex;gap:4px;margin-bottom:28px;border-bottom:1px solid var(--line);overflow-x:auto;">
-    <div class="app-tab active" data-tab="generate">Generate</div>
-    <div class="app-tab" data-tab="overview">Overview</div>
-    <div class="app-tab" data-tab="workflow">Workflow</div>
-    <div class="app-tab" data-tab="premium">Premium</div>
   </div>
 
   <div id="verify-banner" class="verify-banner" style="display:none;">
