@@ -900,19 +900,14 @@
   .terminal-actions a:hover{border-color:var(--royal); transform:translateY(-2px);}
 
   /* ===========================================================
-     TIER 1 / #1 — INTERACTIVE 3D PROJECT CARD
-     A drag-to-rotate 3D card. Front = "flagship project idea".
-     Back = tiny architecture diagram. Click card to flip.
-     =========================================================== */
-  /* ===========================================================
-     TIER 1 / #1 — ROLLING HORIZONTAL PROJECT CARDS
-     Vertical scroll through this section rolls the cards
-     horizontally. The section itself is taller than the
-     viewport (height: 320vh) so there's real scroll runway.
-     A sticky inner div keeps the cards in place while the
-     translateX is driven by scroll progress. Each card is a
-     mini project showcase: numbered, colored top stripe, title,
-     subtitle, stack chips, scope.
+     TIER 1 / #1 — ROLLING HORIZONTAL PROJECT CARDS (8 total)
+     Scroll-pinned 320vh section. A sticky inner div keeps the
+     cards in view while the user scrolls. The track is
+     translateX'd by scroll progress, but the cards SNAP one
+     at a time as you scroll: 1 card per chunk of the inner
+     runway. Each card is a flip card (front = project idea,
+     back = tiny SVG architecture diagram). Hover or click
+     to flip.
      =========================================================== */
   .roll-section{
     position:relative;
@@ -920,12 +915,9 @@
     border-top:1px solid var(--line);
     border-bottom:1px solid var(--line);
   }
-  /* Tall section: gives the user vertical scroll distance that
-     maps 1:1 to the cards' horizontal travel. 320vh means we
-     get ~2.2 viewports of vertical scroll to traverse all cards. */
   .roll-sticky{
     position:relative;
-    height:320vh;
+    height:240vh;  /* tall section gives scroll runway */
   }
   .roll-sticky-inner{
     position:sticky;
@@ -938,7 +930,7 @@
   }
   .roll-head{
     max-width:1120px;
-    margin:0 auto 36px;
+    margin:0 auto 18px;
     padding:0 24px;
     text-align:center;
     position:relative;
@@ -958,19 +950,16 @@
     margin:0 auto;
     line-height:1.65;
   }
-  /* Progress bar at the top of the sticky area, just below the
-     section header. Fills as the user scrolls through. */
+  /* Progress bar + counter sit below the section header in
+     normal flow (not absolute), so the eyebrow → h2 → p →
+     progress → label read top-to-bottom with proper spacing. */
   .roll-progress{
-    position:absolute;
-    top:24px;
-    left:50%;
-    transform:translateX(-50%);
     width:240px;
     height:3px;
     background:rgba(11,15,13,0.08);
     border-radius:2px;
     overflow:hidden;
-    z-index:3;
+    margin:28px auto 10px;
   }
   .roll-progress-fill{
     width:0%;
@@ -980,16 +969,13 @@
     transition:width 60ms linear;
   }
   .roll-progress-label{
-    position:absolute;
-    top:36px;
-    left:50%;
-    transform:translateX(-50%);
+    margin:0 0 6px;
     font-family:'IBM Plex Mono', monospace;
     font-size:10.5px;
     letter-spacing:1px;
     color:var(--ink-soft);
     text-transform:uppercase;
-    z-index:3;
+    text-align:center;
   }
   .roll-track-wrap{
     width:100%;
@@ -1001,11 +987,34 @@
     gap:28px;
     width:max-content;
     will-change:transform;
+    transition:transform 320ms cubic-bezier(.2,.8,.2,1);
   }
-  /* Project card */
+  /* ===========================================================
+     FLIP CARD — each .roll-card is a 3D card with two faces.
+     Front shows the project idea; back shows a tiny SVG
+     architecture diagram. Hover or click to flip.
+     =========================================================== */
   .roll-card{
-    width:420px;
+    width:380px;
+    height:480px;
     flex-shrink:0;
+    perspective:1200px;
+  }
+  .roll-card-inner{
+    position:relative;
+    width:100%;
+    height:100%;
+    transform-style:preserve-3d;
+    transition:transform .7s cubic-bezier(.2,.8,.2,1);
+    transform:rotateY(0deg);
+  }
+  .roll-card:hover .roll-card-inner{transform:rotateY(180deg);}
+  .roll-card.flipped .roll-card-inner{transform:rotateY(180deg);}
+  .roll-card-face{
+    position:absolute;
+    inset:0;
+    backface-visibility:hidden;
+    -webkit-backface-visibility:hidden;
     background:#fff;
     border:1px solid var(--line);
     border-radius:22px;
@@ -1013,13 +1022,9 @@
     overflow:hidden;
     display:flex;
     flex-direction:column;
-    transition:transform .35s cubic-bezier(.2,.8,.2,1), box-shadow .35s ease;
   }
-  .roll-card:hover{
-    transform:translateY(-8px);
-    box-shadow:0 28px 50px -20px rgba(11,15,13,0.22);
-  }
-  /* Top color band — different per card */
+  .roll-card:hover .roll-card-face{box-shadow:0 28px 50px -20px rgba(11,15,13,0.22);}
+  .roll-card-face.back{transform:rotateY(180deg);}
   .roll-card-band{
     height:6px;
     width:100%;
@@ -1028,8 +1033,12 @@
   .roll-card-band.green{background:linear-gradient(90deg, #087F4E, #0EA968);}
   .roll-card-band.amber{background:linear-gradient(90deg, #B45309, #F59E0B);}
   .roll-card-band.violet{background:linear-gradient(90deg, #6D28D9, #A78BFA);}
+  .roll-card-band.cyan{background:linear-gradient(90deg, #0E7490, #22D3EE);}
+  .roll-card-band.pink{background:linear-gradient(90deg, #BE185D, #F472B6);}
+  .roll-card-band.orange{background:linear-gradient(90deg, #C2410C, #FB923C);}
+  .roll-card-band.teal{background:linear-gradient(90deg, #115E59, #2DD4BF);}
   .roll-card-body{
-    padding:32px 30px 28px;
+    padding:28px 28px 24px;
     display:flex;
     flex-direction:column;
     flex:1;
@@ -1060,54 +1069,464 @@
   .roll-card-tag.green{color:var(--emerald-deep); background:var(--emerald-soft); border-color:rgba(14,169,104,0.2);}
   .roll-card-tag.amber{color:#B45309; background:#FEF3C7; border-color:rgba(180,83,9,0.2);}
   .roll-card-tag.violet{color:#6D28D9; background:#EDE9FE; border-color:rgba(109,40,217,0.2);}
+  .roll-card-tag.cyan{color:#0E7490; background:#ECFEFF; border-color:rgba(14,116,144,0.2);}
+  .roll-card-tag.pink{color:#BE185D; background:#FCE7F3; border-color:rgba(190,24,93,0.2);}
+  .roll-card-tag.orange{color:#C2410C; background:#FFF7ED; border-color:rgba(194,65,12,0.2);}
+  .roll-card-tag.teal{color:#115E59; background:#F0FDFA; border-color:rgba(17,94,89,0.2);}
   .roll-card h3{
     font-family:'Sora', sans-serif;
     font-weight:700;
-    font-size:24px;
-    line-height:1.18;
+    font-size:22px;
+    line-height:1.2;
     letter-spacing:-0.5px;
     margin:0 0 12px;
   }
   .roll-card-desc{
     color:var(--ink-soft);
-    font-size:14.5px;
+    font-size:14px;
     line-height:1.6;
-    margin:0 0 22px;
+    margin:0 0 18px;
   }
   .roll-card-stack{
     display:flex;
     flex-wrap:wrap;
-    gap:7px;
-    margin-bottom:24px;
+    gap:6px;
+    margin-bottom:20px;
   }
   .roll-card-stack span{
     font-family:'IBM Plex Mono', monospace;
-    font-size:11.5px;
+    font-size:11px;
     background:var(--bg-soft);
     border:1px solid var(--line);
     color:var(--ink);
-    padding:5px 10px;
+    padding:4px 9px;
     border-radius:6px;
   }
   .roll-card-foot{
     margin-top:auto;
-    padding-top:18px;
+    padding-top:16px;
     border-top:1px dashed var(--line);
     display:flex;
     align-items:center;
     justify-content:space-between;
     font-family:'IBM Plex Mono', monospace;
-    font-size:11.5px;
+    font-size:11px;
     color:var(--ink-soft);
   }
   .roll-card-foot b{color:var(--ink); font-weight:600;}
-
+  .roll-card-flip-cue{
+    position:absolute;
+    top:14px; right:14px;
+    width:26px; height:26px;
+    border-radius:50%;
+    background:rgba(11,15,13,0.06);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    color:var(--ink-soft);
+    z-index:2;
+    transition:background .25s ease, color .25s ease, transform .35s ease;
+  }
+  .roll-card:hover .roll-card-flip-cue{background:var(--royal); color:#fff; transform:rotate(180deg);}
+  .roll-card-back-head{
+    padding:24px 28px 14px;
+    border-bottom:1px solid var(--line);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .roll-card-back-head h4{
+    font-family:'Sora', sans-serif;
+    font-weight:700;
+    font-size:15px;
+    margin:0;
+    letter-spacing:-0.2px;
+  }
+  .roll-card-back-head .arch-tag{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:9.5px;
+    letter-spacing:0.6px;
+    text-transform:uppercase;
+    color:var(--royal);
+    background:var(--royal-soft);
+    padding:3px 8px;
+    border-radius:5px;
+  }
+  .roll-card-arch{
+    flex:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:14px 22px 18px;
+    background:linear-gradient(180deg, #FBFBFD 0%, #F2F4F7 100%);
+  }
+  .roll-card-arch svg{
+    width:100%;
+    height:auto;
+    max-height:240px;
+  }
+  .roll-card-back-foot{
+    padding:12px 28px 16px;
+    border-top:1px solid var(--line);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10.5px;
+    color:var(--ink-soft);
+  }
+  .roll-card-back-foot .back-hint{
+    display:inline-flex; align-items:center; gap:6px;
+  }
+  .roll-card-back-foot .back-hint .arrow{
+    display:inline-block;
+    transform:rotate(180deg);
+  }
   @media (max-width:760px){
-    .roll-sticky{height:260vh;}
-    .roll-card{width:340px;}
+    .roll-sticky{height:200vh;}
+    .roll-card{width:300px; height:440px;}
+    .roll-card h3{font-size:19px;}
   }
 
-  /* ---------- FEATURE CARDS ---------- */
+  /* ===========================================================
+     TIER 1 / #1b — BIG FLAGSHIP FLIP CARD
+     2-column layout: heading + bullets on the LEFT,
+     the drag-to-flip 3D card on the RIGHT. The user
+     drags the card horizontally to rotate it on its Y
+     axis; if they release past 90deg it stays flipped
+     to the architecture on the back.
+     =========================================================== */
+  .flipcard-section{
+    position:relative;
+    background:linear-gradient(180deg, var(--bg-soft) 0%, #FFFFFF 50%, var(--bg-soft) 100%);
+    border-top:1px solid var(--line);
+    border-bottom:1px solid var(--line);
+    padding:90px 24px 110px;
+    overflow:hidden;
+  }
+  .flipcard-section::before{
+    content:'';
+    position:absolute;
+    top:50%; left:50%;
+    transform:translate(-50%,-50%);
+    width:680px; height:680px;
+    background:radial-gradient(circle, rgba(29,78,216,0.08) 0%, transparent 65%);
+    pointer-events:none;
+  }
+  /* 2-column grid: left = text, right = card */
+  .flipcard-inner{
+    max-width:1120px;
+    margin:0 auto;
+    position:relative;
+    z-index:1;
+    display:grid;
+    grid-template-columns: 1fr 1.1fr;
+    align-items:center;
+    gap:60px;
+  }
+  /* LEFT column: heading + description + bullet list */
+  .flipcard-left{
+    text-align:left;
+  }
+  .flipcard-eyebrow{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    color:var(--emerald-deep);
+    background:var(--emerald-soft);
+    border:1px solid rgba(14,169,104,0.22);
+    padding:6px 12px;
+    border-radius:8px;
+    margin-bottom:24px;
+  }
+  .flipcard-eyebrow .dot{
+    width:7px; height:7px; border-radius:50%;
+    background:var(--emerald);
+    box-shadow:0 0 8px var(--emerald);
+    animation:pulseDot 2s ease-in-out infinite;
+  }
+  .flipcard-h{
+    font-family:'Sora', sans-serif;
+    font-weight:800;
+    font-size:clamp(32px, 4.5vw, 52px);
+    line-height:1.05;
+    letter-spacing:-1.6px;
+    margin:0 0 18px;
+    color:var(--ink);
+  }
+  .flipcard-h .grad{
+    background:linear-gradient(100deg, var(--emerald-deep), var(--royal));
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+  }
+  .flipcard-lede{
+    font-family:'Inter', sans-serif;
+    color:var(--ink-soft);
+    font-size:17px;
+    line-height:1.6;
+    margin:0 0 28px;
+    max-width:480px;
+  }
+  /* 3 small "what's inside" bullets */
+  .flipcard-bullets{
+    list-style:none;
+    padding:0;
+    margin:0 0 32px;
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+  }
+  .flipcard-bullets li{
+    display:flex;
+    align-items:flex-start;
+    gap:12px;
+    font-size:14.5px;
+    color:var(--ink-soft);
+    line-height:1.5;
+  }
+  .flipcard-bullets li b{
+    color:var(--ink);
+    font-weight:600;
+    display:block;
+    font-family:'Sora', sans-serif;
+    font-size:14.5px;
+    margin-bottom:2px;
+  }
+  .flipcard-bullets li .bdot{
+    flex-shrink:0;
+    width:22px; height:22px;
+    border-radius:50%;
+    background:var(--royal-soft);
+    color:var(--royal);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    font-weight:700;
+    margin-top:1px;
+  }
+  .flipcard-cta{
+    font-family:'Inter', sans-serif;
+    font-weight:600;
+    font-size:15px;
+    color:#fff;
+    background:linear-gradient(100deg, var(--emerald-deep), var(--emerald));
+    padding:14px 24px;
+    border-radius:10px;
+    text-decoration:none;
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    box-shadow:0 10px 30px -10px rgba(14,169,104,0.5);
+    transition:transform .2s ease, box-shadow .2s ease;
+  }
+  .flipcard-cta:hover{transform:translateY(-2px); box-shadow:0 14px 34px -8px rgba(14,169,104,0.6);}
+  /* RIGHT column: the drag-to-flip card */
+  .flipcard-stage{
+    position:relative;
+    perspective:1800px;
+    width:100%;
+    max-width:380px;
+    aspect-ratio: 1.6/1;  /* credit-card landscape */
+    margin:0 auto;
+    cursor:grab;
+    -webkit-user-select:none;
+    user-select:none;
+    touch-action:none;
+  }
+  .flipcard-stage.dragging{cursor:grabbing;}
+  .flipcard-card{
+    position:relative;
+    width:100%;
+    height:100%;
+    transform-style:preserve-3d;
+    transition:transform .35s cubic-bezier(.2,.8,.2,1);
+    will-change:transform;
+  }
+  .flipcard-face{
+    position:absolute;
+    inset:0;
+    backface-visibility:hidden;
+    -webkit-backface-visibility:hidden;
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:24px;
+    box-shadow:
+      0 40px 80px -20px rgba(11,15,13,0.22),
+      0 2px 4px rgba(11,15,13,0.04);
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+  }
+  .flipcard-face.back{transform:rotateY(180deg);}
+  .flipcard-band{
+    height:5px;
+    width:100%;
+    background:linear-gradient(90deg, #1D4ED8, #0EA968, #1D4ED8);
+    flex-shrink:0;
+  }
+  .flipcard-pad{
+    padding:18px 22px 16px;
+    display:flex;
+    flex-direction:column;
+    height:100%;
+    position:relative;
+    gap:6px;
+  }
+  .flipcard-tag{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:9px;
+    letter-spacing:0.8px;
+    text-transform:uppercase;
+    color:var(--emerald-deep);
+    background:var(--emerald-soft);
+    border:1px solid rgba(14,169,104,0.22);
+    padding:3px 7px;
+    border-radius:5px;
+    margin:0;
+    align-self:flex-start;
+  }
+  .flipcard-tag .dot{
+    width:6px; height:6px; border-radius:50%;
+    background:var(--emerald);
+    box-shadow:0 0 6px var(--emerald);
+    animation:pulseDot 2s ease-in-out infinite;
+  }
+  .flipcard-card-h{
+    font-family:'Sora', sans-serif;
+    font-weight:700;
+    font-size:15px;
+    line-height:1.2;
+    letter-spacing:-0.3px;
+    margin:0;
+    color:var(--ink);
+  }
+  .flipcard-card-h .grad{
+    background:linear-gradient(100deg, var(--emerald-deep), var(--royal));
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+  }
+  .flipcard-desc{
+    font-family:'Inter', sans-serif;
+    color:var(--ink-soft);
+    font-size:11.5px;
+    line-height:1.4;
+    margin:0;
+  }
+  .flipcard-stack{
+    display:flex;
+    flex-wrap:wrap;
+    gap:4px;
+    margin:0;
+  }
+  .flipcard-stack span{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:9.5px;
+    background:var(--bg-soft);
+    border:1px solid var(--line);
+    color:var(--ink);
+    padding:2px 6px;
+    border-radius:4px;
+  }
+  .flipcard-foot{
+    margin-top:auto;
+    padding-top:8px;
+    border-top:1px dashed var(--line);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:9.5px;
+    color:var(--ink-soft);
+  }
+  .flipcard-foot b{color:var(--ink); font-weight:600;}
+  .flipcard-hint{
+    position:absolute;
+    bottom:6px; right:8px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:8.5px;
+    letter-spacing:0.4px;
+    color:var(--ink-soft);
+    background:rgba(255,255,255,0.7);
+    border:1px solid var(--line);
+    border-radius:999px;
+    padding:2px 7px;
+    pointer-events:none;
+  }
+  /* Back face (architecture) */
+  .flipcard-back-head{
+    padding:14px 22px 8px;
+    border-bottom:1px solid var(--line);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    flex-shrink:0;
+  }
+  .flipcard-back-head h4{
+    font-family:'Sora', sans-serif;
+    font-weight:700;
+    font-size:13px;
+    margin:0;
+    letter-spacing:-0.2px;
+  }
+  .flipcard-back-head .arch-tag{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:9.5px;
+    letter-spacing:0.6px;
+    text-transform:uppercase;
+    color:var(--royal);
+    background:var(--royal-soft);
+    padding:3px 8px;
+    border-radius:5px;
+  }
+  .flipcard-arch{
+    flex:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:8px 16px;
+    background:linear-gradient(180deg, #FBFBFD 0%, #F2F4F7 100%);
+    min-height:0;
+  }
+  .flipcard-arch svg{
+    width:100%;
+    height:auto;
+    max-height:140px;
+  }
+  .flipcard-back-foot{
+    padding:6px 22px 10px;
+    border-top:1px solid var(--line);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:9px;
+    color:var(--ink-soft);
+    flex-shrink:0;
+  }
+  /* Mobile: stack columns */
+  @media (max-width:860px){
+    .flipcard-inner{grid-template-columns:1fr; gap:40px;}
+    .flipcard-left{text-align:center;}
+    .flipcard-lede{margin-left:auto; margin-right:auto;}
+    .flipcard-bullets li{text-align:left;}
+    .flipcard-cta{margin:0 auto;}
+  }
+  @media (max-width:520px){
+    .flipcard-stage{max-width:280px; aspect-ratio:1.6/1;}
+    .flipcard-card-h{font-size:13px;}
+    .flipcard-pad{padding:14px 18px 12px;}
+  }
+
+    /* ---------- FEATURE CARDS ---------- */
   .features-grid{
     display:grid;
     grid-template-columns:repeat(3, 1fr);
@@ -1411,125 +1830,6 @@
     .stat:nth-child(1), .stat:nth-child(2){border-bottom:1px solid var(--line);}
   }
 
-  /* ---------- HORIZONTAL SCROLL SECTION (pinned) ----------
-     The whole section is taller than the viewport (260vh) so the
-     user has real scroll runway to traverse the cards. A sticky
-     inner div keeps the cards in view while translateX is driven
-     by scroll progress. */
-  .hscroll-section{
-    background:linear-gradient(180deg, var(--bg) 0%, var(--bg-soft) 50%, var(--bg) 100%);
-    border-top:1px solid var(--line);
-    border-bottom:1px solid var(--line);
-    position:relative;
-  }
-  .hscroll-sticky{
-    position:relative;
-    height:260vh;
-  }
-  .hscroll-sticky-inner{
-    position:sticky;
-    top:0;
-    height:100vh;
-    display:flex;
-    flex-direction:column;
-    justify-content:center;
-    overflow:hidden;
-  }
-  .hscroll-head{
-    max-width:1120px;
-    margin:0 auto 36px;
-    padding:0 24px;
-    text-align:center;
-    position:relative;
-    z-index:2;
-  }
-  .hscroll-progress{
-    position:absolute;
-    top:24px;
-    left:50%;
-    transform:translateX(-50%);
-    width:240px;
-    height:3px;
-    background:rgba(11,15,13,0.08);
-    border-radius:2px;
-    overflow:hidden;
-    z-index:3;
-  }
-  .hscroll-progress-fill{
-    width:0%;
-    height:100%;
-    background:linear-gradient(90deg, var(--emerald-deep), var(--royal));
-    border-radius:2px;
-    transition:width 60ms linear;
-  }
-  .hscroll-progress-label{
-    position:absolute;
-    top:36px;
-    left:50%;
-    transform:translateX(-50%);
-    font-family:'IBM Plex Mono', monospace;
-    font-size:10.5px;
-    letter-spacing:1px;
-    color:var(--ink-soft);
-    text-transform:uppercase;
-    z-index:3;
-  }
-  .hscroll-track-wrap{
-    width:100%;
-    overflow:hidden;
-    padding:0 24px;
-  }
-  .hscroll-track{
-    display:flex;
-    gap:28px;
-    width:max-content;
-    will-change:transform;
-  }
-  .hscroll-card{
-    width:420px;
-    flex-shrink:0;
-    background:#fff;
-    border:1px solid var(--line);
-    border-radius:22px;
-    padding:36px 30px;
-    box-shadow:0 18px 36px -22px rgba(11,15,13,0.12);
-    transition:transform .35s cubic-bezier(.2,.8,.2,1), box-shadow .35s ease, border-color .35s ease;
-  }
-  .hscroll-card:hover{
-    transform:translateY(-8px);
-    box-shadow:0 28px 50px -20px rgba(11,15,13,0.20);
-    border-color:rgba(29,78,216,0.35);
-  }
-  .hscroll-card .hscroll-icon{
-    width:52px; height:52px;
-    border-radius:13px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    margin-bottom:22px;
-    font-size:24px;
-  }
-  .hscroll-icon.green{background:var(--emerald-soft); color:var(--emerald-deep);}
-  .hscroll-icon.blue{background:var(--royal-soft); color:var(--royal);}
-  .hscroll-icon.mix{background:linear-gradient(135deg, var(--emerald-soft), var(--royal-soft)); color:var(--ink);}
-  .hscroll-card h4{
-    font-family:'Sora', sans-serif;
-    font-weight:700;
-    font-size:22px;
-    margin:0 0 10px;
-    letter-spacing:-0.4px;
-  }
-  .hscroll-card p{
-    color:var(--ink-soft);
-    font-size:15px;
-    line-height:1.65;
-    margin:0;
-  }
-  @media (max-width:760px){
-    .hscroll-sticky{height:220vh;}
-    .hscroll-card{width:340px;}
-  }
-
   /* ---------- TESTIMONIAL / QUOTE FLOAT ---------- */
   .floating-quote{
     position:fixed;
@@ -1752,161 +2052,594 @@
   </div>
 </section>
 
-<!-- Tier 1 / #1 — Rolling horizontal project cards -->
+<!-- Tier 1 / #1 — Draggable horizontal project cards (8 total) -->
+<!-- Tier 1 / #1 — Rolling horizontal project cards (8 total, scroll-pinned snap) -->
 <section class="roll-section" data-journey="Projects" data-journey-label="Sample projects">
   <div class="roll-sticky">
     <div class="roll-sticky-inner">
       <div class="roll-head">
         <span class="section-eyebrow">Sample projects</span>
         <h2>Real ideas.<br>Real stacks. Real resume lines.</h2>
-        <p>Scroll to roll through 4 of the kinds of project ideas BuildItUp generates for you. Every one is fully scoped, ready to build.</p>
+        <p>Scroll to roll through 8 of the kinds of project ideas BuildItUp generates for you. Every one is fully scoped, ready to build.</p>
       </div>
       <div class="roll-progress" aria-hidden="true">
         <div class="roll-progress-fill" id="roll-progress-fill"></div>
       </div>
-      <div class="roll-progress-label" id="roll-progress-label">01 / 04</div>
+      <div class="roll-progress-label" id="roll-progress-label">01 / 08</div>
       <div class="roll-track-wrap">
         <div class="roll-track" id="roll-track">
-
-          <div class="roll-card">
-            <div class="roll-card-band blue"></div>
-            <div class="roll-card-body">
-              <div class="roll-card-top">
-                <span class="roll-card-num">01</span>
-                <span class="roll-card-tag">WEB · FRONTEND</span>
-              </div>
-              <h3>Real-time captioning app for college lectures</h3>
-              <p class="roll-card-desc">Streams captions to every student's phone with sub-300ms latency. Works on the shaky hostel Wi-Fi everyone actually has.</p>
-              <div class="roll-card-stack">
-                <span>React</span><span>Vite</span><span>WebSockets</span><span>Postgres</span>
-              </div>
-              <div class="roll-card-foot">
-                <span><b>Scope:</b> 1 weekend → 2 wks</span>
-                <span>120 cr</span>
-              </div>
+<div class="roll-card" data-card>
+        <div class="roll-card-face front">
+          <div class="roll-card-band blue"></div>
+          <span class="roll-card-flip-cue" aria-hidden="true">↻</span>
+          <div class="roll-card-body">
+            <div class="roll-card-top">
+              <span class="roll-card-num">01</span>
+              <span class="roll-card-tag">WEB · FRONTEND</span>
+            </div>
+            <h3>Real-time captioning app for college lectures</h3>
+            <p class="roll-card-desc">Streams captions to every student's phone with sub-300ms latency. Works on the shaky hostel Wi-Fi everyone actually has.</p>
+            <div class="roll-card-stack">
+              <span>React</span><span>Vite</span><span>WebSockets</span><span>Postgres</span>
+            </div>
+            <div class="roll-card-foot">
+              <span><b>Scope:</b> 1 weekend → 2 wks</span>
+              <span>120 cr</span>
             </div>
           </div>
-
-          <div class="roll-card">
-            <div class="roll-card-band green"></div>
-            <div class="roll-card-body">
-              <div class="roll-card-top">
-                <span class="roll-card-num">02</span>
-                <span class="roll-card-tag green">ML · MOBILE</span>
-              </div>
-              <h3>Calorie estimator from a single food photo</h3>
-              <p class="roll-card-desc">On-device inference that works offline, trained on Indian food datasets — not just pizza and burgers.</p>
-              <div class="roll-card-stack">
-                <span>PyTorch</span><span>ONNX</span><span>Flutter</span><span>FastAPI</span>
-              </div>
-              <div class="roll-card-foot">
-                <span><b>Scope:</b> 3–4 weekends</span>
-                <span>120 cr</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="roll-card">
-            <div class="roll-card-band amber"></div>
-            <div class="roll-card-body">
-              <div class="roll-card-top">
-                <span class="roll-card-num">03</span>
-                <span class="roll-card-tag amber">BACKEND · INFRA</span>
-              </div>
-              <h3>Distributed rate-limiter (token bucket, Redis)</h3>
-              <p class="roll-card-desc">Handles 50k req/s across 8 regions with a live admin dashboard and p99 latency tracking.</p>
-              <div class="roll-card-stack">
-                <span>Spring Boot</span><span>Redis</span><span>Kafka</span><span>Grafana</span>
-              </div>
-              <div class="roll-card-foot">
-                <span><b>Scope:</b> 2 weeks</span>
-                <span>120 cr</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="roll-card">
-            <div class="roll-card-band violet"></div>
-            <div class="roll-card-body">
-              <div class="roll-card-top">
-                <span class="roll-card-num">04</span>
-                <span class="roll-card-tag violet">DATA · SEARCH</span>
-              </div>
-              <h3>Log search engine for your side project</h3>
-              <p class="roll-card-desc">Indexes millions of log lines, surfaces the one line that matters. Beats scrolling through stdout in production.</p>
-              <div class="roll-card-stack">
-                <span>Elastic</span><span>Go</span><span>gRPC</span><span>React</span>
-              </div>
-              <div class="roll-card-foot">
-                <span><b>Scope:</b> 1 month</span>
-                <span>120 cr</span>
-              </div>
-            </div>
-          </div>
-
         </div>
+        <div class="roll-card-face back">
+          <div class="roll-card-band blue"></div>
+          <div class="roll-card-back-head">
+            <h4>Architecture</h4>
+            <span class="arch-tag">live captions</span>
+          </div>
+          <div class="roll-card-arch">
+            <svg viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Captioning app architecture">
+              <defs>
+                <marker id="arr1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5B6B63"/></marker>
+              </defs>
+              <rect x="20" y="80" width="68" height="40" rx="8" fill="#EEF2FF" stroke="#1D4ED8" stroke-width="1.4"/>
+              <text x="54" y="105" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="#1D4ED8" font-weight="600">Mic</text>
+              <rect x="126" y="80" width="68" height="40" rx="8" fill="#fff" stroke="#5B6B63" stroke-width="1.2"/>
+              <text x="160" y="105" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="#0B0F0D" font-weight="600">STT /api</text>
+              <rect x="232" y="80" width="68" height="40" rx="8" fill="#E6F7EF" stroke="#087F4E" stroke-width="1.4"/>
+              <text x="266" y="105" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="#087F4E" font-weight="600">/captions</text>
+              <line x1="88" y1="100" x2="126" y2="100" stroke="#5B6B63" stroke-width="1.2" marker-end="url(#arr1)"/>
+              <line x1="194" y1="100" x2="232" y2="100" stroke="#5B6B63" stroke-width="1.2" marker-end="url(#arr1)"/>
+              <rect x="126" y="30" width="68" height="30" rx="6" fill="#FEF3C7" stroke="#B45309" stroke-width="1.2"/>
+              <text x="160" y="50" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="#B45309" font-weight="600">Postgres</text>
+              <rect x="126" y="140" width="68" height="30" rx="6" fill="#F0FDFA" stroke="#115E59" stroke-width="1.2"/>
+              <text x="160" y="160" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="#115E59" font-weight="600">Redis</text>
+              <line x1="160" y1="60" x2="160" y2="80" stroke="#5B6B63" stroke-width="1" stroke-dasharray="3 2"/>
+              <line x1="160" y1="120" x2="160" y2="140" stroke="#5B6B63" stroke-width="1" stroke-dasharray="3 2"/>
+              <text x="160" y="188" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9" fill="#5B6B63" letter-spacing="0.4">mic → /api → ws → phones · state in pg + redis</text>
+            </svg>
+          </div>
+          <div class="roll-card-back-foot">
+            <span>p99 280ms · 200 users</span>
+            <span class="back-hint"><span class="arrow">↻</span> hover to flip back</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 02 — calorie estimator -->
+      <div class="roll-card" data-card>
+        <div class="roll-card-face front">
+          <div class="roll-card-band green"></div>
+          <span class="roll-card-flip-cue" aria-hidden="true">↻</span>
+          <div class="roll-card-body">
+            <div class="roll-card-top">
+              <span class="roll-card-num">02</span>
+              <span class="roll-card-tag green">ML · MOBILE</span>
+            </div>
+            <h3>Calorie estimator from a single food photo</h3>
+            <p class="roll-card-desc">On-device inference that works offline, trained on Indian food datasets — not just pizza and burgers.</p>
+            <div class="roll-card-stack">
+              <span>PyTorch</span><span>ONNX</span><span>Flutter</span><span>FastAPI</span>
+            </div>
+            <div class="roll-card-foot">
+              <span><b>Scope:</b> 3–4 weekends</span>
+              <span>120 cr</span>
+            </div>
+          </div>
+        </div>
+        <div class="roll-card-face back">
+          <div class="roll-card-band green"></div>
+          <div class="roll-card-back-head">
+            <h4>Architecture</h4>
+            <span class="arch-tag">on-device ml</span>
+          </div>
+          <div class="roll-card-arch">
+            <svg viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Calorie estimator architecture">
+              <defs>
+                <marker id="arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5B6B63"/></marker>
+              </defs>
+              <rect x="20" y="80" width="68" height="40" rx="8" fill="#EEF2FF" stroke="#1D4ED8" stroke-width="1.4"/>
+              <text x="54" y="105" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="#1D4ED8" font-weight="600">Camera</text>
+              <rect x="126" y="80" width="68" height="40" rx="8" fill="#E6F7EF" stroke="#087F4E" stroke-width="1.4"/>
+              <text x="160" y="100" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="#087F4E" font-weight="600">Flutter</text>
+              <text x="160" y="113" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="8" fill="#087F4E">app</text>
+              <rect x="232" y="60" width="68" height="40" rx="8" fill="#FEF3C7" stroke="#B45309" stroke-width="1.2"/>
+              <text x="266" y="80" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="#B45309" font-weight="600">ONNX</text>
+              <text x="266" y="93" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="8" fill="#B45309">12MB</text>
+              <rect x="232" y="110" width="68" height="40" rx="8" fill="#FCE7F3" stroke="#BE185D" stroke-width="1.2"/>
+              <text x="266" y="130" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="#BE185D" font-weight="600">PyTorch</text>
+              <text x="266" y="143" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="8" fill="#BE185D">train</text>
+              <line x1="88" y1="100" x2="126" y2="100" stroke="#5B6B63" stroke-width="1.2" marker-end="url(#arr2)"/>
+              <line x1="194" y1="100" x2="232" y2="80" stroke="#5B6B63" stroke-width="1.2" marker-end="url(#arr2)"/>
+              <line x1="194" y1="100" x2="232" y2="130" stroke="#5B6B63" stroke-width="1" stroke-dasharray="3 2" marker-end="url(#arr2)"/>
+              <text x="160" y="178" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9" fill="#5B6B63">offline · 92% top-1 · 80+ dishes</text>
+            </svg>
+          </div>
+          <div class="roll-card-back-foot">
+            <span>ONNX · 12MB · offline</span>
+            <span class="back-hint"><span class="arrow">↻</span> hover to flip back</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 03 — rate limiter -->
+      <div class="roll-card" data-card>
+        <div class="roll-card-face front">
+          <div class="roll-card-band amber"></div>
+          <span class="roll-card-flip-cue" aria-hidden="true">↻</span>
+          <div class="roll-card-body">
+            <div class="roll-card-top">
+              <span class="roll-card-num">03</span>
+              <span class="roll-card-tag amber">BACKEND · INFRA</span>
+            </div>
+            <h3>Distributed rate-limiter (token bucket, Redis)</h3>
+            <p class="roll-card-desc">Handles 50k req/s across 8 regions with a live admin dashboard and p99 latency tracking.</p>
+            <div class="roll-card-stack">
+              <span>Spring Boot</span><span>Redis</span><span>Kafka</span><span>Grafana</span>
+            </div>
+            <div class="roll-card-foot">
+              <span><b>Scope:</b> 2 weeks</span>
+              <span>120 cr</span>
+            </div>
+          </div>
+        </div>
+        <div class="roll-card-face back">
+          <div class="roll-card-band amber"></div>
+          <div class="roll-card-back-head">
+            <h4>Architecture</h4>
+            <span class="arch-tag">distributed</span>
+          </div>
+          <div class="roll-card-arch">
+            <svg viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Rate limiter architecture">
+              <defs>
+                <marker id="arr3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5B6B63"/></marker>
+              </defs>
+              <rect x="20" y="60" width="60" height="22" rx="5" fill="#fff" stroke="#5B6B63" stroke-width="1.1"/>
+              <text x="50" y="75" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9" fill="#0B0F0D">client</text>
+              <rect x="20" y="90" width="60" height="22" rx="5" fill="#fff" stroke="#5B6B63" stroke-width="1.1"/>
+              <text x="50" y="105" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9" fill="#0B0F0D">client</text>
+              <rect x="20" y="120" width="60" height="22" rx="5" fill="#fff" stroke="#5B6B63" stroke-width="1.1"/>
+              <text x="50" y="135" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9" fill="#0B0F0D">client</text>
+              <rect x="120" y="80" width="80" height="44" rx="8" fill="#EEF2FF" stroke="#1D4ED8" stroke-width="1.4"/>
+              <text x="160" y="100" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="#1D4ED8" font-weight="600">Spring</text>
+              <text x="160" y="114" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="#1D4ED8" font-weight="600">Gateway</text>
+              <rect x="240" y="40" width="60" height="30" rx="6" fill="#E6F7EF" stroke="#087F4E" stroke-width="1.4"/>
+              <text x="270" y="59" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="#087F4E" font-weight="600">Redis</text>
+              <rect x="240" y="80" width="60" height="30" rx="6" fill="#FEF3C7" stroke="#B45309" stroke-width="1.2"/>
+              <text x="270" y="99" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="#B45309" font-weight="600">Kafka</text>
+              <rect x="240" y="120" width="60" height="30" rx="6" fill="#EDE9FE" stroke="#6D28D9" stroke-width="1.2"/>
+              <text x="270" y="139" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="#6D28D9" font-weight="600">Grafana</text>
+              <line x1="80" y1="71" x2="120" y2="95" stroke="#5B6B63" stroke-width="1" marker-end="url(#arr3)"/>
+              <line x1="80" y1="101" x2="120" y2="102" stroke="#5B6B63" stroke-width="1" marker-end="url(#arr3)"/>
+              <line x1="80" y1="131" x2="120" y2="108" stroke="#5B6B63" stroke-width="1" marker-end="url(#arr3)"/>
+              <line x1="200" y1="92" x2="240" y2="55" stroke="#5B6B63" stroke-width="1.1" marker-end="url(#arr3)"/>
+              <line x1="200" y1="102" x2="240" y2="95" stroke="#5B6B63" stroke-width="1.1" marker-end="url(#arr3)"/>
+              <line x1="200" y1="112" x2="240" y2="135" stroke="#5B6B63" stroke-width="1" stroke-dasharray="3 2" marker-end="url(#arr3)"/>
+              <text x="160" y="178" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9" fill="#5B6B63">token bucket · p99 &lt; 5ms · 50k req/s</text>
+            </svg>
+          </div>
+          <div class="roll-card-back-foot">
+            <span>50k req/s · p99 5ms</span>
+            <span class="back-hint"><span class="arrow">↻</span> hover to flip back</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 04 — log search -->
+      <div class="roll-card" data-card>
+        <div class="roll-card-face front">
+          <div class="roll-card-band violet"></div>
+          <span class="roll-card-flip-cue" aria-hidden="true">↻</span>
+          <div class="roll-card-body">
+            <div class="roll-card-top">
+              <span class="roll-card-num">04</span>
+              <span class="roll-card-tag violet">DATA · SEARCH</span>
+            </div>
+            <h3>Log search engine for your side project</h3>
+            <p class="roll-card-desc">Indexes millions of log lines, surfaces the one line that matters. Beats scrolling through stdout in production.</p>
+            <div class="roll-card-stack">
+              <span>Elastic</span><span>Go</span><span>gRPC</span><span>React</span>
+            </div>
+            <div class="roll-card-foot">
+              <span><b>Scope:</b> 1 month</span>
+              <span>120 cr</span>
+            </div>
+          </div>
+        </div>
+        <div class="roll-card-face back">
+          <div class="roll-card-band violet"></div>
+          <div class="roll-card-back-head">
+            <h4>Architecture</h4>
+            <span class="arch-tag">log search</span>
+          </div>
+          <div class="roll-card-arch">
+            <svg viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Log search architecture">
+              <defs>
+                <marker id="arr4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5B6B63"/></marker>
+              </defs>
+              <rect x="20" y="50" width="60" height="22" rx="5" fill="#fff" stroke="#5B6B63" stroke-width="1.1"/>
+              <text x="50" y="65" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9" fill="#0B0F0D">service A</text>
+              <rect x="20" y="90" width="60" height="22" rx="5" fill="#fff" stroke="#5B6B63" stroke-width="1.1"/>
+              <text x="50" y="105" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9" fill="#0B0F0D">service B</text>
+              <rect x="20" y="130" width="60" height="22" rx="5" fill="#fff" stroke="#5B6B63" stroke-width="1.1"/>
+              <text x="50" y="145" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9" fill="#0B0F0D">service C</text>
+              <rect x="120" y="80" width="60" height="44" rx="8" fill="#FCE7F3" stroke="#BE185D" stroke-width="1.2"/>
+              <text x="150" y="106" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="#BE185D" font-weight="600">gRPC</text>
+              <text x="150" y="118" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9" fill="#BE185D">shipper</text>
+              <rect x="220" y="80" width="80" height="44" rx="8" fill="#EDE9FE" stroke="#6D28D9" stroke-width="1.4"/>
+              <text x="260" y="100" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="#6D28D9" font-weight="600">Elastic</text>
+              <text x="260" y="114" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9" fill="#6D28D9">cluster</text>
+              <line x1="80" y1="61" x2="120" y2="95" stroke="#5B6B63" stroke-width="1" marker-end="url(#arr4)"/>
+              <line x1="80" y1="101" x2="120" y2="102" stroke="#5B6B63" stroke-width="1" marker-end="url(#arr4)"/>
+              <line x1="80" y1="141" x2="120" y2="110" stroke="#5B6B63" stroke-width="1" marker-end="url(#arr4)"/>
+              <line x1="180" y1="102" x2="220" y2="102" stroke="#5B6B63" stroke-width="1.2" marker-end="url(#arr4)"/>
+              <rect x="120" y="140" width="80" height="22" rx="5" fill="#fff" stroke="#5B6B63" stroke-width="1.1"/>
+              <text x="160" y="155" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9" fill="#0B0F0D">React UI</text>
+              <line x1="260" y1="124" x2="160" y2="140" stroke="#5B6B63" stroke-width="1" stroke-dasharray="3 2" marker-end="url(#arr4)"/>
+              <text x="160" y="180" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9" fill="#5B6B63">10M+ lines · &lt; 200ms query</text>
+            </svg>
+          </div>
+          <div class="roll-card-back-foot">
+            <span>10M+ lines · 200ms query</span>
+            <span class="back-hint"><span class="arrow">↻</span> hover to flip back</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 05 — new: URL shortener -->
+      <div class="roll-card" data-card>
+        <div class="roll-card-face front">
+          <div class="roll-card-band cyan"></div>
+          <span class="roll-card-flip-cue" aria-hidden="true">↻</span>
+          <div class="roll-card-body">
+            <div class="roll-card-top">
+              <span class="roll-card-num">05</span>
+              <span class="roll-card-tag cyan">BACKEND</span>
+            </div>
+            <h3>URL shortener with custom analytics dashboard</h3>
+            <p class="roll-card-desc">A real shortener that actually shows you where clicks come from. Built around a tiny link shortener + a charts panel you'd actually use.</p>
+            <div class="roll-card-stack">
+              <span>Node</span><span>Express</span><span>Redis</span><span>Postgres</span><span>Next.js</span>
+            </div>
+            <div class="roll-card-foot">
+              <span><b>Scope:</b> 1 weekend</span>
+              <span>120 cr</span>
+            </div>
+          </div>
+        </div>
+        <div class="roll-card-face back">
+          <div class="roll-card-band cyan"></div>
+          <div class="roll-card-back-head">
+            <h4>Architecture</h4>
+            <span class="arch-tag">shortener</span>
+          </div>
+          <div class="roll-card-arch">
+            <svg viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="URL shortener architecture">
+              <defs>
+                <marker id="arr5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5B6B63"/></marker>
+              </defs>
+              <rect x="20" y="80" width="60" height="40" rx="8" fill="#EEF2FF" stroke="#1D4ED8" stroke-width="1.4"/>
+              <text x="50" y="105" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="#1D4ED8" font-weight="600">Browser</text>
+              <rect x="120" y="80" width="80" height="40" rx="8" fill="#E6F7EF" stroke="#087F4E" stroke-width="1.4"/>
+              <text x="160" y="100" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="#087F4E" font-weight="600">Next.js</text>
+              <text x="160" y="113" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9" fill="#087F4E">/api/shorten</text>
+              <rect x="240" y="40" width="60" height="34" rx="6" fill="#FEF3C7" stroke="#B45309" stroke-width="1.2"/>
+              <text x="270" y="58" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="#B45309" font-weight="600">Redis</text>
+              <text x="270" y="70" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="8" fill="#B45309">cache</text>
+              <rect x="240" y="84" width="60" height="34" rx="6" fill="#ECFEFF" stroke="#0E7490" stroke-width="1.2"/>
+              <text x="270" y="102" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="#0E7490" font-weight="600">Postgres</text>
+              <text x="270" y="114" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="8" fill="#0E7490">links</text>
+              <rect x="240" y="128" width="60" height="34" rx="6" fill="#F0FDFA" stroke="#115E59" stroke-width="1.2"/>
+              <text x="270" y="146" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="#115E59" font-weight="600">Charts</text>
+              <line x1="80" y1="100" x2="120" y2="100" stroke="#5B6B63" stroke-width="1.2" marker-end="url(#arr5)"/>
+              <line x1="200" y1="92" x2="240" y2="56" stroke="#5B6B63" stroke-width="1" marker-end="url(#arr5)"/>
+              <line x1="200" y1="100" x2="240" y2="100" stroke="#5B6B63" stroke-width="1" marker-end="url(#arr5)"/>
+              <line x1="200" y1="108" x2="240" y2="146" stroke="#5B6B63" stroke-width="1" stroke-dasharray="3 2" marker-end="url(#arr5)"/>
+              <text x="160" y="186" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9" fill="#5B6B63">hash → redis → 301 redirect · live clicks</text>
+            </svg>
+          </div>
+          <div class="roll-card-back-foot">
+            <span>base62 · 5k links/day</span>
+            <span class="back-hint"><span class="arrow">↻</span> hover to flip back</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 06 — new: habit streak -->
+      <div class="roll-card" data-card>
+        <div class="roll-card-face front">
+          <div class="roll-card-band pink"></div>
+          <span class="roll-card-flip-cue" aria-hidden="true">↻</span>
+          <div class="roll-card-body">
+            <div class="roll-card-top">
+              <span class="roll-card-num">06</span>
+              <span class="roll-card-tag pink">MOBILE · HEALTH</span>
+            </div>
+            <h3>Habit streak tracker with friends</h3>
+            <p class="roll-card-desc">Tiny habit tracker where streaks are social — your friends see when you skip, you see when they do. Real accountability without a feed.</p>
+            <div class="roll-card-stack">
+              <span>React Native</span><span>Supabase</span><span>Expo</span><span>Realtime</span>
+            </div>
+            <div class="roll-card-foot">
+              <span><b>Scope:</b> 2 weekends</span>
+              <span>120 cr</span>
+            </div>
+          </div>
+        </div>
+        <div class="roll-card-face back">
+          <div class="roll-card-band pink"></div>
+          <div class="roll-card-back-head">
+            <h4>Architecture</h4>
+            <span class="arch-tag">habit tracker</span>
+          </div>
+          <div class="roll-card-arch">
+            <svg viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Habit tracker architecture">
+              <defs>
+                <marker id="arr6" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5B6B63"/></marker>
+              </defs>
+              <rect x="20" y="60" width="64" height="36" rx="8" fill="#FCE7F3" stroke="#BE185D" stroke-width="1.4"/>
+              <text x="52" y="78" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="#BE185D" font-weight="600">React</text>
+              <text x="52" y="90" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="#BE185D" font-weight="600">Native</text>
+              <rect x="20" y="110" width="64" height="36" rx="8" fill="#FCE7F3" stroke="#BE185D" stroke-width="1.4"/>
+              <text x="52" y="128" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="#BE185D" font-weight="600">Expo</text>
+              <text x="52" y="140" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="#BE185D" font-weight="600">local</text>
+              <rect x="130" y="80" width="80" height="44" rx="8" fill="#E6F7EF" stroke="#087F4E" stroke-width="1.4"/>
+              <text x="170" y="100" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="#087F4E" font-weight="600">Supabase</text>
+              <text x="170" y="113" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9" fill="#087F4E">auth · db</text>
+              <rect x="250" y="40" width="50" height="30" rx="6" fill="#EDE9FE" stroke="#6D28D9" stroke-width="1.2"/>
+              <text x="275" y="59" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9" fill="#6D28D9" font-weight="600">realtime</text>
+              <rect x="250" y="80" width="50" height="30" rx="6" fill="#FEF3C7" stroke="#B45309" stroke-width="1.2"/>
+              <text x="275" y="99" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9" fill="#B45309" font-weight="600">edge fn</text>
+              <rect x="250" y="120" width="50" height="30" rx="6" fill="#ECFEFF" stroke="#0E7490" stroke-width="1.2"/>
+              <text x="275" y="139" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9" fill="#0E7490" font-weight="600">storage</text>
+              <line x1="84" y1="78" x2="130" y2="95" stroke="#5B6B63" stroke-width="1" marker-end="url(#arr6)"/>
+              <line x1="84" y1="128" x2="130" y2="108" stroke="#5B6B63" stroke-width="1" marker-end="url(#arr6)"/>
+              <line x1="210" y1="92" x2="250" y2="55" stroke="#5B6B63" stroke-width="1" marker-end="url(#arr6)"/>
+              <line x1="210" y1="102" x2="250" y2="95" stroke="#5B6B63" stroke-width="1" marker-end="url(#arr6)"/>
+              <line x1="210" y1="112" x2="250" y2="135" stroke="#5B6B63" stroke-width="1" stroke-dasharray="3 2" marker-end="url(#arr6)"/>
+              <text x="160" y="180" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9" fill="#5B6B63">offline-first · realtime streaks · 5 friends</text>
+            </svg>
+          </div>
+          <div class="roll-card-back-foot">
+            <span>offline-first · realtime</span>
+            <span class="back-hint"><span class="arrow">↻</span> hover to flip back</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 07 — new: code review bot -->
+      <div class="roll-card" data-card>
+        <div class="roll-card-face front">
+          <div class="roll-card-band orange"></div>
+          <span class="roll-card-flip-cue" aria-hidden="true">↻</span>
+          <div class="roll-card-body">
+            <div class="roll-card-top">
+              <span class="roll-card-num">07</span>
+              <span class="roll-card-tag orange">DEVOPS · AI</span>
+            </div>
+            <h3>GitHub code-review bot for your team</h3>
+            <p class="roll-card-desc">A bot that actually reads your PRs and posts comments like a senior engineer would. Catches the obvious stuff so you don't have to.</p>
+            <div class="roll-card-stack">
+              <span>TypeScript</span><span>Probot</span><span>OpenAI</span><span>Postgres</span>
+            </div>
+            <div class="roll-card-foot">
+              <span><b>Scope:</b> 1 week</span>
+              <span>120 cr</span>
+            </div>
+          </div>
+        </div>
+        <div class="roll-card-face back">
+          <div class="roll-card-band orange"></div>
+          <div class="roll-card-back-head">
+            <h4>Architecture</h4>
+            <span class="arch-tag">code review</span>
+          </div>
+          <div class="roll-card-arch">
+            <svg viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Code review bot architecture">
+              <defs>
+                <marker id="arr7" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5B6B63"/></marker>
+              </defs>
+              <rect x="20" y="80" width="64" height="40" rx="8" fill="#fff" stroke="#5B6B63" stroke-width="1.2"/>
+              <text x="52" y="100" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="#0B0F0D" font-weight="600">GitHub</text>
+              <text x="52" y="113" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9" fill="#5B6B63">PR webhook</text>
+              <rect x="120" y="80" width="80" height="40" rx="8" fill="#FFF7ED" stroke="#C2410C" stroke-width="1.4"/>
+              <text x="160" y="100" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="#C2410C" font-weight="600">Probot</text>
+              <text x="160" y="113" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9" fill="#C2410C">/webhook</text>
+              <rect x="240" y="60" width="60" height="34" rx="6" fill="#FCE7F3" stroke="#BE185D" stroke-width="1.2"/>
+              <text x="270" y="78" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="#BE185D" font-weight="600">LLM</text>
+              <text x="270" y="90" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="8" fill="#BE185D">gpt-4o-mini</text>
+              <rect x="240" y="106" width="60" height="34" rx="6" fill="#E6F7EF" stroke="#087F4E" stroke-width="1.4"/>
+              <text x="270" y="124" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="#087F4E" font-weight="600">Postgres</text>
+              <text x="270" y="136" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="8" fill="#087F4E">history</text>
+              <line x1="84" y1="100" x2="120" y2="100" stroke="#5B6B63" stroke-width="1.2" marker-end="url(#arr7)"/>
+              <line x1="200" y1="92" x2="240" y2="76" stroke="#5B6B63" stroke-width="1" marker-end="url(#arr7)"/>
+              <line x1="200" y1="108" x2="240" y2="124" stroke="#5B6B63" stroke-width="1" marker-end="url(#arr7)"/>
+              <line x1="270" y1="94" x2="52" y2="80" stroke="#5B6B63" stroke-width="1" stroke-dasharray="3 2" marker-end="url(#arr7)"/>
+              <text x="160" y="180" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9" fill="#5B6B63">diff + style rules → review → post back as comment</text>
+            </svg>
+          </div>
+          <div class="roll-card-back-foot">
+            <span>1 webhook · 30s review</span>
+            <span class="back-hint"><span class="arrow">↻</span> hover to flip back</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 08 — new: meeting notes -->
+      <div class="roll-card" data-card>
+        <div class="roll-card-face front">
+          <div class="roll-card-band teal"></div>
+          <span class="roll-card-flip-cue" aria-hidden="true">↻</span>
+          <div class="roll-card-body">
+            <div class="roll-card-top">
+              <span class="roll-card-num">08</span>
+              <span class="roll-card-tag teal">PRODUCTIVITY · AI</span>
+            </div>
+            <h3>Meeting notes that write themselves</h3>
+            <p class="roll-card-desc">A tiny Chrome extension that joins your call, transcribes it, and ships a Slack-friendly summary in 5 minutes flat.</p>
+            <div class="roll-card-stack">
+              <span>Whisper</span><span>FastAPI</span><span>Chrome ext</span><span>Slack API</span>
+            </div>
+            <div class="roll-card-foot">
+              <span><b>Scope:</b> 2 weeks</span>
+              <span>120 cr</span>
+            </div>
+          </div>
+        </div>
+        <div class="roll-card-face back">
+          <div class="roll-card-band teal"></div>
+          <div class="roll-card-back-head">
+            <h4>Architecture</h4>
+            <span class="arch-tag">meeting notes</span>
+          </div>
+          <div class="roll-card-arch">
+            <svg viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Meeting notes architecture">
+              <defs>
+                <marker id="arr8" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5B6B63"/></marker>
+              </defs>
+              <rect x="20" y="80" width="60" height="40" rx="8" fill="#F0FDFA" stroke="#115E59" stroke-width="1.4"/>
+              <text x="50" y="100" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="#115E59" font-weight="600">Chrome</text>
+              <text x="50" y="113" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="#115E59" font-weight="600">ext</text>
+              <rect x="120" y="80" width="80" height="40" rx="8" fill="#E6F7EF" stroke="#087F4E" stroke-width="1.4"/>
+              <text x="160" y="100" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="#087F4E" font-weight="600">FastAPI</text>
+              <text x="160" y="113" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9" fill="#087F4E">/ingest</text>
+              <rect x="240" y="40" width="60" height="30" rx="6" fill="#EEF2FF" stroke="#1D4ED8" stroke-width="1.2"/>
+              <text x="270" y="59" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="#1D4ED8" font-weight="600">Whisper</text>
+              <rect x="240" y="80" width="60" height="30" rx="6" fill="#FCE7F3" stroke="#BE185D" stroke-width="1.2"/>
+              <text x="270" y="99" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="#BE185D" font-weight="600">LLM</text>
+              <rect x="240" y="120" width="60" height="30" rx="6" fill="#EDE9FE" stroke="#6D28D9" stroke-width="1.2"/>
+              <text x="270" y="139" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="#6D28D9" font-weight="600">Slack</text>
+              <line x1="80" y1="100" x2="120" y2="100" stroke="#5B6B63" stroke-width="1.2" marker-end="url(#arr8)"/>
+              <line x1="200" y1="92" x2="240" y2="55" stroke="#5B6B63" stroke-width="1" marker-end="url(#arr8)"/>
+              <line x1="200" y1="100" x2="240" y2="95" stroke="#5B6B63" stroke-width="1" marker-end="url(#arr8)"/>
+              <line x1="200" y1="108" x2="240" y2="135" stroke="#5B6B63" stroke-width="1" stroke-dasharray="3 2" marker-end="url(#arr8)"/>
+              <text x="160" y="180" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9" fill="#5B6B63">tab audio → whisper → summary → slack</text>
+            </svg>
+          </div>
+          <div class="roll-card-back-foot">
+            <span>5 min · 90s audio</span>
+            <span class="back-hint"><span class="arrow">↻</span> hover to flip back</span>
+          </div>
+        </div>
+      </div>
+      </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- Building blocks (pinned horizontal scroll) -->
-<section class="hscroll-section" id="what-you-get" data-journey="Building blocks" data-journey-label="Building blocks">
-  <div class="hscroll-sticky">
-    <div class="hscroll-sticky-inner">
-      <div class="hscroll-head reveal">
-        <span class="section-eyebrow">What you get</span>
-        <h2 style="font-family:'Sora',sans-serif;font-weight:700;font-size:clamp(28px,4.5vw,40px);letter-spacing:-1px;margin:14px 0;">
-          Everything between <em style="font-style:normal;background:linear-gradient(100deg,var(--emerald-deep),var(--royal));-webkit-background-clip:text;background-clip:text;color:transparent;">idea</em> and <em style="font-style:normal;background:linear-gradient(100deg,var(--emerald-deep),var(--royal));-webkit-background-clip:text;background-clip:text;color:transparent;">shipped</em>
-        </h2>
-        <p style="color:var(--ink-soft);max-width:520px;margin:0 auto;font-size:15.5px;line-height:1.65;">Keep scrolling to roll through the building blocks every guide comes with.</p>
-      </div>
-      <div class="hscroll-progress" aria-hidden="true">
-        <div class="hscroll-progress-fill" id="hscroll-progress-fill"></div>
-      </div>
-      <div class="hscroll-progress-label" id="hscroll-progress-label">01 / 07</div>
-      <div class="hscroll-track-wrap">
-        <div class="hscroll-track" id="hscroll-track">
-          <div class="hscroll-card">
-            <div class="hscroll-icon green">🎯</div>
-            <h4>Targeted scope</h4>
-            <p>Each project is sized to a realistic timeframe — weekend, two weeks, or a month — so you never over-commit.</p>
-          </div>
-          <div class="hscroll-card">
-            <div class="hscroll-icon blue">🧩</div>
-            <h4>Stack breakdown</h4>
-            <p>The exact languages, frameworks, and services — with reasoning on why this stack fits your target role.</p>
-          </div>
-          <div class="hscroll-card">
-            <div class="hscroll-icon mix">🏗️</div>
-            <h4>Architecture map</h4>
-            <p>A bird's-eye view of the components and how they talk to each other — designed for your level, not a senior's.</p>
-          </div>
-          <div class="hscroll-card">
-            <div class="hscroll-icon green">📚</div>
-            <h4>Skills to learn</h4>
-            <p>The 3–6 specific concepts you'll pick up while building — mapped to what interviewers actually ask.</p>
-          </div>
-          <div class="hscroll-card">
-            <div class="hscroll-icon blue">✅</div>
-            <h4>Phased checklist</h4>
-            <p>From "set up the repo" to "deploy and write the README" — broken into phases so you always know the next step.</p>
-          </div>
-          <div class="hscroll-card">
-            <div class="hscroll-icon mix">📈</div>
-            <h4>Resume bullet</h4>
-            <p>A pre-written, metrics-style line for your resume, plus talking points for the interview follow-up.</p>
-          </div>
-          <div class="hscroll-card">
-            <div class="hscroll-icon green">🔁</div>
-            <h4>Progress tracking</h4>
-            <p>Check off phases as you go; pick up exactly where you left off across devices and sessions.</p>
+
+
+<!-- Tier 1 / #1b — Big flagship 3D flip card (drag to rotate, click to flip) -->
+<!-- Tier 1 / #1b — Big flagship 3D flip card (split row + drag to flip) -->
+<section class="flipcard-section" data-journey="Flagship" data-journey-label="Flagship project">
+  <div class="flipcard-inner">
+
+    <!-- LEFT: heading + description + bullets + CTA -->
+    <div class="flipcard-left reveal">
+      <span class="flipcard-eyebrow"><span class="dot"></span>Flagship · picked for you</span>
+      <h2 class="flipcard-h">Real-time <span class="grad">captioning</span> for college lectures.</h2>
+      <p class="flipcard-lede">Streams captions to every student's phone with sub-300ms latency. Works on the shaky hostel Wi-Fi everyone actually has — and ships as a single, resume-ready build you can show at interviews.</p>
+      <ul class="flipcard-bullets">
+        <li>
+          <span class="bdot">1</span>
+          <div><b>One flagship idea</b>Stream captions, with a real WebSocket layer and a Postgres + Redis backend.</div>
+        </li>
+        <li>
+          <span class="bdot">2</span>
+          <div><b>One architecture map</b>Drag the card → flip it to see how the pieces (mic → /api → ws → phones) fit together.</div>
+        </li>
+        <li>
+          <span class="bdot">3</span>
+          <div><b>One full build guide</b>Phase-by-phase checklist, every skill you need to learn, and a copy-pasteable resume bullet at the end.</div>
+        </li>
+      </ul>
+      <a href="app.html" class="flipcard-cta magnetic">Build this →</a>
+    </div>
+
+    <!-- RIGHT: the drag-to-flip 3D card -->
+    <div class="flipcard-stage" id="flipcard-stage">
+      <div class="flipcard-card" id="flipcard-card">
+
+        <!-- Front face -->
+        <div class="flipcard-face front">
+          <div class="flipcard-band"></div>
+          <div class="flipcard-pad">
+            <span class="flipcard-tag"><span class="dot"></span>flagship project</span>
+            <h3 class="flipcard-card-h">Real-time <span class="grad">captioning</span> for college lectures</h3>
+            <p class="flipcard-desc">Streams captions to every student's phone with sub-300ms latency. Works on the shaky hostel Wi-Fi everyone actually has.</p>
+            <div class="flipcard-stack">
+              <span>React</span><span>Vite</span><span>WebSockets</span><span>Postgres</span><span>Redis</span><span>Web Speech API</span>
+            </div>
+            <div class="flipcard-foot">
+              <span><b>Scope:</b> 1 weekend → 2 wks</span>
+              <span><b>200 cr</b> · p99 280ms</span>
+            </div>
+            <div class="flipcard-hint">drag ←→ flip · ↑↓ tilt</div>
           </div>
         </div>
+
+        <!-- Back face -->
+        <div class="flipcard-face back">
+          <div class="flipcard-band"></div>
+          <div class="flipcard-back-head">
+            <h4>Architecture</h4>
+            <span class="arch-tag">live captions</span>
+          </div>
+          <div class="flipcard-arch">
+            <svg viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Captioning app architecture">
+              <defs>
+                <marker id="arrFC" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5B6B63"/></marker>
+              </defs>
+              <rect x="20" y="80" width="68" height="40" rx="8" fill="#EEF2FF" stroke="#1D4ED8" stroke-width="1.4"/>
+              <text x="54" y="105" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="#1D4ED8" font-weight="600">Mic</text>
+              <rect x="126" y="80" width="68" height="40" rx="8" fill="#fff" stroke="#5B6B63" stroke-width="1.2"/>
+              <text x="160" y="105" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="#0B0F0D" font-weight="600">STT /api</text>
+              <rect x="232" y="80" width="68" height="40" rx="8" fill="#E6F7EF" stroke="#087F4E" stroke-width="1.4"/>
+              <text x="266" y="105" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="#087F4E" font-weight="600">/captions</text>
+              <line x1="88" y1="100" x2="126" y2="100" stroke="#5B6B63" stroke-width="1.2" marker-end="url(#arrFC)"/>
+              <line x1="194" y1="100" x2="232" y2="100" stroke="#5B6B63" stroke-width="1.2" marker-end="url(#arrFC)"/>
+              <rect x="126" y="30" width="68" height="30" rx="6" fill="#FEF3C7" stroke="#B45309" stroke-width="1.2"/>
+              <text x="160" y="50" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="#B45309" font-weight="600">Postgres</text>
+              <rect x="126" y="140" width="68" height="30" rx="6" fill="#F0FDFA" stroke="#115E59" stroke-width="1.2"/>
+              <text x="160" y="160" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="#115E59" font-weight="600">Redis</text>
+              <line x1="160" y1="60" x2="160" y2="80" stroke="#5B6B63" stroke-width="1" stroke-dasharray="3 2"/>
+              <line x1="160" y1="120" x2="160" y2="140" stroke="#5B6B63" stroke-width="1" stroke-dasharray="3 2"/>
+              <text x="160" y="188" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9" fill="#5B6B63" letter-spacing="0.4">mic → /api → ws → phones · state in pg + redis</text>
+            </svg>
+          </div>
+          <div class="flipcard-back-foot">
+            <span><b>4 components</b> · 1 weekend</span>
+            <span>p99 280ms · 200 users</span>
+          </div>
+        </div>
+
       </div>
     </div>
+
   </div>
 </section>
+
+
+
+
 
 <section class="section soft" id="plans" data-journey="Plans" data-journey-label="Pricing">
   <div class="watermark">CREDITS</div>
@@ -1959,7 +2692,6 @@
   Pick an idea and let BuildItUp sketch the architecture, the skills, and a 4-phase plan for you.
 </aside>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
 <script>
 const WORKER_URL = "https://projectdesk-api.aryadeepbiswas014.workers.dev";
 
@@ -2099,12 +2831,14 @@ document.querySelectorAll('.word-reveal:not(#hero-headline)').forEach(el => word
 })();
 
 /* ===========================================================
-   TIER 1 / #1 — ROLLING HORIZONTAL CARDS
-   Vertical scroll through the .roll-section maps to horizontal
-   movement of the .roll-track. A sticky inner div keeps the
-   cards in view while the section is being scrolled. A small
-   progress bar + counter in the top of the section updates as
-   you scroll through.
+   TIER 1 / #1 — SCROLL-PINNED ROLLING CARDS (8 total, snap)
+   The .roll-section is 320vh tall. A sticky inner div keeps
+   the cards in view while the user scrolls. The track's
+   translateX is driven by scroll progress, but the cards
+   snap one at a time: there are 7 inner "chunks" (one
+   between each pair of cards), and each chunk maps to one
+   card's width. So scrolling through the section advances
+   one card per chunk. Hover or click flips each card.
    =========================================================== */
 (function initRoll() {
   const section = document.querySelector('.roll-section');
@@ -2117,47 +2851,168 @@ document.querySelectorAll('.word-reveal:not(#hero-headline)').forEach(el => word
   const cards = track.querySelectorAll('.roll-card');
   const totalCards = cards.length;
 
+  // Maximum horizontal scroll of the track (negative translateX)
+  function getMaxOffset() {
+    const wrap = section.querySelector('.roll-track-wrap');
+    if (!wrap) return 0;
+    return Math.max(0, track.scrollWidth - wrap.clientWidth);
+  }
+
   function getProgress() {
     const rect = sticky.getBoundingClientRect();
-    // The section is 320vh tall, so the sticky inner only "pins" for
-    // the middle 220vh of that. Use rect.height to compute progress.
+    // The section is 320vh tall; the sticky inner only pins for the
+    // middle 220vh. Compute the pin progress (0..1).
     const total = rect.height - window.innerHeight;
     if (total <= 0) return 0;
     const scrolled = -rect.top;
     return Math.max(0, Math.min(1, scrolled / total));
   }
 
+  // Snap: with N cards, there are N-1 "snaps" between them.
+  // Map progress [0, 1] to a snapped progress that lands on
+  // one of N positions: 0, 1/(N-1), 2/(N-1), ..., 1.
+  // We use "nearest neighbor" so the cards settle into place
+  // with a small ease. Edge snaps: at p<=0.5/snap → snap 0,
+  // at p>=1-0.5/snap → snap 1.
+  function snapProgress(p) {
+    if (totalCards <= 1) return 0;
+    const snaps = totalCards - 1;
+    // Convert to "card-index" continuous: 0 = first card, snaps = last
+    const idxF = p * snaps;
+    // Nearest integer
+    return Math.round(idxF) / snaps;
+  }
+
   let ticking = false;
   function update() {
-    const p = getProgress();
-    // Translate the track: from 0 (start) to -(trackWidth - wrapWidth)
-    const wrap = section.querySelector('.roll-track-wrap');
-    const wrapWidth = wrap ? wrap.clientWidth : window.innerWidth;
-    const trackWidth = track.scrollWidth;
-    const maxOffset = Math.max(0, trackWidth - wrapWidth);
-    track.style.transform = `translateX(${-p * maxOffset}px)`;
+    const rawP = getProgress();
+    const snappedP = snapProgress(rawP);
+    const maxOffset = getMaxOffset();
+    const offset = -snappedP * maxOffset;
+    track.style.transform = `translateX(${offset}px)`;
 
     // Progress bar
-    if (fill) fill.style.width = (p * 100).toFixed(1) + '%';
+    if (fill) fill.style.width = (rawP * 100).toFixed(1) + '%';
 
-    // Counter (01 / 04, 02 / 04, …)
+    // Counter
     if (label) {
-      const idx = Math.min(totalCards, Math.max(1, Math.ceil(p * totalCards) || 1));
-      const padded = String(idx).padStart(2, '0');
-      const totalPadded = String(totalCards).padStart(2, '0');
-      label.textContent = padded + ' / ' + totalPadded;
+      const idx = Math.min(totalCards, Math.max(1, Math.round(snappedP * (totalCards - 1)) + 1));
+      label.textContent = String(idx).padStart(2, '0') + ' / ' + String(totalCards).padStart(2, '0');
     }
-
     ticking = false;
   }
+
   window.addEventListener('scroll', () => {
     if (!ticking) {
       requestAnimationFrame(update);
       ticking = true;
     }
   }, { passive: true });
-  window.addEventListener('resize', update);
+  window.addEventListener('resize', () => {
+    requestAnimationFrame(update);
+  });
   update();
+})();
+
+/* ===========================================================
+   TIER 1 / #1b — BIG FLAGSHIP FLIP CARD
+   The user can DRAG the .flipcard-stage in any direction.
+     - Horizontal drag (X)  →  rotateY  (the actual flip)
+     - Vertical drag (Y)    →  rotateX  (a tilt that springs
+                                          back to 0 on release)
+   When released, the card snaps to the closest face (0° or
+   180°) based on the horizontal component. The vertical tilt
+   always springs back to 0 so the card sits flat. Click
+   anywhere on the stage toggles the flip as a fallback.
+   =========================================================== */
+(function initFlipcard() {
+  const stage = document.getElementById('flipcard-stage');
+  const card = document.getElementById('flipcard-card');
+  if (!stage || !card) return;
+
+  // 'face' state: 0 = front, 1 = back. The displayed rotateY
+  // is the base angle for that face, plus any horizontal drag.
+  let face = 0;          // current face
+  let baseAngle = 0;     // 0 or 180, the resting rotation around Y
+  let tiltX = 0;         // current rotateX tilt (always springs back to 0)
+  let dragging = false;
+  let pointerId = null;
+  let startX = 0;
+  let startY = 0;
+  let startAngle = 0;    // rotation at the moment we grabbed
+  let startTilt = 0;     // tilt at the moment we grabbed
+  let didMove = false;
+
+  function apply(rotY, rotX) {
+    card.style.transition = dragging ? 'none' : 'transform .35s cubic-bezier(.2,.8,.2,1)';
+    card.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg)`;
+  }
+
+  function onDown(e) {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    dragging = true;
+    pointerId = e.pointerId;
+    startX = e.clientX;
+    startY = e.clientY;
+    startAngle = baseAngle;
+    startTilt = tiltX;
+    didMove = false;
+    stage.classList.add('dragging');
+    try { stage.setPointerCapture(pointerId); } catch (_) {}
+  }
+  function onMove(e) {
+    if (!dragging || e.pointerId !== pointerId) return;
+    const rect = stage.getBoundingClientRect();
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    if (Math.abs(dx) > 2 || Math.abs(dy) > 2) didMove = true;
+    // Horizontal: dragging the full WIDTH of the card rotates it
+    // ~180deg around Y. The card can be flipped from either side.
+    const ySensitivity = 180 / (rect.width * 0.85);
+    let rotY = startAngle + dx * ySensitivity;
+    if (rotY > 360) rotY = 360;
+    if (rotY < -180) rotY = -180;
+    // Vertical: dragging the full HEIGHT of the card tilts it ~20deg
+    // around X. This is purely cosmetic — released tilt springs back.
+    const xSensitivity = 20 / (rect.height * 0.85);
+    let rotX = startTilt - dy * xSensitivity;
+    if (rotX > 18) rotX = 18;
+    if (rotX < -18) rotX = -18;
+    tiltX = rotX;
+    apply(rotY, rotX);
+  }
+  function onUp(e) {
+    if (!dragging || (pointerId !== null && e.pointerId !== pointerId)) return;
+    dragging = false;
+    stage.classList.remove('dragging');
+    pointerId = null;
+    // Read the current rotation from the inline style
+    const t = card.style.transform || '';
+    const m = t.match(/rotateY\((-?\d+(?:\.\d+)?)deg\)/);
+    const cur = m ? parseFloat(m[1]) : baseAngle;
+    // Determine the closest "rest" face based on the horizontal
+    // component. (Vertical tilt always springs back to 0.)
+    let rel = ((cur - baseAngle) % 360 + 360) % 360;
+    if (rel > 90 && rel < 270) {
+      face = 1 - face;
+      baseAngle = face === 1 ? 180 : 0;
+    }
+    tiltX = 0;  // spring back to flat
+    apply(baseAngle, 0);
+  }
+
+  stage.addEventListener('pointerdown', onDown);
+  stage.addEventListener('pointermove', onMove);
+  stage.addEventListener('pointerup', onUp);
+  stage.addEventListener('pointercancel', onUp);
+
+  // Click as a fallback toggle (only when the user didn't actually drag)
+  stage.addEventListener('click', () => {
+    if (didMove) { didMove = false; return; }
+    face = 1 - face;
+    baseAngle = face === 1 ? 180 : 0;
+    apply(baseAngle, 0);
+  });
 })();
 
 /* ===========================================================
@@ -2353,7 +3208,7 @@ if (cursor && follower && !isTouch && !prefersReducedMotion) {
     requestAnimationFrame(animateFollower);
   }
   animateFollower();
-  document.querySelectorAll('a, button, .magnetic, .feature-card, .plan-card, .hscroll-card, .roll-card, .waypoint').forEach(el => {
+  document.querySelectorAll('a, button, .magnetic, .feature-card, .plan-card, .roll-card, .waypoint').forEach(el => {
     el.addEventListener('mouseenter', () => {
       cursor.classList.add('hovering');
       follower.classList.add('hovering');
@@ -2449,56 +3304,6 @@ const statsRow = document.getElementById('stats-row');
 if (statsRow) countObserver.observe(statsRow);
 
 /* ===========================================================
-   HORIZONTAL SCROLL TRACK (pinned)
-   The section is 260vh tall with a sticky inner. Vertical
-   scroll through the section drives horizontal translateX of
-   the cards. A progress bar + counter update as you scroll.
-   Drag-to-pan fallback is removed (the section now does its
-   job properly with the pinned scroll, so dragging is no
-   longer needed and would conflict with the sticky feel).
-   =========================================================== */
-const hscrollTrack = document.getElementById('hscroll-track');
-const hscrollSection = document.getElementById('what-you-get');
-const hscrollSticky = hscrollSection ? hscrollSection.querySelector('.hscroll-sticky') : null;
-if (hscrollTrack && hscrollSection && hscrollSticky) {
-  const cards = hscrollTrack.querySelectorAll('.hscroll-card');
-  const totalCards = cards.length;
-  const fill = document.getElementById('hscroll-progress-fill');
-  const label = document.getElementById('hscroll-progress-label');
-
-  function getProgress() {
-    const rect = hscrollSticky.getBoundingClientRect();
-    const total = rect.height - window.innerHeight;
-    if (total <= 0) return 0;
-    const scrolled = -rect.top;
-    return Math.max(0, Math.min(1, scrolled / total));
-  }
-
-  let hscrollTicking = false;
-  function updateHScroll() {
-    const p = getProgress();
-    const trackWidth = hscrollTrack.scrollWidth;
-    const wrapEl = hscrollSection.querySelector('.hscroll-track-wrap');
-    const wrapWidth = wrapEl ? wrapEl.clientWidth : window.innerWidth;
-    const maxOffset = Math.max(0, trackWidth - wrapWidth);
-    hscrollTrack.style.transform = `translateX(${-p * maxOffset}px)`;
-
-    if (fill) fill.style.width = (p * 100).toFixed(1) + '%';
-    if (label) {
-      const idx = Math.min(totalCards, Math.max(1, Math.ceil(p * totalCards) || 1));
-      label.textContent = String(idx).padStart(2, '0') + ' / ' + String(totalCards).padStart(2, '0');
-    }
-
-    hscrollTicking = false;
-  }
-  window.addEventListener('scroll', () => {
-    if (!hscrollTicking) {
-      requestAnimationFrame(updateHScroll);
-      hscrollTicking = true;
-    }
-  }, { passive: true });
-  window.addEventListener('resize', updateHScroll);
-  updateHScroll();
 }
 
 /* ===========================================================
@@ -2524,6 +3329,7 @@ if (quote) {
     });
   }
 }
+
 </script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a231f73b4be62447',t:'MTc4NTM4OTM2Nw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
