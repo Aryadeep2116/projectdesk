@@ -175,34 +175,38 @@ function jsonResp(request, body, status) {
 
 // --- EMAIL HELPER (Resend API + console.log fallback) ---
 async function sendEmail(env, to, template, data) {
-  const fromAddr = 'hello@builditup.dpdns.org';
   const templates = {
     verify: {
       subject: 'Verify your BuildItUp email',
-      html: `<div style="font-family:Inter,Arial,sans-serif;max-width:520px;margin:0 auto;padding:24px;">
-        <h2 style="color:#0B0F0D;font-family:Sora,Arial,sans-serif;margin:0 0 16px;">Hi ${data.name},</h2>
-        <p style="color:#5B6B63;line-height:1.6;">Welcome to BuildItUp. Click the button below to verify your email and unlock the full tool.</p>
-        <p style="margin:24px 0;"><a href="${data.link}" style="background:#0EA968;color:#fff;padding:12px 22px;border-radius:8px;text-decoration:none;font-weight:600;display:inline-block;">Verify email</a></p>
-        <p style="color:#5B6B63;font-size:12.5px;">Or paste this link: ${data.link}</p>
-        <p style="color:#5B6B63;font-size:12px;margin-top:24px;">Link expires in 24 hours.</p>
+      text: `Hi ${data.name},\n\nWelcome to BuildItUp. Verify your email to unlock the full tool:\n\n${data.link}\n\nThis link expires in 24 hours.\n\n— BuildItUp`,
+      html: `<div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;color:#1a1a1a;">
+        <p>Hi ${data.name},</p>
+        <p>Welcome to BuildItUp. Verify your email to unlock the full tool:</p>
+        <p><a href="${data.link}">${data.link}</a></p>
+        <p style="color:#666;font-size:13px;">This link expires in 24 hours.</p>
+        <p style="color:#666;font-size:13px;">— BuildItUp</p>
       </div>`,
     },
     magic: {
       subject: 'Your BuildItUp sign-in link',
-      html: `<div style="font-family:Inter,Arial,sans-serif;max-width:520px;margin:0 auto;padding:24px;">
-        <h2 style="color:#0B0F0D;font-family:Sora,Arial,sans-serif;margin:0 0 16px;">Hi ${data.name},</h2>
-        <p style="color:#5B6B63;line-height:1.6;">Click below to sign in to BuildItUp. No password needed.</p>
-        <p style="margin:24px 0;"><a href="${data.link}" style="background:#0EA968;color:#fff;padding:12px 22px;border-radius:8px;text-decoration:none;font-weight:600;display:inline-block;">Sign in</a></p>
-        <p style="color:#5B6B63;font-size:12px;margin-top:24px;">Link expires in 15 minutes. If you didn't request this, ignore this email.</p>
+      text: `Hi ${data.name},\n\nUse this link to sign in to BuildItUp:\n\n${data.link}\n\nThis link expires in 15 minutes. If you didn't request this, you can ignore this email.\n\n— BuildItUp`,
+      html: `<div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;color:#1a1a1a;">
+        <p>Hi ${data.name},</p>
+        <p>Use this link to sign in to BuildItUp:</p>
+        <p><a href="${data.link}">${data.link}</a></p>
+        <p style="color:#666;font-size:13px;">This link expires in 15 minutes. If you didn't request this, you can ignore this email.</p>
+        <p style="color:#666;font-size:13px;">— BuildItUp</p>
       </div>`,
     },
     reset: {
       subject: 'Reset your BuildItUp password',
-      html: `<div style="font-family:Inter,Arial,sans-serif;max-width:520px;margin:0 auto;padding:24px;">
-        <h2 style="color:#0B0F0D;font-family:Sora,Arial,sans-serif;margin:0 0 16px;">Hi ${data.name},</h2>
-        <p style="color:#5B6B63;line-height:1.6;">Click below to set a new password for your BuildItUp account.</p>
-        <p style="margin:24px 0;"><a href="${data.link}" style="background:#0EA968;color:#fff;padding:12px 22px;border-radius:8px;text-decoration:none;font-weight:600;display:inline-block;">Reset password</a></p>
-        <p style="color:#5B6B63;font-size:12px;margin-top:24px;">Link expires in 1 hour. If you didn't request this, you can safely ignore this email.</p>
+      text: `Hi ${data.name},\n\nUse this link to set a new password for your BuildItUp account:\n\n${data.link}\n\nThis link expires in 1 hour. If you didn't request this, you can safely ignore this email.\n\n— BuildItUp`,
+      html: `<div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;color:#1a1a1a;">
+        <p>Hi ${data.name},</p>
+        <p>Use this link to set a new password for your BuildItUp account:</p>
+        <p><a href="${data.link}">${data.link}</a></p>
+        <p style="color:#666;font-size:13px;">This link expires in 1 hour. If you didn't request this, you can safely ignore this email.</p>
+        <p style="color:#666;font-size:13px;">— BuildItUp</p>
       </div>`,
     },
   };
@@ -222,6 +226,7 @@ async function sendEmail(env, to, template, data) {
           to: [to],
           subject: tpl.subject,
           html: tpl.html,
+          text: tpl.text,
         }),
       });
       if (res.ok) return true;
