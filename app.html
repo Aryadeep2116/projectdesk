@@ -1683,6 +1683,53 @@
   .step-card.done .step-body .step-title{color:var(--ink-soft);text-decoration:line-through;}
   .step-body .step-detail{font-size:12px;color:var(--ink-soft);margin-top:3px;line-height:1.55;}
 
+  .diagram-mount{
+    background-image:radial-gradient(rgba(15,23,42,0.05) 1px, transparent 1px) !important;
+    background-size:16px 16px;
+    position:relative;
+  }
+  .diagram-legend{display:flex;flex-wrap:wrap;gap:14px;margin:12px 2px 0;}
+  .diagram-legend-item{display:flex;align-items:center;gap:6px;font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.5px;}
+  .diagram-legend-dot{width:9px;height:9px;border-radius:3px;flex-shrink:0;}
+
+  .section-header{display:flex;align-items:center;gap:10px;margin:30px 0 14px;}
+  .section-header:first-child{margin-top:0;}
+  .section-header .sec-icon{
+    width:26px;height:26px;border-radius:7px;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  }
+  .section-header .sec-icon svg{width:14px;height:14px;}
+  .section-header h4{font-family:'Sora',sans-serif;font-size:15px;margin:0;color:var(--ink);}
+  .section-header .sec-sub{font-size:11.5px;color:var(--ink-soft);margin-left:auto;font-family:'IBM Plex Mono',monospace;}
+
+  .phase-timeline{position:relative;padding-left:2px;}
+  .phase-node{display:flex;gap:16px;align-items:flex-start;margin-bottom:26px;position:relative;}
+  .phase-node:last-child{margin-bottom:0;}
+  .phase-rail{
+    display:flex;flex-direction:column;align-items:center;flex-shrink:0;width:36px;
+  }
+  .phase-num{
+    width:36px;height:36px;border-radius:10px;flex-shrink:0;
+    background:linear-gradient(135deg,var(--accent),var(--accent-2));
+    color:#fff;display:flex;align-items:center;justify-content:center;
+    font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:13px;
+    box-shadow:0 6px 14px -6px rgba(16,185,129,.55);
+  }
+  .phase-line{flex:1;width:2px;background:linear-gradient(180deg,var(--accent),rgba(16,185,129,0.08));margin-top:6px;min-height:20px;}
+  .phase-node:last-child .phase-line{display:none;}
+  .phase-content{flex:1;min-width:0;}
+  .phase-card{margin-bottom:0 !important;}
+
+  .step-num-badge{
+    flex-shrink:0;width:22px;height:22px;border-radius:6px;
+    background:var(--paper-2);border:1px solid var(--line);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--ink-soft);font-weight:700;
+    margin-top:1px;
+  }
+  .step-card.done .step-num-badge{background:rgba(16,185,129,.12);border-color:rgba(16,185,129,.3);color:var(--accent-deep);}
+
   </style>
 </head>
 <body>
@@ -2538,13 +2585,13 @@
 
     // Node type -> accent color + short tag, kept consistent with the site's palette.
     const DIAGRAM_TYPE_STYLE = {
-      client:   { color: '#1D4ED8', tag: 'CLIENT' },
-      server:   { color: '#0EA968', tag: 'SERVER' },
-      database: { color: '#D97706', tag: 'DATABASE' },
-      external: { color: '#DC2626', tag: 'EXTERNAL' },
-      storage:  { color: '#5B6B63', tag: 'STORAGE' },
-      queue:    { color: '#7C3AED', tag: 'QUEUE' },
-      other:    { color: '#5B6B63', tag: '' },
+      client:   { color: '#1D4ED8', tag: 'CLIENT', icon: '<rect x="2" y="3" width="16" height="11" rx="1.5"/><path d="M7 17h6M10 14v3" stroke-linecap="round"/>' },
+      server:   { color: '#0EA968', tag: 'SERVER', icon: '<rect x="3" y="2" width="14" height="6" rx="1.2"/><rect x="3" y="11" width="14" height="6" rx="1.2"/><circle cx="6" cy="5" r="0.9" fill="currentColor" stroke="none"/><circle cx="6" cy="14" r="0.9" fill="currentColor" stroke="none"/>' },
+      database: { color: '#D97706', tag: 'DATABASE', icon: '<ellipse cx="10" cy="4.5" rx="7" ry="2.5"/><path d="M3 4.5v11c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5v-11"/><path d="M3 10c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5"/>' },
+      external: { color: '#DC2626', tag: 'EXTERNAL', icon: '<circle cx="10" cy="10" r="7.5"/><path d="M2.5 10h15M10 2.5c2.5 2.2 2.5 13 0 15M10 2.5c-2.5 2.2-2.5 13 0 15" />' },
+      storage:  { color: '#5B6B63', tag: 'STORAGE', icon: '<path d="M4 3h9l3 3v11a1 1 0 01-1 1H4a1 1 0 01-1-1V4a1 1 0 011-1z"/><path d="M7 3v4h6V3"/>' },
+      queue:    { color: '#7C3AED', tag: 'QUEUE', icon: '<rect x="2.5" y="4" width="15" height="4" rx="1"/><rect x="2.5" y="11" width="15" height="4" rx="1"/>' },
+      other:    { color: '#5B6B63', tag: '', icon: '<circle cx="10" cy="10" r="3"/><path d="M10 2v2.5M10 15.5V18M2 10h2.5M15.5 10H18" stroke-linecap="round"/>' },
     };
 
     // Simple auto-layout: layer nodes left-to-right by longest path from a root,
@@ -2589,10 +2636,10 @@
       const layers = [];
       for (let i = 0; i <= maxLayer; i++) layers.push(nodes.filter(n => layer[n.id] === i));
 
-      const colWidth = 210;
-      const nodeW = 160;
-      const nodeH = 62;
-      const rowGap = 30;
+      const colWidth = 220;
+      const nodeW = 168;
+      const nodeH = 70;
+      const rowGap = 34;
       const padding = 30;
       const maxRows = Math.max(...layers.map(l => l.length));
       const width = padding * 2 + (maxLayer + 1) * colWidth - (colWidth - nodeW);
@@ -2608,7 +2655,10 @@
       });
 
       let svg = `<svg viewBox="0 0 ${width} ${height}" style="width:100%;height:auto;font-family:'Inter',sans-serif;">`;
-      svg += `<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1D4ED8"/></marker></defs>`;
+      svg += `<defs>
+        <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#94A3B8"/></marker>
+        <filter id="nodeShadow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#0B0F0D" flood-opacity="0.1"/></filter>
+      </defs>`;
 
       edges.forEach(e => {
         const a = pos[e.from], b = pos[e.to];
@@ -2616,26 +2666,41 @@
         const x1 = a.x + nodeW, y1 = a.y + nodeH / 2;
         const x2 = b.x, y2 = b.y + nodeH / 2;
         const midX = (x1 + x2) / 2;
-        svg += `<path d="M${x1},${y1} C${midX},${y1} ${midX},${y2} ${x2},${y2}" fill="none" stroke="#E7EAE7" stroke-width="1.5" marker-end="url(#arrow)"/>`;
+        svg += `<path d="M${x1},${y1} C${midX},${y1} ${midX},${y2} ${x2},${y2}" fill="none" stroke="#CBD5E1" stroke-width="1.75" marker-end="url(#arrow)"/>`;
         if (e.label) {
-          svg += `<rect x="${midX - e.label.length * 2.8}" y="${(y1 + y2) / 2 - 9}" width="${e.label.length * 5.6}" height="16" fill="#FFFFFF" opacity="0.85"/>`;
-          svg += `<text x="${midX}" y="${(y1 + y2) / 2 + 3}" text-anchor="middle" font-size="9.5" fill="#5B6B63" font-family="'IBM Plex Mono',monospace">${e.label}</text>`;
+          svg += `<rect x="${midX - e.label.length * 2.9}" y="${(y1 + y2) / 2 - 9}" width="${e.label.length * 5.8}" height="17" rx="4" fill="var(--paper, #F5F6F4)" opacity="0.95"/>`;
+          svg += `<text x="${midX}" y="${(y1 + y2) / 2 + 3.5}" text-anchor="middle" font-size="9.5" fill="#5B6B63" font-family="'IBM Plex Mono',monospace">${escapeXml(e.label)}</text>`;
         }
       });
 
+      const usedTypes = new Set();
       nodes.forEach(n => {
         const p = pos[n.id];
         if (!p) return;
         const style = DIAGRAM_TYPE_STYLE[n.type] || DIAGRAM_TYPE_STYLE.other;
-        svg += `<rect x="${p.x}" y="${p.y}" width="${nodeW}" height="${nodeH}" rx="10" fill="#FFFFFF" stroke="${style.color}" stroke-width="1.5"/>`;
+        usedTypes.add(n.type && DIAGRAM_TYPE_STYLE[n.type] ? n.type : 'other');
+        svg += `<g filter="url(#nodeShadow)">
+          <rect x="${p.x}" y="${p.y}" width="${nodeW}" height="${nodeH}" rx="12" fill="#FFFFFF" stroke="${style.color}" stroke-width="1.4"/>
+          <rect x="${p.x}" y="${p.y}" width="4" height="${nodeH}" rx="2" fill="${style.color}"/>
+        </g>`;
+        svg += `<g transform="translate(${p.x + 14}, ${p.y + 12})" stroke="${style.color}" stroke-width="1.4" fill="${style.color}" fill-opacity="0.12" stroke-linejoin="round">
+          <rect width="20" height="20" rx="6" fill="${style.color}" fill-opacity="0.1" stroke="none"/>
+          <g transform="translate(3,3) scale(0.7)" fill="none">${style.icon}</g>
+        </g>`;
         if (style.tag) {
-          svg += `<text x="${p.x + 12}" y="${p.y + 18}" font-size="8.5" letter-spacing="1" fill="${style.color}" font-family="'IBM Plex Mono',monospace">${style.tag}</text>`;
+          svg += `<text x="${p.x + 42}" y="${p.y + 20}" font-size="8" letter-spacing="1" fill="${style.color}" font-family="'IBM Plex Mono',monospace" font-weight="700">${style.tag}</text>`;
         }
-        svg += `<text x="${p.x + 12}" y="${p.y + (style.tag ? 38 : 30)}" font-size="12.5" fill="#0B0F0D" font-weight="600">${escapeXml(n.label).slice(0, 22)}</text>`;
+        svg += `<text x="${p.x + 14}" y="${p.y + 46}" font-size="12.5" fill="#0B0F0D" font-weight="700">${escapeXml(n.label).slice(0, 22)}</text>`;
       });
 
       svg += `</svg>`;
-      container.innerHTML = svg;
+
+      const legend = Array.from(usedTypes).map(t => {
+        const style = DIAGRAM_TYPE_STYLE[t];
+        return `<span class="diagram-legend-item"><span class="diagram-legend-dot" style="background:${style.color};"></span>${style.tag || t}</span>`;
+      }).join('');
+
+      container.innerHTML = svg + `<div class="diagram-legend">${legend}</div>`;
     }
 
     function escapeXml(str) {
@@ -2648,9 +2713,19 @@
       const doneSteps = Object.values(progress).filter(Boolean).length;
       const pct = totalSteps ? Math.round((doneSteps / totalSteps) * 100) : 0;
 
+      const ICONS = {
+        map: '<svg viewBox="0 0 20 20" fill="none" stroke="#fff" stroke-width="1.6"><path d="M2 5l5-2 6 2 5-2v13l-5 2-6-2-5 2z"/><path d="M7 3v13M13 5v13"/></svg>',
+        analysis: '<svg viewBox="0 0 20 20" fill="none" stroke="#fff" stroke-width="1.6"><path d="M3 17V9M9 17V4M15 17v-6"/></svg>',
+        skills: '<svg viewBox="0 0 20 20" fill="none" stroke="#fff" stroke-width="1.6"><path d="M10 2l2.4 4.9 5.4.8-3.9 3.8.9 5.4-4.8-2.5-4.8 2.5.9-5.4-3.9-3.8 5.4-.8z" stroke-linejoin="round"/></svg>',
+        plan: '<svg viewBox="0 0 20 20" fill="none" stroke="#fff" stroke-width="1.6"><path d="M4 6h12M4 10h12M4 14h8" stroke-linecap="round"/></svg>',
+      };
+
       mount.innerHTML = `
     <div style="margin-top:16px;padding:22px;background:var(--card);border:1px solid var(--line);border-radius:14px;">
-      <div class="label-inline" style="margin-bottom:10px;">Architecture map</div>
+      <div class="section-header">
+        <span class="sec-icon">${ICONS.map}</span>
+        <h4>Architecture map</h4>
+      </div>
       <div class="diagram-mount" style="background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:16px;overflow-x:auto;"></div>
 
       <div class="analysis-card">
@@ -2658,8 +2733,12 @@
         <p style="font-size:13.5px;color:var(--ink);line-height:1.65;margin:0;">${guide.architecture}</p>
       </div>
 
-      <div class="label-inline" style="margin-bottom:2px;">Skills you'll need — foundational to advanced</div>
-      <div style="margin-bottom:22px;">
+      <div class="section-header">
+        <span class="sec-icon">${ICONS.skills}</span>
+        <h4>Skills you'll need</h4>
+        <span class="sec-sub">foundational → advanced</span>
+      </div>
+      <div style="margin-bottom:8px;">
         ${guide.skills.map(s => {
         const level = (s.level || 'core').toLowerCase();
         const levelClass = level === 'advanced' ? 'advanced' : level === 'foundational' ? 'foundational' : 'core';
@@ -2675,37 +2754,49 @@
       }).join('')}
       </div>
 
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-        <div class="label-inline" style="margin:0;">Build plan</div>
-        <span id="guide-progress-label" style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--accent);">${pct}% (${doneSteps}/${totalSteps})</span>
+      <div class="section-header">
+        <span class="sec-icon">${ICONS.plan}</span>
+        <h4>Build plan</h4>
+        <span id="guide-progress-label" class="sec-sub" style="color:var(--accent);">${pct}% (${doneSteps}/${totalSteps})</span>
       </div>
-      <div style="height:6px;background:var(--paper-2);border-radius:4px;overflow:hidden;margin-bottom:18px;">
+      <div style="height:6px;background:var(--paper-2);border-radius:4px;overflow:hidden;margin-bottom:22px;">
         <div class="guide-progress-fill" style="height:100%;width:${pct}%;background:linear-gradient(90deg,var(--accent),var(--accent-2));transition:width .3s;"></div>
       </div>
 
+      <div class="phase-timeline">
       ${guide.phases.map((phase, pi) => `
-        <div class="phase-card">
-          <div class="phase-head">
-            <span class="phase-title">${phase.title}</span>
-            <span class="phase-count">${phase.steps.length} step${phase.steps.length === 1 ? '' : 's'}</span>
+        <div class="phase-node">
+          <div class="phase-rail">
+            <div class="phase-num">${String(pi + 1).padStart(2, '0')}</div>
+            <div class="phase-line"></div>
           </div>
-          <div class="phase-desc">${phase.description}</div>
-          ${phase.steps.map((step, si) => {
+          <div class="phase-content">
+            <div class="phase-card">
+              <div class="phase-head">
+                <span class="phase-title">${phase.title}</span>
+                <span class="phase-count">${phase.steps.length} step${phase.steps.length === 1 ? '' : 's'}</span>
+              </div>
+              <div class="phase-desc">${phase.description}</div>
+              ${phase.steps.map((step, si) => {
         const stepId = `${pi}-${si}`;
         const checked = !!progress[stepId];
         return `
-              <div class="step-card${checked ? ' done' : ''}" data-step-id="${stepId}">
-                <input type="checkbox" class="step-check-input guide-step-check" data-step-id="${stepId}" ${checked ? 'checked' : ''}>
-                <span class="step-check-box"><svg viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.3 12L13 4.5" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-                <span class="step-body">
-                  <span class="step-title">${step.title}</span>
-                  <span class="step-detail">${step.detail}</span>
-                </span>
-              </div>
-            `;
+                <div class="step-card${checked ? ' done' : ''}" data-step-id="${stepId}">
+                  <input type="checkbox" class="step-check-input guide-step-check" data-step-id="${stepId}" ${checked ? 'checked' : ''}>
+                  <span class="step-check-box"><svg viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.3 12L13 4.5" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                  <span class="step-num-badge">${pi + 1}.${si + 1}</span>
+                  <span class="step-body">
+                    <span class="step-title">${step.title}</span>
+                    <span class="step-detail">${step.detail}</span>
+                  </span>
+                </div>
+              `;
       }).join('')}
+            </div>
+          </div>
         </div>
       `).join('')}
+      </div>
     </div>
   `;
 
