@@ -1612,6 +1612,77 @@
       .results-head{font-size:23px;}
     }
 
+  /* ---------- Premium guide styling: step cards + analysis panels ---------- */
+  .analysis-card{
+    background:linear-gradient(180deg, rgba(255,255,255,0.9), rgba(247,248,250,0.95));
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:18px 20px;
+    margin-bottom:18px;
+  }
+  .analysis-card .analysis-head{
+    display:flex;align-items:center;gap:8px;
+    font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;
+    color:var(--accent-2);margin-bottom:10px;
+  }
+  .analysis-card .analysis-head::before{content:'';width:7px;height:7px;border-radius:2px;background:linear-gradient(135deg,var(--accent),var(--accent-2));}
+
+  .skill-row{
+    display:flex;align-items:flex-start;gap:12px;
+    padding:12px 0;border-top:1px solid var(--line);
+  }
+  .skill-row:first-child{border-top:0;}
+  .skill-level{
+    flex-shrink:0;width:74px;text-align:center;
+    font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.5px;
+    border-radius:5px;padding:4px 0;font-weight:700;text-transform:uppercase;
+  }
+  .skill-level.foundational{color:#0E9968;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.28);}
+  .skill-level.core{color:#1D4ED8;background:rgba(37,99,235,.08);border:1px solid rgba(37,99,235,.25);}
+  .skill-level.advanced{color:#B91C1C;background:rgba(220,38,38,.08);border:1px solid rgba(220,38,38,.25);}
+  .skill-row .skill-body{flex:1;min-width:0;}
+  .skill-row .skill-name{font-weight:700;color:var(--ink);font-size:13.5px;}
+  .skill-row .skill-why{color:var(--ink-soft);font-size:12.5px;margin-top:2px;line-height:1.5;}
+
+  .phase-card{
+    border:1px solid var(--line);border-radius:12px;
+    background:var(--paper-2);
+    padding:16px 18px;margin-bottom:14px;
+    position:relative;overflow:hidden;
+  }
+  .phase-card::before{
+    content:'';position:absolute;left:0;top:0;bottom:0;width:3px;
+    background:linear-gradient(180deg,var(--accent),var(--accent-2));
+  }
+  .phase-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:2px;}
+  .phase-head .phase-title{font-family:'Sora',sans-serif;font-size:14.5px;}
+  .phase-head .phase-count{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-soft);}
+  .phase-desc{font-size:12.5px;color:var(--ink-soft);margin-bottom:10px;line-height:1.5;}
+
+  .step-card{
+    display:flex;gap:12px;align-items:flex-start;
+    padding:11px 12px;border-radius:9px;
+    background:var(--paper);border:1px solid var(--line);
+    margin-top:8px;cursor:pointer;transition:border-color .15s ease, background .15s ease;
+  }
+  .step-card:hover{border-color:var(--accent);}
+  .step-card.done{background:rgba(16,185,129,.05);border-color:rgba(16,185,129,.25);}
+  .step-check-input{position:absolute;opacity:0;width:0;height:0;}
+  .step-check-box{
+    flex-shrink:0;width:20px;height:20px;border-radius:6px;
+    border:1.5px solid var(--line);margin-top:1px;
+    display:flex;align-items:center;justify-content:center;
+    transition:all .15s ease;
+  }
+  .step-card.done .step-check-box{
+    background:linear-gradient(135deg,var(--accent),var(--accent-2));border-color:transparent;
+  }
+  .step-check-box svg{width:12px;height:12px;opacity:0;transform:scale(.6);transition:all .15s ease;}
+  .step-card.done .step-check-box svg{opacity:1;transform:scale(1);}
+  .step-body .step-title{font-size:13.5px;font-weight:600;color:var(--ink);}
+  .step-card.done .step-body .step-title{color:var(--ink-soft);text-decoration:line-through;}
+  .step-body .step-detail{font-size:12px;color:var(--ink-soft);margin-top:3px;line-height:1.55;}
+
   </style>
 </head>
 <body>
@@ -1665,9 +1736,24 @@
 
       <div id="auth-login" style="display:none;">
         <input id="login-email" type="email" placeholder="Your email" style="width:100%;padding:11px 13px;margin-bottom:10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-2);color:var(--ink);font-family:'Inter',sans-serif;font-size:14px;outline:none;">
-        <input id="login-password" type="password" placeholder="Password" style="width:100%;padding:11px 13px;margin-bottom:14px;border-radius:8px;border:1px solid var(--line);background:var(--paper-2);color:var(--ink);font-family:'Inter',sans-serif;font-size:14px;outline:none;">
+        <input id="login-password" type="password" placeholder="Password" style="width:100%;padding:11px 13px;margin-bottom:6px;border-radius:8px;border:1px solid var(--line);background:var(--paper-2);color:var(--ink);font-family:'Inter',sans-serif;font-size:14px;outline:none;">
+        <div style="text-align:right;margin-bottom:14px;"><a href="#" id="show-forgot-link" style="color:var(--ink-soft);font-size:12px;">Forgot password?</a></div>
         <button id="login-btn" style="width:100%;padding:12px;border-radius:8px;border:none;background:var(--accent);color:#FFFFFF;font-weight:600;font-size:14px;cursor:pointer;">Log in</button>
         <div style="text-align:center;margin-top:14px;font-size:12px;color:var(--ink-soft);">New here? <a href="#" id="show-signup-link" style="color:var(--accent-2);">Create an account</a></div>
+      </div>
+
+      <div id="auth-forgot" style="display:none;">
+        <p style="color:var(--ink-soft);font-size:12.5px;margin:0 0 16px;line-height:1.5;">Enter your account email and we'll send you a link to reset your password.</p>
+        <input id="forgot-email" type="email" placeholder="Your email" style="width:100%;padding:11px 13px;margin-bottom:14px;border-radius:8px;border:1px solid var(--line);background:var(--paper-2);color:var(--ink);font-family:'Inter',sans-serif;font-size:14px;outline:none;">
+        <button id="forgot-btn" style="width:100%;padding:12px;border-radius:8px;border:none;background:var(--accent);color:#FFFFFF;font-weight:600;font-size:14px;cursor:pointer;">Send reset link</button>
+        <div style="text-align:center;margin-top:14px;font-size:12px;color:var(--ink-soft);"><a href="#" id="back-to-login-link" style="color:var(--accent-2);">Back to log in</a></div>
+      </div>
+
+      <div id="auth-reset" style="display:none;">
+        <p style="color:var(--ink-soft);font-size:12.5px;margin:0 0 16px;line-height:1.5;">Choose a new password for your account.</p>
+        <input id="reset-password" type="password" placeholder="New password (min 8 characters)" style="width:100%;padding:11px 13px;margin-bottom:10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-2);color:var(--ink);font-family:'Inter',sans-serif;font-size:14px;outline:none;">
+        <input id="reset-password-confirm" type="password" placeholder="Confirm new password" style="width:100%;padding:11px 13px;margin-bottom:14px;border-radius:8px;border:1px solid var(--line);background:var(--paper-2);color:var(--ink);font-family:'Inter',sans-serif;font-size:14px;outline:none;">
+        <button id="reset-btn" style="width:100%;padding:12px;border-radius:8px;border:none;background:var(--accent);color:#FFFFFF;font-weight:600;font-size:14px;cursor:pointer;">Set new password</button>
       </div>
 
       <div id="login-msg" style="margin-top:14px;font-size:12.5px;font-family:'IBM Plex Mono',monospace;color:var(--error, #DC2626);"></div>
@@ -1858,6 +1944,8 @@
     const loginOverlay = document.getElementById('login-modal-overlay');
     const authSignup = document.getElementById('auth-signup');
     const authLogin = document.getElementById('auth-login');
+    const authForgot = document.getElementById('auth-forgot');
+    const authReset = document.getElementById('auth-reset');
     const authHeading = document.getElementById('auth-heading');
     const loginMsg = document.getElementById('login-msg');
     const authArea = document.getElementById('auth-area');
@@ -1868,14 +1956,22 @@
     // resume that action automatically once auth succeeds.
     let pendingAction = null; // { type: 'generate' } or { type: 'guide', resultId, ideaKey, btn }
 
+    const authPanes = { signup: authSignup, login: authLogin, forgot: authForgot, reset: authReset };
+    const authTitles = { signup: 'Create a free account', login: 'Log in', forgot: 'Reset your password', reset: 'Choose a new password' };
+    function showAuthPane(name) {
+      Object.entries(authPanes).forEach(([key, el]) => { el.style.display = key === name ? 'block' : 'none'; });
+      authHeading.textContent = authTitles[name];
+      loginMsg.textContent = '';
+    }
+
     function openLoginModal() { loginOverlay.style.display = 'flex'; loginMsg.textContent = ''; }
     function closeLoginModal() { loginOverlay.style.display = 'none'; pendingAction = null; }
     document.getElementById('header-login-btn').addEventListener('click', () => {
-      authLogin.style.display = 'block'; authSignup.style.display = 'none'; authHeading.textContent = 'Log in';
+      showAuthPane('login');
       openLoginModal();
     });
     document.getElementById('header-signup-btn').addEventListener('click', () => {
-      authSignup.style.display = 'block'; authLogin.style.display = 'none'; authHeading.textContent = 'Create a free account';
+      showAuthPane('signup');
       openLoginModal();
     });
     loginCloseBtn.addEventListener('click', closeLoginModal);
@@ -1883,18 +1979,98 @@
 
     document.getElementById('show-login-link').addEventListener('click', (e) => {
       e.preventDefault();
-      authSignup.style.display = 'none';
-      authLogin.style.display = 'block';
-      authHeading.textContent = 'Log in';
-      loginMsg.textContent = '';
+      showAuthPane('login');
     });
     document.getElementById('show-signup-link').addEventListener('click', (e) => {
       e.preventDefault();
-      authLogin.style.display = 'none';
-      authSignup.style.display = 'block';
-      authHeading.textContent = 'Create a free account';
-      loginMsg.textContent = '';
+      showAuthPane('signup');
     });
+    document.getElementById('show-forgot-link').addEventListener('click', (e) => {
+      e.preventDefault();
+      showAuthPane('forgot');
+    });
+    document.getElementById('back-to-login-link').addEventListener('click', (e) => {
+      e.preventDefault();
+      showAuthPane('login');
+    });
+
+    document.getElementById('forgot-btn').addEventListener('click', async () => {
+      const email = document.getElementById('forgot-email').value.trim();
+      loginMsg.textContent = '';
+      if (!email || !email.includes('@')) { loginMsg.textContent = 'Enter a valid email.'; return; }
+      const fbtn = document.getElementById('forgot-btn');
+      fbtn.disabled = true;
+      fbtn.textContent = 'Sending...';
+      try {
+        const res = await fetch(WORKER_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'request_password_reset', email })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || data.error) throw new Error(data.error || ('Could not send reset link (HTTP ' + res.status + ')'));
+        loginMsg.style.color = 'var(--accent)';
+        loginMsg.textContent = "If that email has an account, we've sent a reset link — check your inbox.";
+      } catch (err) {
+        loginMsg.style.color = 'var(--error, #DC2626)';
+        loginMsg.textContent = friendlyFetchError(err, 'Could not send reset link');
+      } finally {
+        fbtn.disabled = false;
+        fbtn.textContent = 'Send reset link';
+      }
+    });
+
+    document.getElementById('reset-btn').addEventListener('click', async () => {
+      const pw = document.getElementById('reset-password').value;
+      const pw2 = document.getElementById('reset-password-confirm').value;
+      loginMsg.style.color = 'var(--error, #DC2626)';
+      loginMsg.textContent = '';
+      if (!pw || pw.length < 8) { loginMsg.textContent = 'Password must be at least 8 characters.'; return; }
+      if (pw !== pw2) { loginMsg.textContent = "Passwords don't match."; return; }
+      const rbtn = document.getElementById('reset-btn');
+      const token = rbtn.dataset.token;
+      if (!token) { loginMsg.textContent = 'Missing or expired reset link — request a new one.'; return; }
+      rbtn.disabled = true;
+      rbtn.textContent = 'Setting password...';
+      try {
+        const res = await fetch(WORKER_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'confirm_password_reset', token, password: pw })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || data.error) throw new Error(data.error || ('Could not reset password (HTTP ' + res.status + ')'));
+        // Clean the ?reset= param out of the URL now that it's used.
+        const url = new URL(window.location.href);
+        url.searchParams.delete('reset');
+        window.history.replaceState({}, '', url.toString());
+        if (data.token) {
+          onAuthSuccess(data);
+        } else {
+          loginMsg.style.color = 'var(--accent)';
+          loginMsg.textContent = 'Password updated — log in with your new password.';
+          setTimeout(() => showAuthPane('login'), 1200);
+        }
+      } catch (err) {
+        loginMsg.style.color = 'var(--error, #DC2626)';
+        loginMsg.textContent = friendlyFetchError(err, 'Reset link may have expired — request a new one');
+      } finally {
+        rbtn.disabled = false;
+        rbtn.textContent = 'Set new password';
+      }
+    });
+
+    // If the page was opened from a "reset your password" email link (?reset=TOKEN),
+    // jump straight into the reset-password pane.
+    (function checkResetLink() {
+      const params = new URLSearchParams(window.location.search);
+      const resetToken = params.get('reset');
+      if (resetToken) {
+        document.getElementById('reset-btn').dataset.token = resetToken;
+        showAuthPane('reset');
+        openLoginModal();
+      }
+    })();
 
     function onAuthSuccess(data) {
       localStorage.setItem('pd_session_token', data.token);
@@ -2257,63 +2433,44 @@
       premiumEl.style.display = 'block';
 
       const skills = flagship.skills_to_learn || [];
-      const doneCount = skills.filter((_, i) => progress[i]).length;
-      const pct = skills.length ? Math.round((doneCount / skills.length) * 100) : 0;
 
-      const checklistHtml = resultId
+      const roadmapHtml = skills.length
               ? `
-      <div class="skills-checklist" style="margin:18px 0;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-          <span class="label-inline" style="margin:0;">Roadmap progress</span>
-          <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--accent);">${pct}% (${doneCount}/${skills.length})</span>
-        </div>
-        <div style="height:6px;background:var(--paper-2);border-radius:4px;overflow:hidden;margin-bottom:14px;">
-          <div class="progress-fill" style="height:100%;width:${pct}%;background:var(--accent);transition:width .3s;"></div>
-        </div>
+      <div style="margin:18px 0;">
+        <div class="label-inline" style="margin-bottom:8px;">Roadmap preview</div>
         ${skills.map((s, i) => `
-          <label style="display:flex;align-items:center;gap:10px;padding:8px 0;cursor:pointer;font-size:13.5px;color:${progress[i] ? 'var(--ink-soft)' : 'var(--ink)'};text-decoration:${progress[i] ? 'line-through' : 'none'};">
-            <input type="checkbox" class="progress-check" data-idx="${i}" ${progress[i] ? 'checked' : ''} style="accent-color:var(--accent);width:16px;height:16px;">
-            ${s}
-          </label>
+          <div class="skill-row">
+            <span class="skill-level ${i < skills.length / 3 ? 'foundational' : i < (skills.length * 2 / 3) ? 'core' : 'advanced'}">step ${i + 1}</span>
+            <div class="skill-body"><div class="skill-name">${s}</div></div>
+          </div>
         `).join('')}
       </div>
     `
-              : `<div class="skills-teaser">${skills.map(s => `<span>${s}</span>`).join('')}</div>`;
+              : '';
+
+      const archPreviewHtml = `
+      <div class="analysis-card" style="margin-top:18px;">
+        <div class="analysis-head">Architecture preview</div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <div style="flex:1;height:34px;border-radius:7px;background:linear-gradient(90deg,rgba(16,185,129,.16),rgba(37,99,235,.1));border:1px dashed var(--line);"></div>
+          <span style="color:var(--ink-soft);font-size:16px;">→</span>
+          <div style="flex:1;height:34px;border-radius:7px;background:linear-gradient(90deg,rgba(16,185,129,.16),rgba(37,99,235,.1));border:1px dashed var(--line);"></div>
+          <span style="color:var(--ink-soft);font-size:16px;">→</span>
+          <div style="flex:1;height:34px;border-radius:7px;background:linear-gradient(90deg,rgba(16,185,129,.16),rgba(37,99,235,.1));border:1px dashed var(--line);"></div>
+        </div>
+        <p style="font-size:12.5px;color:var(--ink-soft);line-height:1.6;margin:12px 0 0;">Full system design, component breakdown, and a phased build plan unlock with the complete guide.</p>
+      </div>
+    `;
 
       premiumEl.innerHTML = `
     <div class="premium-badge">Premium · Flagship Project</div>
     <h3>${flagship.title}</h3>
     <p class="hook">${flagship.hook}</p>
-    ${checklistHtml}
+    ${roadmapHtml}
+    ${archPreviewHtml}
     <p class="premium-copy">Full build guide + courses to actually teach you each skill, launching soon.</p>
   `;
       setTimeout(() => premiumEl.classList.add('show'), 150);
-
-      if (resultId) {
-        premiumEl.querySelectorAll('.progress-check').forEach(cb => {
-          cb.addEventListener('change', async (e) => {
-            const idx = parseInt(e.target.dataset.idx, 10);
-            const completed = e.target.checked;
-            const label = e.target.closest('label');
-            label.style.color = completed ? 'var(--ink-soft)' : 'var(--ink)';
-            label.style.textDecoration = completed ? 'line-through' : 'none';
-            progress[idx] = completed;
-            const newDone = skills.filter((_, i) => progress[i]).length;
-            const newPct = skills.length ? Math.round((newDone / skills.length) * 100) : 0;
-            const fill = premiumEl.querySelector('.progress-fill');
-            if (fill) fill.style.width = newPct + '%';
-            const pctLabel = premiumEl.querySelector('.skills-checklist span[style*="color:var(--accent)"]');
-            if (pctLabel) pctLabel.textContent = `${newPct}% (${newDone}/${skills.length})`;
-            try {
-              await fetch(WORKER_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'update_progress', id: resultId, stepIndex: idx, completed })
-              });
-            } catch (e) { /* progress is best-effort, don't block the UI on it */ }
-          });
-        });
-      }
     }
 
     async function requestGuide(resultId, ideaKey, triggerBtn) {
@@ -2492,20 +2649,27 @@
       const pct = totalSteps ? Math.round((doneSteps / totalSteps) * 100) : 0;
 
       mount.innerHTML = `
-    <div style="margin-top:16px;padding:20px;background:var(--paper-2);border:1px solid var(--line);border-radius:12px;">
+    <div style="margin-top:16px;padding:22px;background:var(--card);border:1px solid var(--line);border-radius:14px;">
       <div class="label-inline" style="margin-bottom:10px;">Architecture map</div>
-      <div class="diagram-mount" style="background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:14px;overflow-x:auto;"></div>
-      <p style="font-size:13.5px;color:var(--ink);line-height:1.6;margin:0 0 18px;">${guide.architecture}</p>
+      <div class="diagram-mount" style="background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:16px;overflow-x:auto;"></div>
 
-      <div class="label-inline" style="margin-bottom:10px;">Skills you'll need — foundational to advanced</div>
-      <div style="margin-bottom:20px;">
+      <div class="analysis-card">
+        <div class="analysis-head">Technical analysis</div>
+        <p style="font-size:13.5px;color:var(--ink);line-height:1.65;margin:0;">${guide.architecture}</p>
+      </div>
+
+      <div class="label-inline" style="margin-bottom:2px;">Skills you'll need — foundational to advanced</div>
+      <div style="margin-bottom:22px;">
         ${guide.skills.map(s => {
-        const levelColor = s.level === 'advanced' ? '#DC2626' : s.level === 'core' ? '#1D4ED8' : '#0EA968';
+        const level = (s.level || 'core').toLowerCase();
+        const levelClass = level === 'advanced' ? 'advanced' : level === 'foundational' ? 'foundational' : 'core';
         return `
-          <div style="padding:8px 0;border-top:1px solid var(--line);font-size:13px;">
-            <span style="display:inline-block;font-size:9px;letter-spacing:0.5px;font-family:'IBM Plex Mono',monospace;color:${levelColor};border:1px solid ${levelColor};border-radius:4px;padding:1px 6px;margin-right:8px;vertical-align:middle;">${(s.level || '').toUpperCase()}</span>
-            <span style="color:var(--accent);font-weight:600;">${s.name}</span>
-            <span style="color:var(--ink-soft);"> — ${s.why}</span>
+          <div class="skill-row">
+            <span class="skill-level ${levelClass}">${level}</span>
+            <div class="skill-body">
+              <div class="skill-name">${s.name}</div>
+              <div class="skill-why">${s.why}</div>
+            </div>
           </div>
         `;
       }).join('')}
@@ -2513,27 +2677,31 @@
 
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
         <div class="label-inline" style="margin:0;">Build plan</div>
-        <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--accent);">${pct}% (${doneSteps}/${totalSteps})</span>
+        <span id="guide-progress-label" style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--accent);">${pct}% (${doneSteps}/${totalSteps})</span>
       </div>
-      <div style="height:6px;background:var(--paper);border-radius:4px;overflow:hidden;margin-bottom:16px;">
-        <div class="guide-progress-fill" style="height:100%;width:${pct}%;background:var(--accent);transition:width .3s;"></div>
+      <div style="height:6px;background:var(--paper-2);border-radius:4px;overflow:hidden;margin-bottom:18px;">
+        <div class="guide-progress-fill" style="height:100%;width:${pct}%;background:linear-gradient(90deg,var(--accent),var(--accent-2));transition:width .3s;"></div>
       </div>
 
       ${guide.phases.map((phase, pi) => `
-        <div style="margin-bottom:16px;">
-          <div style="font-family:'Sora',sans-serif;font-size:14px;margin-bottom:2px;">${phase.title}</div>
-          <div style="font-size:12px;color:var(--ink-soft);margin-bottom:10px;">${phase.description}</div>
+        <div class="phase-card">
+          <div class="phase-head">
+            <span class="phase-title">${phase.title}</span>
+            <span class="phase-count">${phase.steps.length} step${phase.steps.length === 1 ? '' : 's'}</span>
+          </div>
+          <div class="phase-desc">${phase.description}</div>
           ${phase.steps.map((step, si) => {
         const stepId = `${pi}-${si}`;
         const checked = !!progress[stepId];
         return `
-              <label style="display:flex;gap:10px;padding:8px 0;cursor:pointer;border-top:1px solid var(--line);">
-                <input type="checkbox" class="guide-step-check" data-step-id="${stepId}" ${checked ? 'checked' : ''} style="accent-color:var(--accent);width:16px;height:16px;margin-top:2px;flex-shrink:0;">
-                <span>
-                  <span style="display:block;font-size:13px;color:${checked ? 'var(--ink-soft)' : 'var(--ink)'};text-decoration:${checked ? 'line-through' : 'none'};">${step.title}</span>
-                  <span style="display:block;font-size:12px;color:var(--ink-soft);margin-top:2px;">${step.detail}</span>
+              <div class="step-card${checked ? ' done' : ''}" data-step-id="${stepId}">
+                <input type="checkbox" class="step-check-input guide-step-check" data-step-id="${stepId}" ${checked ? 'checked' : ''}>
+                <span class="step-check-box"><svg viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.3 12L13 4.5" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                <span class="step-body">
+                  <span class="step-title">${step.title}</span>
+                  <span class="step-detail">${step.detail}</span>
                 </span>
-              </label>
+              </div>
             `;
       }).join('')}
         </div>
@@ -2543,19 +2711,19 @@
 
       renderArchitectureDiagram(mount.querySelector('.diagram-mount'), guide.architectureDiagram);
 
-      mount.querySelectorAll('.guide-step-check').forEach(cb => {
-        cb.addEventListener('change', async (e) => {
-          const stepId = e.target.dataset.stepId;
-          const completed = e.target.checked;
-          const textEl = e.target.nextElementSibling.querySelector('span');
-          textEl.style.color = completed ? 'var(--ink-soft)' : 'var(--ink)';
-          textEl.style.textDecoration = completed ? 'line-through' : 'none';
+      mount.querySelectorAll('.step-card').forEach(card => {
+        card.addEventListener('click', async () => {
+          const stepId = card.dataset.stepId;
+          const cb = card.querySelector('.guide-step-check');
+          const completed = !cb.checked;
+          cb.checked = completed;
+          card.classList.toggle('done', completed);
           progress[stepId] = completed;
           const newDone = Object.values(progress).filter(Boolean).length;
           const newPct = totalSteps ? Math.round((newDone / totalSteps) * 100) : 0;
           const fill = mount.querySelector('.guide-progress-fill');
           if (fill) fill.style.width = newPct + '%';
-          const label = mount.querySelector('span[style*="color:var(--accent)"]');
+          const label = mount.querySelector('#guide-progress-label');
           if (label) label.textContent = `${newPct}% (${newDone}/${totalSteps})`;
 
           try {
@@ -2931,5 +3099,6 @@
       }
     })();
   </script>
+</div>
 </body>
 </html>
