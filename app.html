@@ -1730,6 +1730,65 @@
   }
   .step-card.done .step-num-badge{background:rgba(16,185,129,.12);border-color:rgba(16,185,129,.3);color:var(--accent-deep);}
 
+  /* ---------- Upgraded idea cards ---------- */
+  .idea{
+    border-radius:16px !important;
+    padding:28px 28px 26px !important;
+  }
+  .idea::before{
+    width:0 !important;
+    height:0 !important;
+  }
+  .idea{
+    background:linear-gradient(180deg, rgba(255,255,255,0.98), rgba(250,251,249,0.98)) !important;
+    box-shadow:0 1px 2px rgba(15,23,42,0.04), 0 24px 48px -34px rgba(15,23,42,0.28) !important;
+    border:1px solid var(--line) !important;
+  }
+  .idea:hover{
+    transform:translateY(-5px) !important;
+    box-shadow:0 1px 2px rgba(15,23,42,0.05), 0 30px 56px -28px rgba(16,185,129,0.32), 0 0 0 1px rgba(16,185,129,0.22) !important;
+  }
+  .idea-top-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:2px;}
+  .idea-num{
+    display:inline-flex;align-items:center;gap:7px;
+  }
+  .idea-num::before{
+    content:'';width:6px;height:6px;border-radius:2px;
+    background:linear-gradient(135deg,var(--accent),var(--accent-2));display:inline-block;
+  }
+  .impact-tag{
+    font-family:'IBM Plex Mono',monospace;font-size:10.5px;font-weight:700;letter-spacing:.3px;
+    color:var(--accent-deep);background:rgba(16,185,129,.09);
+    border:1px solid rgba(16,185,129,.25);border-radius:999px;padding:4px 11px;
+    white-space:nowrap;
+  }
+  .difficulty-tag{
+    font-family:'IBM Plex Mono',monospace;font-size:9.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;
+    border-radius:5px;padding:2.5px 7px;display:inline-block;margin-left:8px;vertical-align:middle;
+  }
+  .difficulty-tag.beginner{color:#0E9968;background:rgba(16,185,129,.1);}
+  .difficulty-tag.intermediate{color:#B45309;background:rgba(217,119,6,.1);}
+  .difficulty-tag.advanced{color:#B91C1C;background:rgba(220,38,38,.1);}
+
+  .recruiter-hook{
+    display:flex;gap:10px;align-items:flex-start;
+    background:linear-gradient(135deg, rgba(16,185,129,.06), rgba(37,99,235,.05));
+    border:1px solid rgba(16,185,129,.18);border-radius:11px;
+    padding:12px 14px;margin:12px 0 4px;
+  }
+  .recruiter-hook svg{flex-shrink:0;margin-top:2px;width:15px;height:15px;color:var(--accent-deep);}
+  .recruiter-hook span{font-size:13.5px;color:var(--ink);font-weight:600;line-height:1.5;}
+
+  .idea .guide-btn{
+    background:linear-gradient(100deg, var(--accent-deep), var(--accent-2)) !important;
+    color:#fff !important;
+    border:none !important;
+    font-weight:700 !important;
+    box-shadow:0 12px 24px -14px rgba(16,185,129,.6);
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .idea .guide-btn:hover{transform:translateY(-2px);box-shadow:0 16px 30px -14px rgba(16,185,129,.75);}
+
   </style>
 </head>
 <body>
@@ -2447,9 +2506,20 @@
       ideas.forEach((idea, i) => {
         const div = document.createElement('div');
         div.className = 'idea';
+        const diffClass = (idea.difficulty || 'intermediate').toLowerCase();
+        const hookHtml = idea.recruiter_hook
+          ? `<div class="recruiter-hook">
+               <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M10 2l2.4 4.9 5.4.8-3.9 3.8.9 5.4-4.8-2.5-4.8 2.5.9-5.4-3.9-3.8 5.4-.8z" stroke-linejoin="round"/></svg>
+               <span>${idea.recruiter_hook}</span>
+             </div>`
+          : '';
         div.innerHTML = `
-      <div class="idea-num">Idea ${String(i+1).padStart(2,'0')}</div>
+      <div class="idea-top-row">
+        <div class="idea-num">Idea ${String(i+1).padStart(2,'0')}<span class="difficulty-tag ${diffClass}">${idea.difficulty || ''}</span></div>
+        ${idea.impact_tag ? `<span class="impact-tag">${idea.impact_tag}</span>` : ''}
+      </div>
       <h3>${idea.title}</h3>
+      ${hookHtml}
       <p>${idea.why}</p>
       <span class="label-inline">Stack</span>
       <div class="stack-tags">${idea.stack.map(s => `<span>${s}</span>`).join('')}</div>
@@ -2460,7 +2530,7 @@
         <button class="copy-btn">Copy</button>
         ${idea.resume_line}
       </div>
-      <button class="guide-btn" data-idea-key="${i}" style="margin-top:14px;width:100%;padding:10px;border-radius:8px;border:1px solid var(--accent-2);background:transparent;color:var(--accent-2);font-family:'IBM Plex Mono',monospace;font-size:12px;cursor:pointer;">Get the full step-by-step guide (200 credits) →</button>
+      <button class="guide-btn" data-idea-key="${i}" style="margin-top:14px;width:100%;padding:12px;border-radius:9px;font-family:'IBM Plex Mono',monospace;font-size:12px;cursor:pointer;">Get the full step-by-step guide (200 credits) →</button>
     `;
         target.appendChild(div);
         setTimeout(() => div.classList.add('show'), i * 110);

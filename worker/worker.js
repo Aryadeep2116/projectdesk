@@ -1269,7 +1269,7 @@ Valid values for a node's "type" field: "client", "server", "database", "externa
       // Cap input lengths to keep prompts sane and prevent abuse
       const safe = (v, max) => String(v || "not specified").slice(0, max);
 
-      const prompt = `You are a career mentor helping an Indian student pick resume-worthy projects.
+      const prompt = `You are a sharp, no-fluff technical mentor helping an Indian student pick projects that a recruiter or hiring manager would actually stop scrolling for.
 
 Background: ${safe(branch, 100)}
 Target role: ${safe(role, 100)}
@@ -1278,20 +1278,30 @@ Time available: ${safe(time, 50)}
 What feels missing from their resume: ${safe(gap, 300)}
 Dream company/target: ${safe(dreamTarget, 100)}
 
-Give exactly 4 solid project ideas tailored to this. Avoid generic overused ideas (no "to-do list app", no "weather app", no basic calculator) unless genuinely justified. Prefer projects that show real judgement and would make an interviewer ask a follow-up question. Each idea's "why" should reference their specific stated gap or goal where relevant.
+Give exactly 4 project ideas tailored to this. Hard rules:
+- BANNED unless genuinely justified with a real twist: to-do list app, weather app, basic calculator, generic blog/CRUD clone, "Netflix clone" / "Instagram clone" with no differentiator, simple portfolio site.
+- Every idea needs ONE concrete technical differentiator that a recruiter can picture in 3 seconds — a real constraint solved (concurrency, latency, offline-sync, real-time, cost optimization, security, scale), not just "used React and Node".
+- Prefer ideas where the interesting part is a decision, not a checkbox: e.g. "implemented optimistic UI with conflict resolution" beats "added a like button". Think like a senior engineer skimming a resume for 6 seconds — what makes them pause?
+- Reference the student's specific stated gap or goal directly in "why" — no generic filler.
+- "resume_line" MUST include a plausible number (%, ms, req/s, concurrent users, rows, cost saved, time saved) — vague achievement language is not acceptable.
+- "recruiter_hook" is a single punchy sentence, sharper and more concrete than "why" — the exact line that would make a recruiter open the GitHub link. No buzzwords like "leverage", "utilize", "cutting-edge".
+- "difficulty" must genuinely reflect effort given their stated time and current skills — don't inflate everything to "Advanced".
 
-Then separately, describe ONE flagship project — more ambitious than the 4 above, the kind of project that would genuinely put this student ahead of most other candidates applying for the same role, closer to what someone at their dream company/target would respect. Also list the specific skills they'd need to learn to pull it off, ranked by priority.
+Then separately, describe ONE flagship project — meaningfully more ambitious than the 4 above, the kind of project that would put this student ahead of most other candidates for the same role, closer to what an engineer at their dream company/target would respect. List the specific skills they'd need to learn to pull it off, ranked by priority (most foundational first).
 
 Respond ONLY with valid JSON, no markdown fences, no preamble, in this exact structure:
 {
   "greeting": "one short warm sentence acknowledging their specific target role and background",
   "ideas": [
     {
-      "title": "short project name",
+      "title": "short, specific project name — no generic 'X App' naming",
       "why": "1-2 sentences on why this project specifically stands out for this target role, referencing their stated gap or goal if relevant",
+      "recruiter_hook": "one sharp, concrete sentence a recruiter would remember — the standout technical detail",
+      "impact_tag": "2-4 word badge naming the core technical challenge solved, e.g. 'Real-time sync' or 'Sub-100ms search'",
+      "difficulty": "Beginner | Intermediate | Advanced",
       "stack": ["tech1", "tech2", "tech3"],
       "scope": "1 sentence on realistic scope given the time available",
-      "resume_line": "one polished resume bullet point, action-verb led, with a plausible measurable outcome"
+      "resume_line": "one polished resume bullet point, action-verb led, with a specific plausible number"
     }
   ],
   "flagship": {
@@ -1321,11 +1331,14 @@ Respond ONLY with valid JSON, no markdown fences, no preamble, in this exact str
                   properties: {
                     title: { type: "string" },
                     why: { type: "string" },
+                    recruiter_hook: { type: "string" },
+                    impact_tag: { type: "string" },
+                    difficulty: { type: "string" },
                     stack: { type: "array", items: { type: "string" } },
                     scope: { type: "string" },
                     resume_line: { type: "string" },
                   },
-                  required: ["title", "why", "stack", "scope", "resume_line"],
+                  required: ["title", "why", "recruiter_hook", "impact_tag", "difficulty", "stack", "scope", "resume_line"],
                 },
               },
               flagship: {
