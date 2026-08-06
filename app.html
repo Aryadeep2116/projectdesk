@@ -590,12 +590,14 @@
       position:relative;
       overflow:hidden;
       opacity:0;
-      transform:translateY(16px);
+      transform:translateY(26px) scale(.94);
       transition:transform .25s ease, box-shadow .25s ease;
     }
-    .idea.show{animation:cardIn .55s cubic-bezier(.2,.8,.2,1) forwards;}
+    .idea.show{animation:cardIn .65s cubic-bezier(.16,.9,.24,1) forwards;}
     @keyframes cardIn{
-      to{opacity:1;transform:translateY(0);}
+      0%{opacity:0;transform:translateY(26px) scale(.94);}
+      60%{opacity:1;transform:translateY(-3px) scale(1.012);}
+      100%{opacity:1;transform:translateY(0) scale(1);}
     }
     .idea:hover{
       transform:translateY(-4px) scale(1.008);
@@ -919,22 +921,25 @@
     /* Scroll-reveal: applied to idea cards, plan panels, etc. */
     .reveal-app{
       opacity:0;
-      transform:translateY(28px);
-      transition:opacity .7s cubic-bezier(.2,.8,.2,1), transform .7s cubic-bezier(.2,.8,.2,1);
+      transform:translateY(36px) scale(.97);
+      filter:blur(3px);
+      transition:opacity .75s cubic-bezier(.16,.8,.24,1), transform .75s cubic-bezier(.16,.8,.24,1), filter .6s ease;
     }
-    .reveal-app.in-view{opacity:1;transform:translateY(0);}
+    .reveal-app.in-view{opacity:1;transform:translateY(0) scale(1);filter:blur(0);}
     .reveal-left-app{
       opacity:0;
-      transform:translateX(-40px);
-      transition:opacity .7s cubic-bezier(.2,.8,.2,1), transform .7s cubic-bezier(.2,.8,.2,1);
+      transform:translateX(-52px) scale(.97);
+      filter:blur(3px);
+      transition:opacity .75s cubic-bezier(.16,.8,.24,1), transform .75s cubic-bezier(.16,.8,.24,1), filter .6s ease;
     }
-    .reveal-left-app.in-view{opacity:1;transform:translateX(0);}
+    .reveal-left-app.in-view{opacity:1;transform:translateX(0) scale(1);filter:blur(0);}
     .reveal-right-app{
       opacity:0;
-      transform:translateX(40px);
-      transition:opacity .7s cubic-bezier(.2,.8,.2,1), transform .7s cubic-bezier(.2,.8,.2,1);
+      transform:translateX(52px) scale(.97);
+      filter:blur(3px);
+      transition:opacity .75s cubic-bezier(.16,.8,.24,1), transform .75s cubic-bezier(.16,.8,.24,1), filter .6s ease;
     }
-    .reveal-right-app.in-view{opacity:1;transform:translateX(0);}
+    .reveal-right-app.in-view{opacity:1;transform:translateX(0) scale(1);filter:blur(0);}
 
     /* 3D tilt on idea / plan cards */
     .tilt-card{
@@ -1833,16 +1838,16 @@
       <p style="color:var(--ink-soft);font-size:12.5px;margin:0 0 20px;line-height:1.5;">360 free credits every 30 days — generating ideas and detailed guides both draw from the same pool.</p>
 
       <div id="auth-signup">
-        <input id="signup-name" type="text" placeholder="Your name" style="width:100%;padding:11px 13px;margin-bottom:10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-2);color:var(--ink);font-family:'Inter',sans-serif;font-size:14px;outline:none;">
-        <input id="signup-email" type="email" placeholder="Your email" style="width:100%;padding:11px 13px;margin-bottom:10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-2);color:var(--ink);font-family:'Inter',sans-serif;font-size:14px;outline:none;">
-        <input id="signup-password" type="password" placeholder="Password (min 8 characters)" style="width:100%;padding:11px 13px;margin-bottom:14px;border-radius:8px;border:1px solid var(--line);background:var(--paper-2);color:var(--ink);font-family:'Inter',sans-serif;font-size:14px;outline:none;">
+        <input id="signup-name" type="text" name="name" autocomplete="name" placeholder="Your name" style="width:100%;padding:11px 13px;margin-bottom:10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-2);color:var(--ink);font-family:'Inter',sans-serif;font-size:14px;outline:none;">
+        <input id="signup-email" type="email" name="email" autocomplete="email" placeholder="Your email" style="width:100%;padding:11px 13px;margin-bottom:10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-2);color:var(--ink);font-family:'Inter',sans-serif;font-size:14px;outline:none;">
+        <input id="signup-password" type="password" name="new-password" autocomplete="new-password" placeholder="Password (min 8 characters)" style="width:100%;padding:11px 13px;margin-bottom:14px;border-radius:8px;border:1px solid var(--line);background:var(--paper-2);color:var(--ink);font-family:'Inter',sans-serif;font-size:14px;outline:none;">
         <button id="signup-btn" style="width:100%;padding:12px;border-radius:8px;border:none;background:var(--accent);color:#FFFFFF;font-weight:600;font-size:14px;cursor:pointer;">Sign up</button>
         <div style="text-align:center;margin-top:14px;font-size:12px;color:var(--ink-soft);">Already have an account? <a href="#" id="show-login-link" style="color:var(--accent-2);">Log in</a></div>
       </div>
 
       <div id="auth-login" style="display:none;">
-        <input id="login-email" type="email" placeholder="Your email" style="width:100%;padding:11px 13px;margin-bottom:10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-2);color:var(--ink);font-family:'Inter',sans-serif;font-size:14px;outline:none;">
-        <input id="login-password" type="password" placeholder="Password" style="width:100%;padding:11px 13px;margin-bottom:6px;border-radius:8px;border:1px solid var(--line);background:var(--paper-2);color:var(--ink);font-family:'Inter',sans-serif;font-size:14px;outline:none;">
+        <input id="login-email" type="email" name="email" autocomplete="username" placeholder="Your email" style="width:100%;padding:11px 13px;margin-bottom:10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-2);color:var(--ink);font-family:'Inter',sans-serif;font-size:14px;outline:none;">
+        <input id="login-password" type="password" name="password" autocomplete="current-password" placeholder="Password" style="width:100%;padding:11px 13px;margin-bottom:6px;border-radius:8px;border:1px solid var(--line);background:var(--paper-2);color:var(--ink);font-family:'Inter',sans-serif;font-size:14px;outline:none;">
         <div style="text-align:right;margin-bottom:14px;"><a href="#" id="show-forgot-link" style="color:var(--ink-soft);font-size:12px;">Forgot password?</a></div>
         <button id="login-btn" style="width:100%;padding:12px;border-radius:8px;border:none;background:var(--accent);color:#FFFFFF;font-weight:600;font-size:14px;cursor:pointer;">Log in</button>
         <div style="text-align:center;margin-top:14px;font-size:12px;color:var(--ink-soft);">New here? <a href="#" id="show-signup-link" style="color:var(--accent-2);">Create an account</a></div>
@@ -1850,15 +1855,15 @@
 
       <div id="auth-forgot" style="display:none;">
         <p style="color:var(--ink-soft);font-size:12.5px;margin:0 0 16px;line-height:1.5;">Enter your account email and we'll send you a link to reset your password.</p>
-        <input id="forgot-email" type="email" placeholder="Your email" style="width:100%;padding:11px 13px;margin-bottom:14px;border-radius:8px;border:1px solid var(--line);background:var(--paper-2);color:var(--ink);font-family:'Inter',sans-serif;font-size:14px;outline:none;">
+        <input id="forgot-email" type="email" name="email" autocomplete="email" placeholder="Your email" style="width:100%;padding:11px 13px;margin-bottom:14px;border-radius:8px;border:1px solid var(--line);background:var(--paper-2);color:var(--ink);font-family:'Inter',sans-serif;font-size:14px;outline:none;">
         <button id="forgot-btn" style="width:100%;padding:12px;border-radius:8px;border:none;background:var(--accent);color:#FFFFFF;font-weight:600;font-size:14px;cursor:pointer;">Send reset link</button>
         <div style="text-align:center;margin-top:14px;font-size:12px;color:var(--ink-soft);"><a href="#" id="back-to-login-link" style="color:var(--accent-2);">Back to log in</a></div>
       </div>
 
       <div id="auth-reset" style="display:none;">
         <p style="color:var(--ink-soft);font-size:12.5px;margin:0 0 16px;line-height:1.5;">Choose a new password for your account.</p>
-        <input id="reset-password" type="password" placeholder="New password (min 8 characters)" style="width:100%;padding:11px 13px;margin-bottom:10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-2);color:var(--ink);font-family:'Inter',sans-serif;font-size:14px;outline:none;">
-        <input id="reset-password-confirm" type="password" placeholder="Confirm new password" style="width:100%;padding:11px 13px;margin-bottom:14px;border-radius:8px;border:1px solid var(--line);background:var(--paper-2);color:var(--ink);font-family:'Inter',sans-serif;font-size:14px;outline:none;">
+        <input id="reset-password" type="password" name="new-password" autocomplete="new-password" placeholder="New password (min 8 characters)" style="width:100%;padding:11px 13px;margin-bottom:10px;border-radius:8px;border:1px solid var(--line);background:var(--paper-2);color:var(--ink);font-family:'Inter',sans-serif;font-size:14px;outline:none;">
+        <input id="reset-password-confirm" type="password" name="confirm-password" autocomplete="new-password" placeholder="Confirm new password" style="width:100%;padding:11px 13px;margin-bottom:14px;border-radius:8px;border:1px solid var(--line);background:var(--paper-2);color:var(--ink);font-family:'Inter',sans-serif;font-size:14px;outline:none;">
         <button id="reset-btn" style="width:100%;padding:12px;border-radius:8px;border:none;background:var(--accent);color:#FFFFFF;font-weight:600;font-size:14px;cursor:pointer;">Set new password</button>
       </div>
 
@@ -1928,12 +1933,12 @@
           </div>
           <div class="field">
             <label>Your background</label>
-            <input id="branch" type="text" placeholder="e.g. CSE 3rd year, or Commerce grad learning data analysis">
+            <input id="branch" type="text" name="branch" autocomplete="off" placeholder="e.g. CSE 3rd year, or Commerce grad learning data analysis">
           </div>
 
           <div class="field">
             <label>Target role <span class="req">required</span></label>
-            <input id="role" type="text" placeholder="e.g. SDE intern, Data Analyst">
+            <input id="role" type="text" name="role" autocomplete="off" placeholder="e.g. SDE intern, Data Analyst">
           </div>
 
           <div class="field">
@@ -1948,17 +1953,17 @@
 
           <div class="field">
             <label>Skills you already have</label>
-            <textarea id="skills" placeholder="e.g. Python, basic SQL, React, comfortable picking up new tools"></textarea>
+            <textarea id="skills" name="skills" autocomplete="off" placeholder="e.g. Python, basic SQL, React, comfortable picking up new tools"></textarea>
           </div>
 
           <div class="field">
             <label>What feels missing from your resume right now?</label>
-            <input id="gap" type="text" placeholder="e.g. no real projects, nothing that shows leadership, too much theory">
+            <input id="gap" type="text" name="gap" autocomplete="off" placeholder="e.g. no real projects, nothing that shows leadership, too much theory">
           </div>
 
           <div class="field">
             <label>Dream company or target (optional)</label>
-            <input id="dreamTarget" type="text" placeholder="e.g. a fintech startup, Zomato, a Series A SaaS company">
+            <input id="dreamTarget" type="text" name="dreamTarget" autocomplete="off" placeholder="e.g. a fintech startup, Zomato, a Series A SaaS company">
           </div>
 
           <button id="go"><span class="spinner"></span><span id="go-label">Get project ideas (120 credits)</span><span class="btn-arrow">→</span></button>
@@ -2004,7 +2009,7 @@
           <div style="font-family:'Sora',sans-serif;font-size:19px;margin-bottom:8px;">Premium — coming soon</div>
           <p style="color:var(--ink-soft);font-size:13px;max-width:380px;margin:0 0 20px;">More credits, more guides per month, and features we're still deciding on.</p>
           <div class="waitlist-row" style="max-width:380px;">
-            <input id="premium-waitlist-email" type="email" placeholder="your email — get early access + launch discount">
+            <input id="premium-waitlist-email" type="email" name="waitlist-email" autocomplete="email" placeholder="your email — get early access + launch discount">
             <button id="premium-waitlist-btn">Join waitlist</button>
           </div>
           <div id="premium-waitlist-status" class="waitlist-status"></div>
@@ -2470,7 +2475,7 @@
       box.style.cssText = 'margin:22px 0;padding:16px 18px;background:var(--card);border:1px solid var(--line);border-radius:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;';
       box.innerHTML = `
     <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-soft);">Save this link to come back anytime:</span>
-    <input readonly value="${shareUrl}" style="flex:1;min-width:180px;background:var(--paper-2);border:1px solid var(--line);border-radius:6px;padding:8px 10px;color:var(--ink);font-family:'IBM Plex Mono',monospace;font-size:12px;">
+    <input readonly value="${shareUrl}" name="share-url" autocomplete="off" style="flex:1;min-width:180px;background:var(--paper-2);border:1px solid var(--line);border-radius:6px;padding:8px 10px;color:var(--ink);font-family:'IBM Plex Mono',monospace;font-size:12px;">
     <button id="copy-share-link" style="background:var(--accent);color:#FFFFFF;border:none;border-radius:6px;padding:8px 14px;font-weight:600;font-size:12px;cursor:pointer;">Copy link</button>
   `;
       resultsHead.after(box);
@@ -2543,6 +2548,7 @@
 
         div.querySelector('.guide-btn').addEventListener('click', (e) => requestGuide(currentResultId, String(i), e.target));
       });
+      if (window.refreshScrollReveals) setTimeout(window.refreshScrollReveals, 60);
     }
 
     function renderFlagship(flagship, inputs, resultId, progress) {
@@ -2871,6 +2877,7 @@
   `;
 
       renderArchitectureDiagram(mount.querySelector('.diagram-mount'), guide.architectureDiagram);
+      if (window.refreshScrollReveals) setTimeout(window.refreshScrollReveals, 60);
 
       mount.querySelectorAll('.step-card').forEach(card => {
         card.addEventListener('click', async () => {
@@ -3059,12 +3066,16 @@
         const tabContent = document.querySelectorAll('.tab-content, .tab-pane, [data-tab-content]');
         tabContent.forEach(el => el.classList.add('reveal-app'));
 
-        // Idea / plan cards across tabs
-        const cards = document.querySelectorAll('.idea-card, .plan-step, .overview-card, .workflow-step, .premium-card, [data-idea-card], [data-plan-step]');
+        // Guide/workflow content across tabs — matches the real classes used in this app.
+        // Idea cards are intentionally excluded here: they already have their own
+        // dedicated pop-in animation (.show/@keyframes cardIn) and double-applying
+        // this transition on top would fight it (both drive opacity/transform).
+        const cards = document.querySelectorAll('.phase-node, .analysis-card, .skill-row, .idea-card, .plan-step, .overview-card, .workflow-step, .premium-card, [data-idea-card], [data-plan-step]');
         cards.forEach((el, i) => {
           if (!el.classList.contains('reveal-app') && !el.classList.contains('reveal-left-app') && !el.classList.contains('reveal-right-app')) {
             el.classList.add(i % 2 === 0 ? 'reveal-left-app' : 'reveal-right-app');
             el.classList.add('tilt-card');
+            el.style.transitionDelay = (i % 6) * 0.06 + 's';
           }
         });
       }
@@ -3092,6 +3103,13 @@
       }
       setTimeout(observeReveals, 100);
       setTimeout(observeReveals, 500);
+
+      // Expose so dynamically-rendered content (ideas, guides, etc. added after
+      // initial page load) can re-run tagging + observation once inserted.
+      window.refreshScrollReveals = function () {
+        autoTag();
+        observeReveals();
+      };
 
       // ---- 3D tilt on tilt-card elements ----
       function attachTilt() {

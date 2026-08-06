@@ -277,6 +277,44 @@
     0%,100%{opacity:.3;}
     50%{opacity:1;}
   }
+
+  /* TABS */
+  .admin-tabs{display:flex;gap:4px;margin-bottom:24px;border-bottom:1px solid var(--line);}
+  .admin-tab{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    letter-spacing:.4px;
+    color:var(--ink-soft);
+    background:none;
+    border:none;
+    border-bottom:2px solid transparent;
+    padding:10px 4px;
+    margin-right:22px;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    gap:7px;
+    transition:color .15s ease, border-color .15s ease;
+  }
+  .admin-tab:hover{color:var(--ink);}
+  .admin-tab.active{color:var(--accent);border-color:var(--accent);}
+  .admin-tab .count-pill{
+    background:var(--paper-2);border:1px solid var(--line);border-radius:999px;
+    padding:1px 7px;font-size:10.5px;color:var(--ink-soft);
+  }
+  .admin-tab.active .count-pill{background:rgba(14,169,104,.1);border-color:rgba(14,169,104,.3);color:var(--accent);}
+  .tab-panel{display:none;}
+  .tab-panel.active{display:block;}
+
+  .badge{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10px;letter-spacing:.4px;
+    border-radius:5px;padding:2.5px 7px;display:inline-block;font-weight:600;
+  }
+  .badge.ok{color:#0E9968;background:rgba(16,185,129,.1);}
+  .badge.warn{color:#B45309;background:rgba(217,119,6,.1);}
+  .badge.fail{color:#B91C1C;background:rgba(220,38,38,.1);}
+  .badge.neutral{color:var(--ink-soft);background:var(--paper-2);}
 </style>
 </head>
 <body>
@@ -318,12 +356,41 @@
   <!-- DASHBOARD -->
   <div id="dashboard">
     <div class="stats" id="statsRow"></div>
-    <div class="table-card">
-      <div class="table-head">
-        <h3>Waitlist signups</h3>
-        <input id="search" type="text" placeholder="Search email or role...">
+
+    <div class="admin-tabs">
+      <button class="admin-tab active" data-tab="users">Users <span class="count-pill" id="count-users">0</span></button>
+      <button class="admin-tab" data-tab="logins">Login activity <span class="count-pill" id="count-logins">0</span></button>
+      <button class="admin-tab" data-tab="waitlist">Waitlist <span class="count-pill" id="count-waitlist">0</span></button>
+    </div>
+
+    <div class="tab-panel active" id="panel-users">
+      <div class="table-card">
+        <div class="table-head">
+          <h3>Registered accounts</h3>
+          <input id="search-users" type="text" placeholder="Search name or email...">
+        </div>
+        <div class="table-scroll" id="usersTableWrap"></div>
       </div>
-      <div class="table-scroll" id="tableWrap"></div>
+    </div>
+
+    <div class="tab-panel" id="panel-logins">
+      <div class="table-card">
+        <div class="table-head">
+          <h3>Login attempts — password, code, and magic-link sign-ins</h3>
+          <input id="search-logins" type="text" placeholder="Search email...">
+        </div>
+        <div class="table-scroll" id="loginsTableWrap"></div>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="panel-waitlist">
+      <div class="table-card">
+        <div class="table-head">
+          <h3>Waitlist signups</h3>
+          <input id="search-waitlist" type="text" placeholder="Search email or role...">
+        </div>
+        <div class="table-scroll" id="waitlistTableWrap"></div>
+      </div>
     </div>
   </div>
 
@@ -331,7 +398,9 @@
 
 <script>
 const WORKER_URL = "https://projectdesk-api.aryadeepbiswas014.workers.dev";
-let allEntries = [];
+let allUsers = [];
+let allLogins = [];
+let allWaitlist = [];
 
 const pwInput = document.getElementById('pw');
 const loadBtn = document.getElementById('load');
@@ -340,7 +409,6 @@ const loginCard = document.getElementById('loginCard');
 const dashboard = document.getElementById('dashboard');
 const logoutBtn = document.getElementById('logout');
 const toggleEye = document.getElementById('toggleEye');
-const searchInput = document.getElementById('search');
 
 toggleEye.addEventListener('click', () => {
   const showing = pwInput.type === 'text';
@@ -352,6 +420,16 @@ pwInput.addEventListener('keydown', (e) => {
   if (e.key === 'Enter') loadBtn.click();
 });
 
+// ---- Tabs ----
+document.querySelectorAll('.admin-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+  });
+});
+
 async function loadDashboard(password) {
   msg.innerHTML = '<div class="error-msg" style="color:var(--ink-soft);"><span class="dot-pulse">●</span> Authenticating...</div>';
   loadBtn.disabled = true;
@@ -360,7 +438,7 @@ async function loadDashboard(password) {
     const res = await fetch(WORKER_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'admin_view_waitlist', password })
+      body: JSON.stringify({ action: 'admin_dashboard', password })
     });
     const data = await res.json();
 
@@ -390,30 +468,87 @@ async function loadDashboard(password) {
   }
 }
 
+function timeAgo(iso) {
+  const diff = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return mins + 'm ago';
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return hrs + 'h ago';
+  const days = Math.floor(hrs / 24);
+  return days + 'd ago';
+}
+
 function renderDashboard(data) {
-  const entries = data.entries || [];
-  allEntries = entries;
+  allUsers = data.users || [];
+  allLogins = data.logins || [];
+  allWaitlist = data.waitlist || [];
+  const loginStats = data.loginStats || {};
+  const userStats = data.userStats || {};
   const counts = data.eventCounts || {};
   const views = counts.landing_view || 0;
   const clicks = counts.cta_click || 0;
   const rate = views ? ((clicks / views) * 100).toFixed(1) : '0';
 
   document.getElementById('statsRow').innerHTML = `
+    <div class="stat-box"><div class="num">${userStats.total || 0}</div><div class="lbl">Registered users</div></div>
+    <div class="stat-box"><div class="num">${loginStats.total || 0}</div><div class="lbl">Total logins (90d)</div></div>
+    <div class="stat-box"><div class="num">${loginStats.today || 0}</div><div class="lbl">Logins today</div></div>
+    <div class="stat-box"><div class="num">${loginStats.failed || 0}</div><div class="lbl">Failed attempts</div></div>
+    <div class="stat-box"><div class="num">${userStats.verified || 0}</div><div class="lbl">Verified emails</div></div>
     <div class="stat-box"><div class="num">${views}</div><div class="lbl">Landing views</div></div>
-    <div class="stat-box"><div class="num">${clicks}</div><div class="lbl">CTA clicks</div></div>
     <div class="stat-box"><div class="num">${rate}%</div><div class="lbl">Click-through rate</div></div>
-    <div class="stat-box"><div class="num">${entries.length}</div><div class="lbl">Waitlist signups</div></div>
+    <div class="stat-box"><div class="num">${allWaitlist.length}</div><div class="lbl">Waitlist signups</div></div>
   `;
 
-  renderTable(entries);
+  document.getElementById('count-users').textContent = allUsers.length;
+  document.getElementById('count-logins').textContent = allLogins.length;
+  document.getElementById('count-waitlist').textContent = allWaitlist.length;
+
+  renderUsersTable(allUsers);
+  renderLoginsTable(allLogins);
+  renderWaitlistTable(allWaitlist);
 }
 
-function renderTable(entries) {
-  const tableWrap = document.getElementById('tableWrap');
-  if (entries.length === 0) {
-    tableWrap.innerHTML = '<div class="empty-state">No matching signups yet.</div>';
-    return;
-  }
+function renderUsersTable(users) {
+  const wrap = document.getElementById('usersTableWrap');
+  if (!users.length) { wrap.innerHTML = '<div class="empty-state">No registered accounts yet.</div>'; return; }
+  let html = '<table><tr><th>Signed up</th><th>Name</th><th>Email</th><th>Plan</th><th>Credits</th><th>Verified</th><th>Guides unlocked</th></tr>';
+  users.forEach(u => {
+    html += `<tr>
+      <td>${new Date(u.signedUpAt).toLocaleString()} <span style="color:var(--ink-soft);">(${timeAgo(u.signedUpAt)})</span></td>
+      <td>${u.name || ''}</td>
+      <td class="email">${u.email || ''}</td>
+      <td><span class="badge ${u.plan === 'premium' ? 'ok' : 'neutral'}">${u.plan || 'free'}</span></td>
+      <td>${u.credits ?? ''}</td>
+      <td><span class="badge ${u.emailVerified ? 'ok' : 'warn'}">${u.emailVerified ? 'verified' : 'unverified'}</span></td>
+      <td>${u.guidesUnlocked ?? 0}</td>
+    </tr>`;
+  });
+  html += '</table>';
+  wrap.innerHTML = html;
+}
+
+function renderLoginsTable(logins) {
+  const wrap = document.getElementById('loginsTableWrap');
+  if (!logins.length) { wrap.innerHTML = '<div class="empty-state">No login activity recorded yet.</div>'; return; }
+  let html = '<table><tr><th>When</th><th>Email</th><th>Method</th><th>Result</th><th>Reason</th></tr>';
+  logins.forEach(l => {
+    html += `<tr>
+      <td>${new Date(l.ts).toLocaleString()} <span style="color:var(--ink-soft);">(${timeAgo(l.ts)})</span></td>
+      <td class="email">${l.email || ''}</td>
+      <td><span class="badge neutral">${(l.method || '').replace('_', ' ')}</span></td>
+      <td><span class="badge ${l.success ? 'ok' : 'fail'}">${l.success ? 'success' : 'failed'}</span></td>
+      <td style="color:var(--ink-soft);">${l.reason ? l.reason.replace(/_/g, ' ') : '—'}</td>
+    </tr>`;
+  });
+  html += '</table>';
+  wrap.innerHTML = html;
+}
+
+function renderWaitlistTable(entries) {
+  const wrap = document.getElementById('waitlistTableWrap');
+  if (!entries.length) { wrap.innerHTML = '<div class="empty-state">No matching signups yet.</div>'; return; }
   let html = '<table><tr><th>When</th><th>Email</th><th>Role</th><th>Gap</th><th>Dream Target</th><th>Branch</th><th>Skills</th></tr>';
   entries.forEach(e => {
     html += `<tr>
@@ -427,17 +562,24 @@ function renderTable(entries) {
     </tr>`;
   });
   html += '</table>';
-  tableWrap.innerHTML = html;
+  wrap.innerHTML = html;
 }
 
-searchInput.addEventListener('input', () => {
-  const q = searchInput.value.trim().toLowerCase();
-  if (!q) { renderTable(allEntries); return; }
-  const filtered = allEntries.filter(e =>
-    (e.email || '').toLowerCase().includes(q) ||
-    (e.role || '').toLowerCase().includes(q)
-  );
-  renderTable(filtered);
+document.getElementById('search-users').addEventListener('input', (e) => {
+  const q = e.target.value.trim().toLowerCase();
+  renderUsersTable(!q ? allUsers : allUsers.filter(u =>
+    (u.email || '').toLowerCase().includes(q) || (u.name || '').toLowerCase().includes(q)
+  ));
+});
+document.getElementById('search-logins').addEventListener('input', (e) => {
+  const q = e.target.value.trim().toLowerCase();
+  renderLoginsTable(!q ? allLogins : allLogins.filter(l => (l.email || '').toLowerCase().includes(q)));
+});
+document.getElementById('search-waitlist').addEventListener('input', (e) => {
+  const q = e.target.value.trim().toLowerCase();
+  renderWaitlistTable(!q ? allWaitlist : allWaitlist.filter(e2 =>
+    (e2.email || '').toLowerCase().includes(q) || (e2.role || '').toLowerCase().includes(q)
+  ));
 });
 
 loadBtn.addEventListener('click', () => {

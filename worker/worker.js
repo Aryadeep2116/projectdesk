@@ -77,6 +77,26 @@ async function getSession(env, token) {
   try { return JSON.parse(stored); } catch (e) { return null; }
 }
 
+// --- LOGIN ACTIVITY LOGGING (for the admin dashboard) ---
+// Every login attempt (password, OTP, magic link) — success or failure — gets
+// a lightweight record so the admin page can show "how many logins", recent
+// activity, and failed-attempt patterns. Kept for 90 days, sorted by key
+// since the key is time-prefixed.
+async function logLoginEvent(env, email, method, success, extra) {
+  try {
+    const ts = Date.now();
+    const id = generateId().slice(0, 8);
+    const key = `login_log:${ts}:${id}`;
+    await env.WAITLIST.put(key, JSON.stringify({
+      email: (email || '').toLowerCase(),
+      method,       // "password" | "otp" | "magic_link"
+      success: !!success,
+      reason: extra || null, // e.g. "wrong_password", "no_account"
+      ts: new Date(ts).toISOString(),
+    }), { expirationTtl: 60 * 60 * 24 * 90 });
+  } catch (e) { /* logging must never break the actual login flow */ }
+}
+
 // --- CREDITS SYSTEM ---
 // Free plan gets 360 credits per 30-day cycle. Generating the 4 project ideas
 // costs 120 credits; generating one detailed guide costs 200. That leaves a
@@ -390,6 +410,7 @@ async function sendEmail(env, to, template, data) {
         const userKey = `user:${email.toLowerCase()}`;
         const stored = await env.WAITLIST.get(userKey);
         if (!stored) {
+          await logLoginEvent(env, email, "password", false, "no_account");
           return new Response(JSON.stringify({ error: "Invalid email or password." }), {
             status: 401,
             headers: { ...corsHeaders(request), "Content-Type": "application/json" },
@@ -398,6 +419,7 @@ async function sendEmail(env, to, template, data) {
         const userRecord = JSON.parse(stored);
         const { hash } = await hashPassword(password, userRecord.salt);
         if (hash !== userRecord.hash) {
+          await logLoginEvent(env, email, "password", false, "wrong_password");
           return new Response(JSON.stringify({ error: "Invalid email or password." }), {
             status: 401,
             headers: { ...corsHeaders(request), "Content-Type": "application/json" },
@@ -406,6 +428,7 @@ async function sendEmail(env, to, template, data) {
 
         const token = generateId();
         await env.WAITLIST.put(`session:${token}`, JSON.stringify({ email: userRecord.email, name: userRecord.name }), { expirationTtl: 60 * 60 * 24 * 30 });
+        await logLoginEvent(env, userRecord.email, "password", true);
 
         return new Response(JSON.stringify({ ok: true, token, name: userRecord.name, email: userRecord.email, emailVerified: userRecord.emailVerified !== false }), {
           headers: { ...corsHeaders(request), "Content-Type": "application/json" },
@@ -486,6 +509,7 @@ async function sendEmail(env, to, template, data) {
         const key = `otp:${email.toLowerCase()}`;
         const stored = await env.WAITLIST.get(key);
         if (!stored) {
+          await logLoginEvent(env, email, "otp", false, "expired_or_missing");
           return new Response(JSON.stringify({ error: "Code expired or not found. Request a new one." }), {
             status: 400,
             headers: { ...corsHeaders(request), "Content-Type": "application/json" },
@@ -493,6 +517,7 @@ async function sendEmail(env, to, template, data) {
         }
         const record = JSON.parse(stored);
         if (String(otp).trim() !== record.otp) {
+          await logLoginEvent(env, email, "otp", false, "wrong_code");
           return new Response(JSON.stringify({ error: "Incorrect code." }), {
             status: 401,
             headers: { ...corsHeaders(request), "Content-Type": "application/json" },
@@ -507,6 +532,7 @@ async function sendEmail(env, to, template, data) {
           JSON.stringify({ email: email.toLowerCase(), name: record.name }),
           { expirationTtl: 60 * 60 * 24 * 30 } // 30 days
         );
+        await logLoginEvent(env, email, "otp", true);
 
         return new Response(JSON.stringify({ ok: true, token, name: record.name, email: email.toLowerCase() }), {
           headers: { ...corsHeaders(request), "Content-Type": "application/json" },
@@ -996,6 +1022,92 @@ Valid values for a node's "type" field: "client", "server", "database", "externa
         });
       }
 
+      // --- ADMIN: everything the admin dashboard needs in one call ---
+      // (registered users, login activity + stats, waitlist entries, event counts)
+      if (body.action === "admin_dashboard") {
+        if (await isRateLimited(env, ip, "admin", 30, 3600)) {
+          return new Response(JSON.stringify({ error: "Too many attempts. Try again later." }), {
+            status: 429,
+            headers: { ...corsHeaders(request), "Content-Type": "application/json" },
+          });
+        }
+        if (body.password !== env.ADMIN_PASSWORD) {
+          return new Response(JSON.stringify({ error: "Unauthorized" }), {
+            status: 401,
+            headers: { ...corsHeaders(request), "Content-Type": "application/json" },
+          });
+        }
+
+        // Registered accounts (never expose hash/salt to the frontend)
+        const userList = await env.WAITLIST.list({ prefix: "user:", limit: 1000 });
+        const users = (await Promise.all(
+          userList.keys.map(async (k) => {
+            const raw = await env.WAITLIST.get(k.name);
+            if (!raw) return null;
+            const u = JSON.parse(raw);
+            return {
+              name: u.name,
+              email: u.email,
+              plan: u.plan || "free",
+              credits: u.credits,
+              creditsResetAt: u.creditsResetAt,
+              emailVerified: u.emailVerified !== false,
+              signedUpAt: u.ts,
+              guidesUnlocked: (u.usedGuides || []).length,
+            };
+          })
+        )).filter(Boolean);
+        users.sort((a, b) => new Date(b.signedUpAt) - new Date(a.signedUpAt));
+
+        // Login activity log (password / otp / magic link — success + failure)
+        const loginList = await env.WAITLIST.list({ prefix: "login_log:", limit: 1000 });
+        const logins = (await Promise.all(
+          loginList.keys.map(async (k) => JSON.parse(await env.WAITLIST.get(k.name) || 'null'))
+        )).filter(Boolean);
+        logins.sort((a, b) => new Date(b.ts) - new Date(a.ts));
+
+        const now = Date.now();
+        const dayMs = 24 * 60 * 60 * 1000;
+        const loginStats = {
+          total: logins.length,
+          successful: logins.filter(l => l.success).length,
+          failed: logins.filter(l => !l.success).length,
+          today: logins.filter(l => now - new Date(l.ts).getTime() < dayMs).length,
+          last7Days: logins.filter(l => now - new Date(l.ts).getTime() < 7 * dayMs).length,
+          uniqueEmails: new Set(logins.filter(l => l.success).map(l => l.email)).size,
+        };
+
+        // Waitlist (pre-launch interest form, separate from real accounts)
+        const wlList = await env.WAITLIST.list({ prefix: "waitlist:", limit: 1000 });
+        const waitlist = await Promise.all(
+          wlList.keys.map(async (k) => JSON.parse(await env.WAITLIST.get(k.name)))
+        );
+        waitlist.sort((a, b) => new Date(b.ts) - new Date(a.ts));
+
+        // Landing page engagement events
+        const eventList = await env.WAITLIST.list({ prefix: "event:", limit: 1000 });
+        const events = await Promise.all(
+          eventList.keys.map(async (k) => JSON.parse(await env.WAITLIST.get(k.name)))
+        );
+        const eventCounts = {};
+        events.forEach(e => { eventCounts[e.type] = (eventCounts[e.type] || 0) + 1; });
+
+        return new Response(JSON.stringify({
+          users,
+          logins: logins.slice(0, 300), // cap payload size; stats above cover the full set
+          loginStats,
+          waitlist,
+          eventCounts,
+          userStats: {
+            total: users.length,
+            verified: users.filter(u => u.emailVerified).length,
+            premium: users.filter(u => u.plan === 'premium').length,
+          },
+        }), {
+          headers: { ...corsHeaders(request), "Content-Type": "application/json" },
+        });
+      }
+
       // --- ADMIN: view all waitlist entries (simple password check) ---
       if (body.action === "admin_view_waitlist") {
         if (await isRateLimited(env, ip, "admin", 20, 3600)) {
@@ -1094,9 +1206,13 @@ Valid values for a node's "type" field: "client", "server", "database", "externa
         const { email } = JSON.parse(stored);
         await env.WAITLIST.delete(`magic:${token}`);
         const userRecord = JSON.parse(await env.WAITLIST.get(`user:${email}`));
-        if (!userRecord) return jsonResp(request, { error: "Account no longer exists." }, 404);
+        if (!userRecord) {
+          await logLoginEvent(env, email, "magic_link", false, "account_missing");
+          return jsonResp(request, { error: "Account no longer exists." }, 404);
+        }
         const sessionToken = generateId();
         await env.WAITLIST.put(`session:${sessionToken}`, JSON.stringify({ email: userRecord.email, name: userRecord.name }), { expirationTtl: 60 * 60 * 24 * 30 });
+        await logLoginEvent(env, userRecord.email, "magic_link", true);
         return jsonResp(request, { ok: true, token: sessionToken, name: userRecord.name, email: userRecord.email, emailVerified: userRecord.emailVerified !== false });
       }
   
