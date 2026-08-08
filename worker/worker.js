@@ -1385,23 +1385,79 @@ Valid values for a node's "type" field: "client", "server", "database", "externa
       // Cap input lengths to keep prompts sane and prevent abuse
       const safe = (v, max) => String(v || "not specified").slice(0, max);
 
-      const prompt = `You are a sharp, no-fluff technical mentor helping an Indian student pick projects that a recruiter or hiring manager would actually stop scrolling for.
+      // --- ANTI-REPEAT MEMORY ---
+      // Keep a rolling list of recently-suggested idea titles per target role so
+      // repeat visitors (or different students targeting the same role) don't
+      // keep getting the same handful of ideas back. Small, cheap, high-impact.
+      const roleSlug = safe(role, 60).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "general";
+      const recentKey = `recent_titles:${roleSlug}`;
+      let recentTitles = [];
+      try {
+        recentTitles = JSON.parse(await env.WAITLIST.get(recentKey) || "[]");
+      } catch (e) { recentTitles = []; }
+      const avoidList = recentTitles.slice(-18);
 
-Background: ${safe(branch, 100)}
+      const briefBlock = `Background: ${safe(branch, 100)}
 Target role: ${safe(role, 100)}
 Existing skills: ${safe(skills, 200)}
 Time available: ${safe(time, 50)}
 What feels missing from their resume: ${safe(gap, 300)}
-Dream company/target: ${safe(dreamTarget, 100)}
+Dream company/target: ${safe(dreamTarget, 100)}`;
 
-Give exactly 4 project ideas tailored to this. Hard rules:
+      // --- PASS 1: BRAINSTORM ---
+      // A separate, unconstrained pass generates a wide raw pool of candidates.
+      // Free-text generation (no rigid JSON schema) produces more varied,
+      // less "safe-default" output than asking for the final answer directly —
+      // schema-constrained decoding on the first pass tends to regress to the
+      // most statistically common (i.e. most generic) completion.
+      let brainstormText = "";
+      try {
+        const brainstormPrompt = `${briefBlock}
+
+Brainstorm 10 distinct project ideas for this student. For each, one line only: a specific project concept plus the ONE real technical constraint it solves (concurrency, real-time sync, latency, offline-first, cost at scale, security, search relevance, consistency under failure, etc). No fluff, no explanations, just the list.
+
+Hard bans: to-do apps, weather apps, calculators, unmodified clone apps, generic blogs/CRUD, plain portfolio sites.
+${avoidList.length ? `\nAlready suggested recently for this exact role — do NOT repeat these or close variants:\n${avoidList.map(t => `- ${t}`).join("\n")}` : ""}
+
+Format: "1. <idea> — <the one technical constraint it demonstrates>"`;
+
+        const brainstormResp = await env.AI.run("@cf/meta/llama-3.3-70b-instruct-fp8-fast", {
+          messages: [
+            { role: "system", content: "You are an experienced software engineer brainstorming sharp, non-generic project ideas. Be specific and varied. Plain text only." },
+            { role: "user", content: brainstormPrompt },
+          ],
+          max_tokens: 700,
+        });
+        brainstormText = (brainstormResp && brainstormResp.response) || "";
+      } catch (e) {
+        brainstormText = ""; // non-fatal — pass 2 still works without a seed pool
+      }
+
+      // --- PASS 2: SELECT, SHARPEN, AND STRUCTURE ---
+      // Given the raw candidate pool (if we got one), pick and rewrite the best,
+      // most differentiated 4 — actively rejecting anything that still reads
+      // as generic even from its own brainstorm — then produce the flagship
+      // and lock everything into the final schema.
+      const prompt = `You are a sharp, no-fluff technical mentor helping an Indian student pick projects that a recruiter or hiring manager would actually stop scrolling for.
+
+${briefBlock}
+
+${brainstormText ? `Here is a raw brainstormed candidate pool to draw from (you may also deviate from it if you think of something sharper — this is a seed, not a constraint):\n${brainstormText}\n` : ""}
+Here is the bar for quality — study the difference:
+BAD (generic, reject anything like this): "Task Manager App" — why: "Built with React and Node, has CRUD operations for tasks." This says nothing: no constraint, no number, no reason a recruiter would care.
+GOOD (this is the bar): "Rate-Limited API Gateway with Sliding-Window Throttling" — why: "Implements a Redis-backed sliding-window rate limiter handling 5,000+ req/s with sub-5ms overhead per request, directly relevant to backend roles where API abuse protection is a real interview topic." This works because it names the exact algorithmic decision, a real number, and why it maps to the target role.
+
+Give exactly 4 project ideas tailored to this student, at the GOOD bar above. Hard rules:
 - BANNED unless genuinely justified with a real twist: to-do list app, weather app, basic calculator, generic blog/CRUD clone, "Netflix clone" / "Instagram clone" with no differentiator, simple portfolio site.
 - Every idea needs ONE concrete technical differentiator that a recruiter can picture in 3 seconds — a real constraint solved (concurrency, latency, offline-sync, real-time, cost optimization, security, scale), not just "used React and Node".
 - Prefer ideas where the interesting part is a decision, not a checkbox: e.g. "implemented optimistic UI with conflict resolution" beats "added a like button". Think like a senior engineer skimming a resume for 6 seconds — what makes them pause?
 - Reference the student's specific stated gap or goal directly in "why" — no generic filler.
+- "why" must NOT lead with a list of frameworks/technologies — lead with the decision or constraint solved.
 - "resume_line" MUST include a plausible number (%, ms, req/s, concurrent users, rows, cost saved, time saved) — vague achievement language is not acceptable.
 - "recruiter_hook" is a single punchy sentence, sharper and more concrete than "why" — the exact line that would make a recruiter open the GitHub link. No buzzwords like "leverage", "utilize", "cutting-edge".
 - "difficulty" must genuinely reflect effort given their stated time and current skills — don't inflate everything to "Advanced".
+- The 4 ideas must be meaningfully different from each other in domain and constraint — do not give 4 variations on the same underlying idea.
+${avoidList.length ? `- Do NOT reuse these recently-suggested titles or close variants: ${avoidList.slice(-10).join(" | ")}` : ""}
 
 Then separately, describe ONE flagship project — meaningfully more ambitious than the 4 above, the kind of project that would put this student ahead of most other candidates for the same role, closer to what an engineer at their dream company/target would respect. List the specific skills they'd need to learn to pull it off, ranked by priority (most foundational first).
 
@@ -1473,6 +1529,16 @@ Respond ONLY with valid JSON, no markdown fences, no preamble, in this exact str
       });
 
       const parsed = parseAiJson(aiResponse);
+
+      // Update anti-repeat memory with this batch's titles (rolling window, ~30 days).
+      try {
+        const newTitles = [
+          ...(Array.isArray(parsed.ideas) ? parsed.ideas.map(i => i.title).filter(Boolean) : []),
+          ...(parsed.flagship && parsed.flagship.title ? [parsed.flagship.title] : []),
+        ];
+        const updatedTitles = [...recentTitles, ...newTitles].slice(-60); // cap stored history
+        await env.WAITLIST.put(recentKey, JSON.stringify(updatedTitles), { expirationTtl: 60 * 60 * 24 * 30 });
+      } catch (e) { /* best-effort, never block the response on this */ }
 
       // Charge the credit cost now that generation succeeded.
       userRecordForGen.credits -= IDEA_GEN_COST;
