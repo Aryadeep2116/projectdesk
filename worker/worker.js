@@ -101,6 +101,10 @@ async function logLoginEvent(env, email, method, success, extra) {
 // Free plan gets 360 credits per 30-day cycle. Generating the 4 project ideas
 // costs 120 credits; generating one detailed guide costs 200. That leaves a
 // little headroom (40) per cycle. Premium credits/features are still TBD.
+// On top of the plan allowance, the admin panel can hand a single account extra
+// credits (admin_set_credits). That extra lives on the user record as
+// `bonusCredits` and is added again on every 30-day reset, so a boost isn't
+// wiped out by the cycle rolling over.
 const FREE_PLAN_CREDITS = 360;
 const PREMIUM_PLAN_CREDITS = 1000; // placeholder — revisit once premium plan is defined
 const IDEA_GEN_COST = 120;
@@ -118,15 +122,23 @@ async function saveUser(env, userRecord) {
 // Resets a user's credits if their 30-day cycle has elapsed (or if they've
 // never had one, e.g. accounts created before credits existed). Mutates and
 // returns the record; caller is responsible for saving it back.
+//
+// `bonusCredits` is a per-cycle top-up that an admin can hand a specific
+// account from the admin panel. It is added on top of the plan allowance every
+// time the cycle resets, so a boost keeps working next month instead of being
+// wiped by the reset. Legacy records simply have no field (treated as 0).
 function refreshCredits(userRecord) {
   const now = Date.now();
-  const resetDue = !userRecord.creditsResetAt || now >= new Date(userRecord.creditsResetAt).getTime();
-  if (resetDue) {
-    userRecord.credits = userRecord.plan === "premium" ? PREMIUM_PLAN_CREDITS : FREE_PLAN_CREDITS;
-    userRecord.creditsResetAt = new Date(now + CREDIT_CYCLE_MS).toISOString();
-  }
   if (!userRecord.plan) userRecord.plan = "free";
   if (!Array.isArray(userRecord.usedGuides)) userRecord.usedGuides = [];
+  const bonus = Math.max(0, Math.trunc(Number(userRecord.bonusCredits) || 0));
+  userRecord.bonusCredits = bonus;
+  const planCredits = userRecord.plan === "premium" ? PREMIUM_PLAN_CREDITS : FREE_PLAN_CREDITS;
+  const resetDue = !userRecord.creditsResetAt || now >= new Date(userRecord.creditsResetAt).getTime();
+  if (resetDue) {
+    userRecord.credits = planCredits + bonus;
+    userRecord.creditsResetAt = new Date(now + CREDIT_CYCLE_MS).toISOString();
+  }
   return userRecord;
 }
 
@@ -368,6 +380,9 @@ async function sendEmail(env, to, template, data) {
           ts: new Date().toISOString(),
           plan: "free",
           credits: FREE_PLAN_CREDITS,
+          // Extra credits granted by an admin; added on top of the plan
+          // allowance on every 30-day reset (see refreshCredits).
+          bonusCredits: 0,
           creditsResetAt: new Date(Date.now() + CREDIT_CYCLE_MS).toISOString(),
           usedGuides: [],
         };
@@ -607,6 +622,10 @@ async function sendEmail(env, to, template, data) {
           premiumUntil: userRecord.premiumUntil || null,
           cancelled: !!userRecord.cancelledAt,
           credits: userRecord.credits,
+          // Plan allowance for this cycle + any admin top-up, so the app can
+          // explain a balance that goes above the normal free allowance.
+          planCredits: userRecord.plan === "premium" ? PREMIUM_PLAN_CREDITS : FREE_PLAN_CREDITS,
+          bonusCredits: userRecord.bonusCredits || 0,
           creditsResetAt: userRecord.creditsResetAt,
           emailVerified: userRecord.emailVerified !== false,
           results: results.filter(Boolean).reverse(),
@@ -1044,12 +1063,16 @@ Valid values for a node's "type" field: "client", "server", "database", "externa
           userList.keys.map(async (k) => {
             const raw = await env.WAITLIST.get(k.name);
             if (!raw) return null;
-            const u = JSON.parse(raw);
+            const u = refreshCredits(JSON.parse(raw));
             return {
               name: u.name,
               email: u.email,
               plan: u.plan || "free",
               credits: u.credits,
+              // Plan allowance for the current cycle (e.g. 360 free) — the admin
+              // panel uses it to show how much of a balance came from boosts.
+              planCredits: u.plan === "premium" ? PREMIUM_PLAN_CREDITS : FREE_PLAN_CREDITS,
+              bonusCredits: u.bonusCredits || 0,
               creditsResetAt: u.creditsResetAt,
               emailVerified: u.emailVerified !== false,
               signedUpAt: u.ts,
@@ -1105,6 +1128,89 @@ Valid values for a node's "type" field: "client", "server", "database", "externa
           },
         }), {
           headers: { ...corsHeaders(request), "Content-Type": "application/json" },
+        });
+      }
+
+      // --- ADMIN: give a specific account more credits ---
+      // Lets the admin top up one account (e.g. a student who ran out mid-cycle).
+      // Two modes, so a mistake can be undone as easily as a top-up is made:
+      //   mode "add" → adds `credits` to their balance
+      //   mode "set" → replaces their balance with `credits`
+      // Either way the extra is remembered as `bonusCredits`, so it carries over
+      // each 30-day reset. "set" rewrites the boost to whatever is needed to
+      // reach the requested balance, so set(360) on a free account also clears
+      // any boost it had.
+      if (body.action === "admin_set_credits") {
+        if (await isRateLimited(env, ip, "admin", 30, 3600)) {
+          return jsonResp(request, { error: "Too many attempts. Try again later." }, 429);
+        }
+        if (body.password !== env.ADMIN_PASSWORD) {
+          return jsonResp(request, { error: "Unauthorized" }, 401);
+        }
+
+        const email = String(body.email || "").trim().toLowerCase();
+        if (!email || !email.includes("@") || email.length > 200) {
+          return jsonResp(request, { error: "A valid account email is required." }, 400);
+        }
+
+        // Accept a numeric string too (admin may paste "500"), but nothing else.
+        const amount = typeof body.credits === "string" && body.credits.trim() !== ""
+          ? Number(body.credits)
+          : body.credits;
+        if (typeof amount !== "number" || !Number.isFinite(amount) || Math.trunc(amount) !== amount) {
+          return jsonResp(request, { error: "Credits must be a whole number." }, 400);
+        }
+        if (Math.abs(amount) > 100000) {
+          return jsonResp(request, { error: "That's too large — keep changes within 100,000 credits." }, 400);
+        }
+
+        const mode = body.mode === "set" ? "set" : "add";
+
+        const userRecord = await getUser(env, email);
+        if (!userRecord) {
+          return jsonResp(request, { error: `No account found for ${email}.` }, 404);
+        }
+
+        const creditsBefore = refreshCredits(userRecord).credits;
+        userRecord.credits = mode === "set" ? amount : creditsBefore + amount;
+        if (userRecord.credits < 0) userRecord.credits = 0;
+
+        const planCredits = userRecord.plan === "premium" ? PREMIUM_PLAN_CREDITS : FREE_PLAN_CREDITS;
+        // Store the top-up as "everything above the plan allowance". This cycle's
+        // reset has already happened (creditsResetAt is in the future), so the
+        // boosted balance stands as-is until the cycle ends — at which point the
+        // same extra is added on top of the plan allowance again.
+        userRecord.bonusCredits = Math.max(0, userRecord.credits - planCredits);
+
+        // Keep a short audit trail on the account itself (last 20 changes).
+        userRecord.creditLog = Array.isArray(userRecord.creditLog) ? userRecord.creditLog : [];
+        userRecord.creditLog.push({
+          ts: new Date().toISOString(),
+          mode,
+          amount,
+          before: creditsBefore,
+          after: userRecord.credits,
+          by: "admin",
+        });
+        if (userRecord.creditLog.length > 20) {
+          userRecord.creditLog = userRecord.creditLog.slice(-20);
+        }
+
+        await env.WAITLIST.put(`user:${email}`, JSON.stringify(userRecord));
+
+        return jsonResp(request, {
+          ok: true,
+          message: mode === "set"
+            ? `${email} now has ${userRecord.credits} credits this cycle.`
+            : `Added ${amount} credits to ${email} — they now have ${userRecord.credits}.`,
+          name: userRecord.name,
+          email: userRecord.email,
+          plan: userRecord.plan,
+          credits: userRecord.credits,
+          planCredits,
+          bonusCredits: userRecord.bonusCredits,
+          creditsResetAt: userRecord.creditsResetAt,
+          creditsBefore: creditsBefore,
         });
       }
 

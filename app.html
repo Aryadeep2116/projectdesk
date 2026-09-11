@@ -1815,7 +1815,7 @@
         <span class="brand-text">Build<span class="accent">ItUp</span></span>
       </a>
       <div id="credit-box" style="display:none;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:6px 14px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-soft);">
-        <span id="credit-num" style="color:var(--accent);font-weight:600;">–</span> / <span id="credit-total">360</span> credits
+        <span id="credit-num" style="color:var(--accent);font-weight:600;">–</span> / <span id="credit-total">360</span> credits<span id="credit-boost" style="display:none;margin-left:7px;color:var(--accent);">· +0 top-up</span>
       </div>
     </div>
     <div id="auth-area" style="display:flex;align-items:center;gap:8px;">
@@ -2300,7 +2300,15 @@
         if (data.error) return;
         creditBox.style.display = 'block';
         creditNum.textContent = data.credits;
-        document.getElementById('credit-total').textContent = data.plan === 'premium' ? '1000' : '360';
+        // `planCredits` is this cycle's plan allowance; a balance above it means
+        // an admin topped the account up, so say where the extra came from.
+        document.getElementById('credit-total').textContent = data.planCredits || (data.plan === 'premium' ? '1000' : '360');
+        const boostEl = document.getElementById('credit-boost');
+        if (boostEl) {
+          const boost = data.bonusCredits || 0;
+          boostEl.style.display = boost > 0 ? 'inline' : 'none';
+          boostEl.textContent = `· +${boost} top-up`;
+        }
         latestDashboardData = data;
         populateWorkflowFromDashboard(data);
       } catch (e) { /* best-effort */ }

@@ -315,6 +315,50 @@
   .badge.warn{color:#B45309;background:rgba(217,119,6,.1);}
   .badge.fail{color:#B91C1C;background:rgba(220,38,38,.1);}
   .badge.neutral{color:var(--ink-soft);background:var(--paper-2);}
+
+  /* CREDIT BOOSTS */
+  .panel-note{
+    padding:14px 20px;border-bottom:1px solid var(--line);
+    font-size:12.5px;line-height:1.55;color:var(--ink-soft);
+  }
+  .balance-cell b{font-family:'Sora', sans-serif;font-size:15px;font-weight:700;}
+  .btn-mini{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    padding:6px 11px;
+    border-radius:6px;
+    border:1px solid var(--line);
+    background:var(--paper-2);
+    color:var(--ink-soft);
+    cursor:pointer;
+    transition:border-color .15s, color .15s, background .15s;
+  }
+  .btn-mini:hover{border-color:var(--accent);color:var(--accent);}
+  .btn-mini.solid{background:var(--accent);border-color:var(--accent);color:#FFFFFF;font-weight:600;}
+  .btn-mini.solid:hover{color:#FFFFFF;filter:brightness(1.06);}
+  .btn-mini:disabled{opacity:.55;cursor:default;}
+  .credit-editor{display:flex;flex-wrap:wrap;align-items:center;gap:9px;padding:6px 0 2px;}
+  .ce-label{
+    font-family:'IBM Plex Mono', monospace;font-size:10.5px;letter-spacing:1px;
+    text-transform:uppercase;color:var(--ink-soft);
+  }
+  .ce-quick{display:flex;gap:6px;flex-wrap:wrap;}
+  .credit-editor select{
+    padding:7px 9px;border-radius:7px;border:1px solid var(--line);background:var(--paper);
+    color:var(--ink);font-family:'IBM Plex Mono', monospace;font-size:11.5px;outline:none;
+  }
+  .credit-editor select:focus{border-color:var(--accent);}
+  .credit-editor input[type="number"]{
+    width:104px;padding:7px 9px;border-radius:7px;border:1px solid var(--line);
+    background:var(--paper);color:var(--ink);font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px;outline:none;
+  }
+  .credit-editor input[type="number"]:focus{border-color:var(--accent);}
+  tr.editor-row td{background:var(--paper-2);white-space:normal;}
+  tr.editor-row:hover td{background:var(--paper-2);}
+  .ce-msg{font-family:'IBM Plex Mono', monospace;font-size:11.5px;color:var(--ink-soft);}
+  .ce-msg.ok{color:var(--accent);}
+  .ce-msg.err{color:var(--error);}
 </style>
 </head>
 <body>
@@ -359,6 +403,7 @@
 
     <div class="admin-tabs">
       <button class="admin-tab active" data-tab="users">Users <span class="count-pill" id="count-users">0</span></button>
+      <button class="admin-tab" data-tab="credits">Credit boosts <span class="count-pill" id="count-boosted">0</span></button>
       <button class="admin-tab" data-tab="logins">Login activity <span class="count-pill" id="count-logins">0</span></button>
       <button class="admin-tab" data-tab="waitlist">Waitlist <span class="count-pill" id="count-waitlist">0</span></button>
     </div>
@@ -370,6 +415,22 @@
           <input id="search-users" type="text" placeholder="Search name or email...">
         </div>
         <div class="table-scroll" id="usersTableWrap"></div>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="panel-credits">
+      <div class="table-card">
+        <div class="table-head">
+          <h3>Give a specific account more credits</h3>
+          <input id="search-credits" type="text" placeholder="Search name or email...">
+        </div>
+        <div class="panel-note">
+          Pick an account, then add credits so they can generate more. The boost is added to
+          their balance and carried into every future 30-day cycle — so it keeps working next
+          month instead of disappearing at the reset. Use “Set balance to” to correct a mistake
+          or take credits back.
+        </div>
+        <div class="table-scroll" id="creditsTableWrap"></div>
       </div>
     </div>
 
@@ -401,6 +462,21 @@ const WORKER_URL = "https://projectdesk-api.aryadeepbiswas014.workers.dev";
 let allUsers = [];
 let allLogins = [];
 let allWaitlist = [];
+
+// Credit-boost state. `adminPw` is the password already validated by the
+// dashboard call, reused for credit changes so the admin only types it once.
+let adminPw = '';
+let creditDraft = null;   // { email, mode, amount } — the row currently open for editing
+let creditNotice = null;  // { email, type: 'ok'|'err', text } — last result for a row
+const CREDIT_PRESETS = [120, 200, 500, 1000];
+
+// Escapes text that came from user records (names, emails) before it goes into
+// an innerHTML template.
+function esc(v) {
+  return String(v == null ? '' : v).replace(/[&<>"']/g, (c) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+}
 
 const pwInput = document.getElementById('pw');
 const loadBtn = document.getElementById('load');
@@ -458,6 +534,9 @@ async function loadDashboard(password) {
 
     msg.innerHTML = '';
     loadBtn.disabled = false;
+    adminPw = password;
+    creditDraft = null;
+    creditNotice = null;
     renderDashboard(data);
     loginCard.style.display = 'none';
     dashboard.style.display = 'block';
@@ -506,6 +585,7 @@ function renderDashboard(data) {
   document.getElementById('count-waitlist').textContent = allWaitlist.length;
 
   renderUsersTable(allUsers);
+  renderCreditsTable();
   renderLoginsTable(allLogins);
   renderWaitlistTable(allWaitlist);
 }
@@ -517,10 +597,10 @@ function renderUsersTable(users) {
   users.forEach(u => {
     html += `<tr>
       <td>${new Date(u.signedUpAt).toLocaleString()} <span style="color:var(--ink-soft);">(${timeAgo(u.signedUpAt)})</span></td>
-      <td>${u.name || ''}</td>
-      <td class="email">${u.email || ''}</td>
-      <td><span class="badge ${u.plan === 'premium' ? 'ok' : 'neutral'}">${u.plan || 'free'}</span></td>
-      <td>${u.credits ?? ''}</td>
+      <td>${esc(u.name || '')}</td>
+      <td class="email">${esc(u.email || '')}</td>
+      <td><span class="badge ${u.plan === 'premium' ? 'ok' : 'neutral'}">${esc(u.plan || 'free')}</span></td>
+      <td>${u.credits ?? ''}${u.bonusCredits > 0 ? ` <span class="badge ok">+${u.bonusCredits}</span>` : ''}</td>
       <td><span class="badge ${u.emailVerified ? 'ok' : 'warn'}">${u.emailVerified ? 'verified' : 'unverified'}</span></td>
       <td>${u.guidesUnlocked ?? 0}</td>
     </tr>`;
@@ -529,6 +609,184 @@ function renderUsersTable(users) {
   wrap.innerHTML = html;
 }
 
+// ---- CREDIT BOOSTS ----
+// Renders the accounts table for the Credit boosts tab. Each row can open an
+// inline editor that talks to the worker's admin_set_credits action.
+function renderCreditsTable() {
+  const wrap = document.getElementById('creditsTableWrap');
+  const q = (document.getElementById('search-credits').value || '').trim().toLowerCase();
+  const boosted = allUsers.filter(u => (u.bonusCredits || 0) > 0).length;
+  document.getElementById('count-boosted').textContent = boosted;
+
+  if (!allUsers.length) {
+    wrap.innerHTML = '<div class="empty-state">No registered accounts yet.</div>';
+    return;
+  }
+  const users = !q ? allUsers : allUsers.filter(u =>
+    (u.email || '').toLowerCase().includes(q) || (u.name || '').toLowerCase().includes(q)
+  );
+  if (!users.length) {
+    wrap.innerHTML = '<div class="empty-state">No accounts match that search.</div>';
+    return;
+  }
+
+  let html = '<table><tr><th>Account</th><th>Plan</th><th>Balance</th><th>Boost each cycle</th><th>Cycle resets</th><th></th></tr>';
+  users.forEach(u => {
+    const email = u.email || '';
+    const bonus = u.bonusCredits || 0;
+    const open = !!creditDraft && creditDraft.email === email;
+    const resets = u.creditsResetAt
+      ? `${new Date(u.creditsResetAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} <span style="color:var(--ink-soft);">(${timeUntil(u.creditsResetAt)})</span>`
+      : '<span style="color:var(--ink-soft);">—</span>';
+
+    html += `<tr>
+      <td>${esc(u.name || '—')}<div class="email" style="color:var(--ink-soft);">${esc(email)}</div></td>
+      <td><span class="badge ${u.plan === 'premium' ? 'ok' : 'neutral'}">${esc(u.plan || 'free')}</span></td>
+      <td class="balance-cell">${u.credits ?? '–'}</td>
+      <td>${bonus > 0 ? `<span class="badge ok">+${bonus}</span>` : '<span style="color:var(--ink-soft);">—</span>'}</td>
+      <td>${resets}</td>
+      <td><button class="btn-mini${open ? ' solid' : ''}" data-credit-open="${esc(email)}">Adjust credits</button></td>
+    </tr>`;
+
+    if (creditNotice && creditNotice.email === email) {
+      html += `<tr class="editor-row"><td colspan="6">
+        <div class="ce-msg ${creditNotice.type}">${creditNotice.type === 'ok' ? '✓' : '⚠'} ${esc(creditNotice.text)}</div>
+      </td></tr>`;
+    }
+
+    if (open) {
+      const total = u.planCredits || (u.plan === 'premium' ? 1000 : 360);
+      html += `<tr class="editor-row"><td colspan="6">
+        <div class="credit-editor">
+          <span class="ce-label">Account: ${esc(email)}</span>
+          <div class="ce-quick">
+            ${CREDIT_PRESETS.map(n => `<button class="btn-mini" data-credit-preset="${n}">+${n}</button>`).join('')}
+          </div>
+          <select data-credit-mode>
+            <option value="add"${creditDraft.mode === 'add' ? ' selected' : ''}>Add to balance</option>
+            <option value="set"${creditDraft.mode === 'set' ? ' selected' : ''}>Set balance to</option>
+          </select>
+          <input type="number" data-credit-amount min="0" step="1" value="${creditDraft.amount}" placeholder="Credits">
+          <button class="btn-mini solid" data-credit-apply>Apply</button>
+          <button class="btn-mini" data-credit-cancel>Cancel</button>
+        </div>
+        <div class="ce-msg" style="margin-top:8px;">Current balance ${u.credits ?? 0} · plan allowance ${total}/cycle${bonus > 0 ? ` · includes +${bonus} carry-over` : ''}</div>
+      </td></tr>`;
+    }
+  });
+  html += '</table>';
+  wrap.innerHTML = html;
+}
+
+function timeUntil(iso) {
+  const diff = new Date(iso).getTime() - Date.now();
+  if (diff <= 0) return 'due now';
+  const days = Math.floor(diff / 86400000);
+  if (days >= 1) return `in ${days}d`;
+  const hrs = Math.floor(diff / 3600000);
+  if (hrs >= 1) return `in ${hrs}h`;
+  return 'in <1h';
+}
+
+async function applyCreditChange(email, mode, amount, btn) {
+  creditNotice = null;
+  btn.disabled = true;
+  const original = btn.textContent;
+  btn.textContent = 'Saving...';
+  try {
+    const res = await fetch(WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'admin_set_credits', password: adminPw, email, credits: amount, mode })
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+
+    // Keep local state in sync so the Users tab and the balance column agree
+    // with the server without a second round-trip.
+    const u = allUsers.find(x => (x.email || '').toLowerCase() === email.toLowerCase());
+    if (u) {
+      u.credits = data.credits;
+      u.bonusCredits = data.bonusCredits;
+      u.creditsResetAt = data.creditsResetAt || u.creditsResetAt;
+      u.planCredits = data.planCredits;
+      if (data.plan) u.plan = data.plan;
+    }
+    creditDraft = null;
+    creditNotice = { email, type: 'ok', text: data.message };
+    // Re-render the other tab's table through its own filter handler.
+    document.getElementById('search-users').dispatchEvent(new Event('input'));
+  } catch (err) {
+    // Editor stays open (creditDraft untouched) so the admin can just retry.
+    creditNotice = { email, type: 'err', text: err.message || 'Could not update credits. Try again.' };
+    btn.disabled = false;
+    btn.textContent = original;
+  }
+  renderCreditsTable();
+}
+
+document.getElementById('creditsTableWrap').addEventListener('click', (ev) => {
+  const btn = ev.target.closest('button');
+  if (!btn) return;
+  const email = creditDraft ? creditDraft.email : null;
+
+  if (btn.hasAttribute('data-credit-open')) {
+    const target = btn.getAttribute('data-credit-open');
+    creditNotice = null;
+    creditDraft = (email === target) ? null : { email: target, mode: 'add', amount: 120 };
+    renderCreditsTable();
+    return;
+  }
+  if (!email) return;
+
+  if (btn.hasAttribute('data-credit-cancel')) {
+    creditDraft = null;
+    creditNotice = null;
+    renderCreditsTable();
+    return;
+  }
+
+  const editor = document.querySelector('#creditsTableWrap .credit-editor');
+  if (!editor) return;
+  const modeEl = editor.querySelector('[data-credit-mode]');
+  const amountEl = editor.querySelector('[data-credit-amount]');
+
+  if (btn.dataset.creditPreset) {
+    // Presets are always a top-up, and they only fill the field — nothing is
+    // sent until Apply, so a misclick is easy to see and undo.
+    amountEl.value = btn.dataset.creditPreset;
+    modeEl.value = 'add';
+    creditDraft.mode = 'add';
+    creditDraft.amount = Number(btn.dataset.creditPreset);
+    renderCreditsTable();
+    return;
+  }
+
+  if (btn.hasAttribute('data-credit-apply')) {
+    const mode = modeEl.value === 'set' ? 'set' : 'add';
+    const amount = Number(amountEl.value);
+    if (amountEl.value.trim() === '' || !Number.isFinite(amount) || Math.trunc(amount) !== amount || amount < 0) {
+      creditNotice = { email, type: 'err', text: 'Enter a whole number of credits (0 or more).' };
+      renderCreditsTable();
+      return;
+    }
+    if (mode === 'set' && !confirm(`Set ${email}'s balance to ${amount} credits?`)) return;
+    applyCreditChange(email, mode, amount, btn);
+  }
+});
+
+// Keep the draft in sync while typing so opening/closing other rows doesn't
+// lose what was entered.
+document.getElementById('creditsTableWrap').addEventListener('input', (ev) => {
+  if (!creditDraft) return;
+  const modeEl = document.querySelector('#creditsTableWrap [data-credit-mode]');
+  const amountEl = document.querySelector('#creditsTableWrap [data-credit-amount]');
+  if (modeEl) creditDraft.mode = modeEl.value === 'set' ? 'set' : 'add';
+  if (amountEl && amountEl.value.trim() !== '') creditDraft.amount = Number(amountEl.value) || 0;
+});
+
+document.getElementById('search-credits').addEventListener('input', renderCreditsTable);
+
 function renderLoginsTable(logins) {
   const wrap = document.getElementById('loginsTableWrap');
   if (!logins.length) { wrap.innerHTML = '<div class="empty-state">No login activity recorded yet.</div>'; return; }
@@ -536,10 +794,10 @@ function renderLoginsTable(logins) {
   logins.forEach(l => {
     html += `<tr>
       <td>${new Date(l.ts).toLocaleString()} <span style="color:var(--ink-soft);">(${timeAgo(l.ts)})</span></td>
-      <td class="email">${l.email || ''}</td>
-      <td><span class="badge neutral">${(l.method || '').replace('_', ' ')}</span></td>
+      <td class="email">${esc(l.email || '')}</td>
+      <td><span class="badge neutral">${esc((l.method || '').replace('_', ' '))}</span></td>
       <td><span class="badge ${l.success ? 'ok' : 'fail'}">${l.success ? 'success' : 'failed'}</span></td>
-      <td style="color:var(--ink-soft);">${l.reason ? l.reason.replace(/_/g, ' ') : '—'}</td>
+      <td style="color:var(--ink-soft);">${l.reason ? esc(l.reason.replace(/_/g, ' ')) : '—'}</td>
     </tr>`;
   });
   html += '</table>';
@@ -553,12 +811,12 @@ function renderWaitlistTable(entries) {
   entries.forEach(e => {
     html += `<tr>
       <td>${new Date(e.ts).toLocaleString()}</td>
-      <td class="email">${e.email || ''}</td>
-      <td>${e.role || ''}</td>
-      <td>${e.gap || ''}</td>
-      <td>${e.dreamTarget || ''}</td>
-      <td>${e.branch || ''}</td>
-      <td>${e.skills || ''}</td>
+      <td class="email">${esc(e.email || '')}</td>
+      <td>${esc(e.role || '')}</td>
+      <td>${esc(e.gap || '')}</td>
+      <td>${esc(e.dreamTarget || '')}</td>
+      <td>${esc(e.branch || '')}</td>
+      <td>${esc(e.skills || '')}</td>
     </tr>`;
   });
   html += '</table>';
